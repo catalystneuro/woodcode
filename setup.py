@@ -3,9 +3,9 @@ from setuptools import setup, find_packages
 setup(
     name="woodcode",
     version="0.1.0",
-    author="Adrian Duszkiewicz",
+    author="Wood/Dudchenko lab members",
     author_email="a.j.duszkiewicz@gmail.com",
-    description="A python package for neural data analysis in Wood/Dudchenko lab",
+    description="A python library for neural data analysis in Wood/Dudchenko lab",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/Wood-Dudchenko-lab/woodcode",
