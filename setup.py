@@ -15,6 +15,7 @@ setup(
         "scipy",
         "matplotlib",
         "pandas",
+        "pynwb",
         "pynapple==0.7.1"
     ],
     classifiers=[
