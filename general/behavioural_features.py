@@ -2,16 +2,14 @@ import numpy as np
 import pandas as pd
 import pynapple as nap
 
-def compute_velocity(pos, window_size: int = None, sampling_rate: float = None):
+def compute_velocity(pos: nap.TsdFrame, window_size: int = None, sampling_rate: float = None) -> nap.Tsd:
     """
     Computes the velocity of an animal based on position data.
 
     Parameters:
     -----------
-    pos : pd.DataFrame or nap.Tsd
-        Position data with time as the index.
-        - If a DataFrame, it should have two columns (x, y).
-        - If a TsdFrame, it should contain 2D position values as an array-like structure.
+    pos : nap.TsdFrame
+        A TsdFrame with time as the index and two columns (x, y) for position data.
     window_size : int, optional
         Moving average window size in bins. If None, no smoothing is applied.
     sampling_rate : float, optional
@@ -20,28 +18,27 @@ def compute_velocity(pos, window_size: int = None, sampling_rate: float = None):
     Returns:
     --------
     vel : nap.Tsd
-        A time series of velocity values.
+        A Tsd containing velocity values indexed by time.
     """
 
-    # Convert nap.Tsd to pandas DataFrame if needed
-    if isinstance(pos, nap.TsdFrame):
-        timestamps = pos.index
-        pos_values = np.array(pos.values)  # Ensure it's a NumPy array
-        if pos_values.shape[1] != 2:
-            raise ValueError("Input nap.Tsd must contain 2D position values (x, y).")
-        pos = pd.DataFrame(pos_values, index=timestamps, columns=["x", "y"])
+    if not isinstance(pos, nap.TsdFrame):
+        raise TypeError("Input must be a pynapple TsdFrame.")
 
-    elif not isinstance(pos, pd.DataFrame):
-        raise TypeError("Input must be either a pandas DataFrame or a pynapple Tsd.")
+    if pos.shape[1] != 2:
+        raise ValueError("Input TsdFrame must have exactly two columns (x, y).")
+
+    # Extract timestamps and position data
+    timestamps = pos.index
+    pos_values = pos.values  # Convert to NumPy array
 
     # Determine tracking interval
     if sampling_rate is None:
-        tracking_interval = np.median(np.diff(pos.index))  # Compute from timestamps
+        tracking_interval = np.median(np.diff(timestamps))  # Compute from timestamps
     else:
         tracking_interval = 1.0 / sampling_rate  # Define explicitly
 
     # Compute displacement in x and y
-    displacement = np.diff(pos.to_numpy(), axis=0)
+    displacement = np.diff(pos_values, axis=0)
 
     # Compute 2D displacement (Euclidean distance)
     displacement = np.hypot(displacement[:, 0], displacement[:, 1])
@@ -50,7 +47,7 @@ def compute_velocity(pos, window_size: int = None, sampling_rate: float = None):
     vel = displacement / tracking_interval
 
     # Convert to pandas Series
-    vel_series = pd.Series(vel, index=pos.index[1:])
+    vel_series = pd.Series(vel, index=timestamps[1:])
 
     # Apply moving average smoothing if window_size is specified
     if window_size is not None:
