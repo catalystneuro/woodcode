@@ -10,7 +10,7 @@ setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/Wood-Dudchenko-lab/woodcode",
-    packages=find_packages(),  # Automatically finds packages inside the repo
+    packages=find_packages(include=["woodcode", "woodcode.*"]),  # Includes all submodules  # Automatically finds packages inside the repo
     install_requires=[  # Dependencies your package needs
         "numpy",
         "scipy",
