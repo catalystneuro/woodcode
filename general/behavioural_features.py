@@ -11,7 +11,7 @@ def compute_velocity(pos, window_size: int = None, sampling_rate: float = None):
     pos : pd.DataFrame or nap.Tsd
         Position data with time as the index.
         - If a DataFrame, it should have two columns (x, y).
-        - If a Tsd, it should contain 2D position values as an array-like structure.
+        - If a TsdFrame, it should contain 2D position values as an array-like structure.
     window_size : int, optional
         Moving average window size in bins. If None, no smoothing is applied.
     sampling_rate : float, optional
@@ -24,7 +24,7 @@ def compute_velocity(pos, window_size: int = None, sampling_rate: float = None):
     """
 
     # Convert nap.Tsd to pandas DataFrame if needed
-    if isinstance(pos, nap.Tsd):
+    if isinstance(pos, nap.TsdFrame):
         timestamps = pos.index
         pos_values = np.array(pos.values)  # Ensure it's a NumPy array
         if pos_values.shape[1] != 2:
