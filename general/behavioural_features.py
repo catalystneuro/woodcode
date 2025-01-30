@@ -6,7 +6,7 @@ def compute_velocity(pos: nap.TsdFrame, window_size: int = None, sampling_rate: 
     """
     Computes the velocity of an animal based on position data.
 
-    Parameters:
+    Parameterss:
     -----------
     pos : nap.TsdFrame
         A TsdFrame with time as the index and two columns (x, y) for position data.
