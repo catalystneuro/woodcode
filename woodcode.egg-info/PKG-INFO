@@ -1,4 +1,4 @@
-Metadata-Version: 2.2
+Metadata-Version: 2.1
 Name: woodcode
 Version: 0.1.0
 Summary: A python library for neural data analysis in Wood/Dudchenko lab
@@ -16,16 +16,8 @@ Requires-Dist: scipy
 Requires-Dist: matplotlib
 Requires-Dist: pandas
 Requires-Dist: pynwb
+Requires-Dist: openpyxl
 Requires-Dist: pynapple==0.7.1
-Dynamic: author
-Dynamic: author-email
-Dynamic: classifier
-Dynamic: description
-Dynamic: description-content-type
-Dynamic: home-page
-Dynamic: requires-dist
-Dynamic: requires-python
-Dynamic: summary
 
 # woodcode
 A python library for neural data analysis in Wood/Dudchenko lab
