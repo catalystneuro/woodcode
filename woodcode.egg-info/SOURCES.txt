@@ -1,8 +1,0 @@
-LICENSE
-README.md
-setup.py
-woodcode.egg-info/PKG-INFO
-woodcode.egg-info/SOURCES.txt
-woodcode.egg-info/dependency_links.txt
-woodcode.egg-info/requires.txt
-woodcode.egg-info/top_level.txt

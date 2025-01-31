@@ -16,6 +16,7 @@ setup(
         "matplotlib",
         "pandas",
         "pynwb",
+        "openpyxl",
         "pynapple==0.7.1"
     ],
     classifiers=[
