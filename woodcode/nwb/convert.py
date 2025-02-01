@@ -59,23 +59,40 @@ def save_nwb_file(nwbfile,datapath, foldername):
         io.write(nwbfile)
     print('Done!')
 
+
 def add_events(nwbfile, events, event_name="events"):
     print('Adding events to NWB file...')
 
-  # Create a TimeIntervals table
-    events_table = TimeIntervals(name=event_name)
-    events_table.add_column(name="event_type", description="Type of event")  # Add a column for event type
+    # Handle case where events is a single IntervalSet
+    if isinstance(events, nap.IntervalSet):
+        events = {event_name: events}
 
-    for timestamp, state in events.items():
-        events_table.add_row(start_time=timestamp, stop_time=timestamp+0.001, event_type=state) # stop time doesn't matter
+    # Ensure events is a dictionary
+    if not isinstance(events, dict):
+        raise TypeError(
+            "events must be a dictionary where keys are labels and values are pynapple IntervalSet instances.")
+
+    # Ensure all values in events are IntervalSet instances
+    if not all(isinstance(interval_set, nap.IntervalSet) for interval_set in events.values()):
+        raise TypeError("All values in events must be pynapple IntervalSet instances.")
+
+    # Create a TimeIntervals table
+    events_table = TimeIntervals(name=event_name)
+    events_table.add_column(name="label", description="Type of event")
+
+    for label, interval_set in events.items():
+        for start, end in zip(interval_set['start'], interval_set['end']):
+            events_table.add_row(start_time=start, stop_time=end, label=label)
 
     nwbfile.add_time_intervals(events_table)
 
     return nwbfile
 
 
-def add_units(nwbfile, spikes, waveforms, shank_id, shank_names):
+def add_units(nwbfile, spikes, waveforms, shank_id):
     print('Adding units to NWB file...')
+    shank_names = list(nwbfile.electrode_groups.keys())
+    print(shank_names)
     for ncell in range(len(spikes)):
         group_name = shank_names[shank_id[ncell]]  # Map shank_id to correct name
         nwbfile.add_unit(id=ncell,
@@ -145,64 +162,6 @@ def add_probes(nwbfile, metadata, xmldata):
 
     # Print how shanks are called
     print("Shank names:", shank_names)
-
-    return nwbfile, shank_names
-
-
-def add_probe(nwbfile, **kwargs):
-    '''
-    n_shanks: number of shanks
-    n_channels: number of channels per shank
-    step: spacing between electrodes (in um)
-    electrode_counter: number of electrodes added so far
-    '''
-    print('Adding probes to NWB file...')
-    n_shanks = kwargs.get('n_shanks')
-    n_channels = kwargs.get('n_channels')
-    step = kwargs.get('step')
-    probe_description = kwargs.get('probe_description')
-    probe = kwargs.get('probe')
-    probe_target = kwargs.get('location')
-
-    electrode_counter = kwargs.get('electrodes_so_far')
-
-    # add columns to the electrode table
-    nwbfile.add_electrode_column(name='label', description='label of electrode')
-    nwbfile.add_electrode_column(name='is_faulty', description='Boolean column to indicate faulty electrodes')
-
-    # create probe device
-    device = nwbfile.create_device(
-        name=probe,
-        description=probe_description
-    )
-
-    # now add electrodes
-    for ishank in range(n_shanks):
-        #create an electrode group for this shank
-        electrode_group = nwbfile.create_electrode_group(
-            name='shank{}'.format(ishank),
-            description='electrode group for shank{}'.format(ishank),
-            device=device,
-            location=probe_target,
-        )
-
-        for ielec in range(n_channels):
-            elec_depth = step * (n_channels - ielec-1)
-            nwbfile.add_electrode(
-                x=0., y=float(elec_depth), z=0.,  # add electrode position
-                location=probe_target,
-                filtering='none',
-                is_faulty=False,  # TODO
-                group=electrode_group,
-                label='shank{}elec{}'.format(ishank,ielec)
-            )
-            electrode_counter += 1
-
-    # define table region RAW DAT FILE and LFP will refer to (all electrodes)
-    all_table_region = nwbfile.create_electrode_table_region(
-        region=list(range(electrode_counter)),
-        description='all electrodes',
-    )
 
     return nwbfile
 

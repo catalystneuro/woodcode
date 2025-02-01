@@ -7,17 +7,38 @@ import numpy as np
 import pandas as pd
 import json
 import re
+import pynapple as nap
 
-def get_events(datapath, foldername, time_offset=0):
+
+def get_openephys_events(datapath, foldername, time_offset=0, skip_first=0):
+# to do: account for instances when TTL is up at epoch edges
 
     print('Importing events npy files...')
     # importing events
     states = np.load(datapath / foldername / 'Analysis' / 'states.npy')
     timestamps = np.load(datapath / foldername / 'Analysis' / 'timestamps.npy')
     events = pd.Series(states, index=timestamps+time_offset)
-    events = events[events > 0]  # we don't care about the end of TTL pulses
+    events = events.iloc[skip_first:]
 
-    return events
+    df = events.reset_index()
+    df.columns = ['time', 'event']
+
+    # Identify start and end events
+    df['event_type'] = df['event'].abs()
+    df['event_sign'] = df['event'].apply(lambda x: 'start' if x > 0 else 'end')
+
+    # Separate dataframes for each event type
+    event_dict = {}
+    for event_type in df['event_type'].unique():
+        event_subset = df[df['event_type'] == event_type].copy()
+
+        starts = event_subset[event_subset['event_sign'] == 'start'].reset_index(drop=True)
+        ends = event_subset[event_subset['event_sign'] == 'end'].reset_index(drop=True)
+        event_int = nap.IntervalSet(start=starts['time'].values, end=ends['time'].values)
+
+        event_dict[event_type] = event_int
+
+    return event_dict
 
 
 def get_metadata(datapath, metaname, foldername):
@@ -92,6 +113,61 @@ def get_start_time(datapath, foldername):
     return start_time
 
 
+def get_matlab_position(data_path, file_name, vbl_name='pos'):
+    """
+    Loads position from a MATLAB .mat file,
+    ensuring correct format and dimensions.
+    """
+    print('Importing position from mat file...')
+    pos_file = data_path / file_name
+
+    try:
+        # Try loading as an HDF5 (v7.3) file
+        with h5py.File(pos_file, 'r') as pos_data:
+            # Extract and process position data
+            pos = pos_data[vbl_name]['data'][()].T
+            pos_index = pos_data[vbl_name]['t'][()].T.squeeze()
+            pos_index = np.atleast_1d(pos_index).ravel()  # Ensure index is 1D
+            pos.index = pos_index
+
+    except OSError:
+        # If not an HDF5 file, load using scipy.io (v7 or earlier)
+        pos_data = spio.loadmat(pos_file, simplify_cells=True)
+        pos = np.array(pos_data[vbl_name]['data']).squeeze()  # Extract inner array and remove unnecessary dimensions
+        pos_index = np.atleast_1d(pos_data['pos']['t'].squeeze()).ravel()
+        pos.index = pos_index
+
+    pos_tsdframe = nap.TsdFrame(t=pos_index, d=pos, columns=['x', 'y'])
+
+    return pos_tsdframe
+
+def get_matlab_hd(data_path, file_name, vbl_name='ang'):
+    """
+    Loads head-direction data from a MATLAB .mat file,
+    ensuring correct format and dimensions.
+    """
+    print('Importing position from mat file...')
+    hd_file = data_path / file_name
+
+    try:
+        # Try loading as an HDF5 (v7.3) file
+        with h5py.File(hd_file, 'r') as hd_data:
+            # Extract and process angle data
+            hd = hd_data[vbl_name]['data'][()].T.squeeze()
+            hd = np.atleast_1d(hd % (2 * np.pi))  # Ensure 1D
+            hd_index = hd_data['ang']['t'][()].T.squeeze()
+            hd_index = np.atleast_1d(hd_index).ravel()  # Ensure index is 1D
+
+    except OSError:
+        # If not an HDF5 file, load using scipy.io (v7 or earlier)
+        hd_data = spio.loadmat(hd_file, simplify_cells=True)
+        hd = np.array(hd_data[vbl_name]['data']).squeeze()  # Extract inner array
+        hd_index = np.atleast_1d(hd_data['pos']['t'].squeeze()).ravel()
+
+    hd_tsd = nap.Tsd(t=hd_index, d=hd)
+
+    return hd_tsd
+
 def get_data_matlab(datapath, foldername):
 
     print('Importing data from mat files...')
@@ -103,9 +179,6 @@ def get_data_matlab(datapath, foldername):
     epoch_file = path / 'Epoch_TS.csv'
     waveform_file = path / 'Waveforms.mat'
     wfeatures_file = path / 'WaveformFeatures.mat'
-
-    # load epochs from mat file
-    epochs = pd.read_csv(epoch_file, header=None, names=['Start','End'])
 
 
     """
@@ -120,7 +193,6 @@ def get_data_matlab(datapath, foldername):
             # Extract and process angle data
             ang = tracking_data['ang']['data'][()].T.squeeze()
             ang = np.atleast_1d(ang % (2 * np.pi))  # Ensure 1D
-
             ang_index = tracking_data['ang']['t'][()].T.squeeze()
             ang_index = np.atleast_1d(ang_index).ravel()  # Ensure index is 1D
 
@@ -164,7 +236,7 @@ def get_data_matlab(datapath, foldername):
         temp = {cell: timestamps}
         spikes.update(temp)
 
-   # get shank and channel ID for cells
+    # get shank and channel ID for cells
     shank_id = spikedata['shank']-1
 
     # get waveforms and waveform features
