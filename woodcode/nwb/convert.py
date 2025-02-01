@@ -1,12 +1,10 @@
 from pathlib import Path
-
 import warnings
 import pynapple as nap
 from pynwb import NWBHDF5IO, NWBFile
 from pynwb.behavior import SpatialSeries, Position, CompassDirection
 from pynwb.epoch import TimeIntervals
 from pynwb.file import Subject
-from pynwb.image import ImageSeries
 import numpy as np
 from pynwb.ecephys import ElectricalSeries
 from pynwb.ecephys import LFP

@@ -5,7 +5,7 @@ setup(
     version="0.1.0",
     author="Wood/Dudchenko lab members",
     author_email="a.j.duszkiewicz@gmail.com",
-    description="A python library for neural data analysis in Wood/Dudchenko lab",
+    description="A python package for neural and behavioural data analysis in Wood/Dudchenko lab",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/Wood-Dudchenko-lab/woodcode",
@@ -18,6 +18,8 @@ setup(
         "pynwb",
         "openpyxl",
         "hdmf",
+        "h5py",
+        "pytz",
         "pynapple==0.7.1"
     ],
     classifiers=[
