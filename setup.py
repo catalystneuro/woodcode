@@ -17,6 +17,7 @@ setup(
         "pandas",
         "pynwb",
         "openpyxl",
+        "hdmf",
         "pynapple==0.7.1"
     ],
     classifiers=[

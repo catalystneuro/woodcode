@@ -106,17 +106,50 @@ def get_data_matlab(datapath, foldername):
     # load epochs from mat file
     epochs = pd.read_csv(epoch_file, header=None, names=['Start','End'])
 
-    # Load angle from mat file
-    tracking_data = h5py.File(tracking_file, 'r')
-    ang = tracking_data['ang']['data'][()].T.squeeze()
-    ang = ang % (2 * np.pi)  # mod 2 pi
-    ang = pd.Series(ang)
-    ang.index = tracking_data['ang']['t'][()].T.squeeze()
 
-    # load position from mat file
-    pos = tracking_data['pos']['data'][()].T
-    pos = pd.DataFrame(pos,columns=['X', 'Y'])
-    pos.index = tracking_data['pos']['t'][()].T.squeeze()
+    """
+    Loads position and angle data from a MATLAB .mat file,
+    ensuring correct format and dimensions.
+    """
+    try:
+        # Try loading as an HDF5 (v7.3) file
+        with h5py.File(tracking_file, 'r') as tracking_data:
+            print("Detected HDF5 MAT file (v7.3)")
+
+            # Extract and process angle data
+            ang = tracking_data['ang']['data'][()].T.squeeze()
+            ang = np.atleast_1d(ang % (2 * np.pi))  # Ensure 1D
+
+            ang_index = tracking_data['ang']['t'][()].T.squeeze()
+            ang_index = np.atleast_1d(ang_index).ravel()  # Ensure index is 1D
+
+            # Convert to Pandas Series
+            ang = pd.Series(ang, index=ang_index)
+
+            # Extract and process position data
+            pos = tracking_data['pos']['data'][()].T
+            pos = pd.DataFrame(pos, columns=['X', 'Y'])
+
+            pos_index = tracking_data['pos']['t'][()].T.squeeze()
+            pos_index = np.atleast_1d(pos_index).ravel()  # Ensure index is 1D
+            pos.index = pos_index
+
+
+    except OSError:
+        # If not an HDF5 file, load using scipy.io (v7 or earlier)
+        print("Detected older MAT file (v7 or earlier), using scipy.io.loadmat()")
+        tracking_data = spio.loadmat(tracking_file, simplify_cells=True)
+
+        # Extract and process angle data
+        ang = np.atleast_1d(tracking_data['ang']['data'].squeeze() % (2 * np.pi))
+        ang_index = np.atleast_1d(tracking_data['ang']['t'].squeeze()).ravel()  # Ensure index is 1D
+        ang = pd.Series(ang, index=ang_index)
+
+        pos = np.array(tracking_data['pos']['data'])  # Extract inner array
+        pos = pos.squeeze()  # Remove unnecessary dimensions
+        pos = pd.DataFrame(pos, columns=['X', 'Y'])
+        pos_index = np.atleast_1d(tracking_data['pos']['t'].squeeze()).ravel()
+        pos.index = pos_index
 
     # Next lines load the spike data from the .mat file
     spikedata = spio.loadmat(spike_file, simplify_cells=True)
