@@ -95,6 +95,9 @@ def get_metadata(datapath, metaname, foldername):
 
 
 def get_start_time(datapath, foldername):
+    # to do: if file not found,try using recording name and midnight
+    # if that fails, use placeholder time
+
     print('Importing start time from txt file...')
     # Read and extract the timestamp
     file_path = datapath / foldername / 'Analysis' / "Metadata.txt"
@@ -113,13 +116,12 @@ def get_start_time(datapath, foldername):
     return start_time
 
 
-def get_matlab_position(data_path, file_name, vbl_name='pos'):
+def get_matlab_position(pos_file, vbl_name='pos'):
     """
     Loads position from a MATLAB .mat file,
     ensuring correct format and dimensions.
     """
     print('Importing position from mat file...')
-    pos_file = data_path / file_name
 
     try:
         # Try loading as an HDF5 (v7.3) file
@@ -128,26 +130,23 @@ def get_matlab_position(data_path, file_name, vbl_name='pos'):
             pos = pos_data[vbl_name]['data'][()].T
             pos_index = pos_data[vbl_name]['t'][()].T.squeeze()
             pos_index = np.atleast_1d(pos_index).ravel()  # Ensure index is 1D
-            pos.index = pos_index
 
     except OSError:
         # If not an HDF5 file, load using scipy.io (v7 or earlier)
         pos_data = spio.loadmat(pos_file, simplify_cells=True)
         pos = np.array(pos_data[vbl_name]['data']).squeeze()  # Extract inner array and remove unnecessary dimensions
         pos_index = np.atleast_1d(pos_data['pos']['t'].squeeze()).ravel()
-        pos.index = pos_index
 
     pos_tsdframe = nap.TsdFrame(t=pos_index, d=pos, columns=['x', 'y'])
 
     return pos_tsdframe
 
-def get_matlab_hd(data_path, file_name, vbl_name='ang'):
+def get_matlab_hd(hd_file, vbl_name='ang'):
     """
     Loads head-direction data from a MATLAB .mat file,
     ensuring correct format and dimensions.
     """
     print('Importing position from mat file...')
-    hd_file = data_path / file_name
 
     try:
         # Try loading as an HDF5 (v7.3) file
@@ -168,85 +167,34 @@ def get_matlab_hd(data_path, file_name, vbl_name='ang'):
 
     return hd_tsd
 
-def get_data_matlab(datapath, foldername):
+def get_matlab_spikes(path):
 
     print('Importing data from mat files...')
 
-    path = datapath / foldername / 'Analysis'
     # file names for spikes, angle, and epoch files
     spike_file = path / 'SpikeData.mat'
-    tracking_file = path / 'TrackingProcessed.mat'  # has HD angle
-    epoch_file = path / 'Epoch_TS.csv'
     waveform_file = path / 'Waveforms.mat'
     wfeatures_file = path / 'WaveformFeatures.mat'
 
-
-    """
-    Loads position and angle data from a MATLAB .mat file,
-    ensuring correct format and dimensions.
-    """
-    try:
-        # Try loading as an HDF5 (v7.3) file
-        with h5py.File(tracking_file, 'r') as tracking_data:
-            print("Detected HDF5 MAT file (v7.3)")
-
-            # Extract and process angle data
-            ang = tracking_data['ang']['data'][()].T.squeeze()
-            ang = np.atleast_1d(ang % (2 * np.pi))  # Ensure 1D
-            ang_index = tracking_data['ang']['t'][()].T.squeeze()
-            ang_index = np.atleast_1d(ang_index).ravel()  # Ensure index is 1D
-
-            # Convert to Pandas Series
-            ang = pd.Series(ang, index=ang_index)
-
-            # Extract and process position data
-            pos = tracking_data['pos']['data'][()].T
-            pos = pd.DataFrame(pos, columns=['X', 'Y'])
-
-            pos_index = tracking_data['pos']['t'][()].T.squeeze()
-            pos_index = np.atleast_1d(pos_index).ravel()  # Ensure index is 1D
-            pos.index = pos_index
-
-
-    except OSError:
-        # If not an HDF5 file, load using scipy.io (v7 or earlier)
-        print("Detected older MAT file (v7 or earlier), using scipy.io.loadmat()")
-        tracking_data = spio.loadmat(tracking_file, simplify_cells=True)
-
-        # Extract and process angle data
-        ang = np.atleast_1d(tracking_data['ang']['data'].squeeze() % (2 * np.pi))
-        ang_index = np.atleast_1d(tracking_data['ang']['t'].squeeze()).ravel()  # Ensure index is 1D
-        ang = pd.Series(ang, index=ang_index)
-
-        pos = np.array(tracking_data['pos']['data'])  # Extract inner array
-        pos = pos.squeeze()  # Remove unnecessary dimensions
-        pos = pd.DataFrame(pos, columns=['X', 'Y'])
-        pos_index = np.atleast_1d(tracking_data['pos']['t'].squeeze()).ravel()
-        pos.index = pos_index
-
     # Next lines load the spike data from the .mat file
     spikedata = spio.loadmat(spike_file, simplify_cells=True)
-    total_cells = np.arange(0, len(spikedata['S']['C']))  # To find the total number of cells in the recording
-    spikes = dict()  # For pynapple, this will be turned into a TsGroup of all cells' timestamps
-    cell_df = pd.DataFrame(columns=['timestamps'])  # Dataframe for cells and their spike timestamps
-    # Loop to assign cell timestamps into the dataframe and the cell_ts dictionary
-    for cell in total_cells:  # give spikes
-        timestamps = spikedata['S']['C'][cell]['tsd']['t']
-        cell_df.loc[cell, 'timestamps'] = timestamps
-        temp = {cell: timestamps}
-        spikes.update(temp)
+    total_cells = np.arange(0, len(spikedata['S']['C']))
+    spikes = {}
+    for cell in total_cells:
+        timestamps = np.array(spikedata['S']['C'][cell]['tsd']['t'])  # Convert to numpy array
+        spikes[cell] = nap.Ts(t=timestamps)  # Create Ts object for each neuron
 
-    # get shank and channel ID for cells
-    shank_id = spikedata['shank']-1
-
-    # get waveforms and waveform features
+    # get spike metadata
     waveforms = spio.loadmat(waveform_file, simplify_cells=True)
     waveforms = waveforms['meanWaveforms']
     wfeatures = spio.loadmat(wfeatures_file, simplify_cells=True)
+    shank_id = spikedata['shank']-1,
+    shank_id = shank_id[0]
     maxIx = wfeatures['maxIx']
-    tr2pk = wfeatures['tr2pk']
 
-    return pos, ang, epochs, spikes, shank_id, waveforms, maxIx, tr2pk
+    spikes = nap.TsGroup(spikes)  # Convert dictionary to TsGroup
+
+    return spikes, waveforms, shank_id
 
 
 def read_xml(file_path):

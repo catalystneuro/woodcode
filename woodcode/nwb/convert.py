@@ -88,21 +88,21 @@ def add_events(nwbfile, events, event_name="events"):
 
     return nwbfile
 
-
 def add_units(nwbfile, spikes, waveforms, shank_id):
     print('Adding units to NWB file...')
+
     shank_names = list(nwbfile.electrode_groups.keys())
-    print(shank_names)
     for ncell in range(len(spikes)):
         group_name = shank_names[shank_id[ncell]]  # Map shank_id to correct name
         nwbfile.add_unit(id=ncell,
-                         spike_times=spikes[ncell],
+                         spike_times=spikes[ncell].index.to_numpy(),
                          waveform_mean=waveforms[ncell].T,
                          electrode_group=nwbfile.electrode_groups[group_name])
     return nwbfile
 
 
 def add_probes(nwbfile, metadata, xmldata):
+    # to do: add depth info
     """
     Adds probes, electrode groups, and electrodes to the NWB file.
     Properly assigns shanks to probes when xmldata['spike_groups']
@@ -251,19 +251,21 @@ def add_epochs(nwbfile, epochs, metadata):
 
 
 
-def add_lfp(nwbfile, lfp, metadata):
-    # WORK IN PROGRESS
+def add_lfp(nwbfile, lfp_path, xml_data):
+
+    print('Adding LFP...')
 
     all_table_region = nwbfile.create_electrode_table_region(
-        region=list(range(electrode_counter)),
+        region=list(range(len(nwbfile.electrodes))),
         description='all electrodes',
     )
-    # LFP
-    print('Adding lfp...')
 
-    path_lfp = datapath / foldername / (foldername + '.lfp')
-    lfp_data = nap.load_eeg(filepath=path_lfp, channel=None, n_channels=64, frequency=1250.0, precision='int16',
+    # get channel numbers in shank order
+
+
+    lfp_data = nap.load_eeg(filepath=lfp_path, channel=None, n_channels=xml_data['n_channels'], frequency=float(xml_data['eeg_sampling_rate']), precision='int16',
                             bytes_size=2)
+
     lfp_data = lfp_data[:, chanOrder]  # sort according to channel order
 
     # create ElectricalSeries
