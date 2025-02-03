@@ -28,69 +28,110 @@ def get_lap_intervals(track_pos_tsd, track_end=0.15):
         return {"rightward": nap.IntervalSet(), "leftward": nap.IntervalSet()}
 
     track_pos = (track_pos - min_pos) / (max_pos - min_pos)
+    print(f"\nTrack Position Range after normalization: {track_pos.min():.3f} to {track_pos.max():.3f}")
 
     # Pre-compute thresholds
     left_end = track_end
     right_end = 1 - left_end
+    print(f"Thresholds - Left: {left_end:.3f}, Right: {right_end:.3f}")
 
-    # First, find all local minima and maxima using gradient
-    gradient = np.gradient(track_pos)
-    potential_min_idx = []
-    potential_max_idx = []
+    # Find initial run direction using vectorized operations
+    left_ix = np.where(track_pos < left_end)[0]
+    right_ix = np.where(track_pos > right_end)[0]
 
-    # Find zero crossings in gradient for minima and maxima
-    for i in range(1, len(gradient)):
-        if gradient[i - 1] < 0 and gradient[i] >= 0:  # Local minimum
-            potential_min_idx.append(i - 1)
-        elif gradient[i - 1] > 0 and gradient[i] <= 0:  # Local maximum
-            potential_max_idx.append(i - 1)
-
-    # Filter extrema by position thresholds
-    valid_min_idx = [idx for idx in potential_min_idx if track_pos[idx] <= left_end]
-    valid_max_idx = [idx for idx in potential_max_idx if track_pos[idx] >= right_end]
-
-    if not valid_min_idx or not valid_max_idx:
+    if len(left_ix) == 0 or len(right_ix) == 0:
         return {"rightward": nap.IntervalSet(), "leftward": nap.IntervalSet()}
 
     rightward_times = []
     leftward_times = []
 
-    print("\nLap Start and End Points:")
-    print("-" * 40)
+    # Determine initial direction and starting point
+    if left_ix[0] < right_ix[0]:
+        next_run = 1  # First run is rightward
+        # Find the actual minimum in the left end region
+        left_start_region = track_pos[:right_ix[0]]
+        nS = np.argmin(left_start_region)
+        print(f"\nStarting with rightward run from position {track_pos[nS]:.3f}")
+    else:
+        next_run = -1  # First run is leftward
+        # Find the actual maximum in the right end region
+        right_start_region = track_pos[:left_ix[0]]
+        nS = np.argmax(right_start_region)
+        print(f"\nStarting with leftward run from position {track_pos[nS]:.3f}")
 
-    # Process all minima and maxima in temporal order to find laps
-    all_extrema = [(idx, 'min') for idx in valid_min_idx] + [(idx, 'max') for idx in valid_max_idx]
-    all_extrema.sort(key=lambda x: x[0])
+    tot_samples = len(track_pos)
+    while nS < tot_samples - 1:
+        print(f"\nProcessing run starting at position {track_pos[nS]:.3f}")
+        # Use vectorized operations to find next threshold crossing
+        if next_run == 1:
+            next_ix = np.where(track_pos[nS + 1:] > right_end)[0]
+            print(f"Looking for right threshold crossing")
+        else:
+            next_ix = np.where(track_pos[nS + 1:] < left_end)[0]
+            print(f"Looking for left threshold crossing")
 
-    current_idx = 0
-    while current_idx < len(all_extrema) - 1:
-        start_idx, start_type = all_extrema[current_idx]
-        end_idx, end_type = all_extrema[current_idx + 1]
+        if len(next_ix) == 0:
+            print("No more crossings found")
+            break
 
-        # Check if this pair forms a valid lap
-        segment = track_pos[start_idx:end_idx + 1]
-        lap_min = segment.min()
-        lap_max = segment.max()
+        next_ix = next_ix[0]
+        if next_ix == 0:
+            nS += 1
+            continue
 
-        valid_lap = False
-        # For rightward laps
-        if start_type == 'min' and end_type == 'min' and lap_max >= right_end:
-            rightward_times.append((timestamps[start_idx], timestamps[end_idx]))
-            print(f"Rightward lap: Start={track_pos[start_idx]:.3f}, End={track_pos[end_idx]:.3f}")
-            print(f"  - Lap min: {lap_min:.3f}, Lap max: {lap_max:.3f}")
-            valid_lap = True
-        # For leftward laps
-        elif start_type == 'max' and end_type == 'max' and lap_min <= left_end:
-            leftward_times.append((timestamps[start_idx], timestamps[end_idx]))
-            print(f"Leftward lap: Start={track_pos[start_idx]:.3f}, End={track_pos[end_idx]:.3f}")
-            print(f"  - Lap min: {lap_min:.3f}, Lap max: {lap_max:.3f}")
-            valid_lap = True
+        # Find the actual extremum after crossing threshold
+        search_end = min(nS + next_ix + 20, tot_samples)  # Look a bit beyond crossing
+        run_range = track_pos[nS + 1:search_end]
+        if len(run_range) == 0:
+            nS += next_ix
+            continue
 
-        current_idx += 1 if not valid_lap else 1
+        # Use vectorized operations to find min/max
+        if next_run == 1:
+            # For rightward runs, look for minimum after reaching right end
+            right_reached_ix = np.where(run_range > right_end)[0]
+            if len(right_reached_ix) > 0:
+                first_right_ix = right_reached_ix[0]
+                remaining_range = run_range[first_right_ix:]
+                if len(remaining_range) > 0:
+                    run_end = first_right_ix + np.argmin(remaining_range) + nS + 1
+                    print(f"Found rightward run end at position {track_pos[run_end]:.3f}")
+                else:
+                    run_end = nS + next_ix
+            else:
+                run_end = nS + next_ix
+        else:
+            # For leftward runs, look for maximum after reaching left end
+            left_reached_ix = np.where(run_range < left_end)[0]
+            if len(left_reached_ix) > 0:
+                first_left_ix = left_reached_ix[0]
+                remaining_range = run_range[first_left_ix:]
+                if len(remaining_range) > 0:
+                    run_end = first_left_ix + np.argmax(remaining_range) + nS + 1
+                    print(f"Found leftward run end at position {track_pos[run_end]:.3f}")
+                else:
+                    run_end = nS + next_ix
+            else:
+                run_end = nS + next_ix
 
-    print("\nExtremum points found:")
-    print("Minima:", [f"{track_pos[idx]:.3f}" for idx in valid_min_idx])
-    print("Maxima:", [f"{track_pos[idx]:.3f}" for idx in valid_max_idx])
+        # Verify lap reaches both ends using vectorized operations
+        lap_segment = track_pos[nS:run_end + 1]
+        lap_min = lap_segment.min()
+        lap_max = lap_segment.max()
+
+        # Check if the lap covers most of the track
+        track_coverage = lap_max - lap_min
+        if lap_min <= left_end and lap_max >= right_end and track_coverage >= 0.7:  # Ensure significant coverage
+            # Valid lap detected
+            if next_run == 1:
+                rightward_times.append((timestamps[nS], timestamps[run_end]))
+                print(f"Added rightward lap: {track_pos[nS]:.3f} to {track_pos[run_end]:.3f}")
+            else:
+                leftward_times.append((timestamps[nS], timestamps[run_end]))
+                print(f"Added leftward lap: {track_pos[nS]:.3f} to {track_pos[run_end]:.3f}")
+
+        next_run = -next_run
+        nS = run_end
 
     # Create IntervalSets efficiently using numpy arrays
     return {
