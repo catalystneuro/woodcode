@@ -28,112 +28,91 @@ def get_lap_intervals(track_pos_tsd, track_end=0.15):
         return {"rightward": nap.IntervalSet(), "leftward": nap.IntervalSet()}
 
     track_pos = (track_pos - min_pos) / (max_pos - min_pos)
-    print(f"\nTrack Position Range after normalization: {track_pos.min():.3f} to {track_pos.max():.3f}")
 
     # Pre-compute thresholds
     left_end = track_end
     right_end = 1 - left_end
-    print(f"Thresholds - Left: {left_end:.3f}, Right: {right_end:.3f}")
 
-    # Find initial run direction using vectorized operations
-    left_ix = np.where(track_pos < left_end)[0]
-    right_ix = np.where(track_pos > right_end)[0]
+    # Find all left and right threshold crossings
+    left_crosses = np.where(track_pos < left_end)[0]
+    right_crosses = np.where(track_pos > right_end)[0]
 
-    if len(left_ix) == 0 or len(right_ix) == 0:
+    if len(left_crosses) == 0 or len(right_crosses) == 0:
         return {"rightward": nap.IntervalSet(), "leftward": nap.IntervalSet()}
 
     rightward_times = []
     leftward_times = []
 
     # Determine initial direction and starting point
-    if left_ix[0] < right_ix[0]:
+    if left_crosses[0] < right_crosses[0]:
         next_run = 1  # First run is rightward
-        # Find the actual minimum in the left end region
-        left_start_region = track_pos[:right_ix[0]]
-        nS = np.argmin(left_start_region)
-        print(f"\nStarting with rightward run from position {track_pos[nS]:.3f}")
+        # Find the first minimum (start of rightward run)
+        search_end = right_crosses[0]
+        nS = np.argmin(track_pos[:search_end]) if search_end > 0 else 0
     else:
         next_run = -1  # First run is leftward
-        # Find the actual maximum in the right end region
-        right_start_region = track_pos[:left_ix[0]]
-        nS = np.argmax(right_start_region)
-        print(f"\nStarting with leftward run from position {track_pos[nS]:.3f}")
+        # Find the first maximum (start of leftward run)
+        search_end = left_crosses[0]
+        nS = np.argmax(track_pos[:search_end]) if search_end > 0 else 0
 
     tot_samples = len(track_pos)
-    while nS < tot_samples - 1:
-        print(f"\nProcessing run starting at position {track_pos[nS]:.3f}")
-        # Use vectorized operations to find next threshold crossing
-        if next_run == 1:
-            next_ix = np.where(track_pos[nS + 1:] > right_end)[0]
-            print(f"Looking for right threshold crossing")
-        else:
-            next_ix = np.where(track_pos[nS + 1:] < left_end)[0]
-            print(f"Looking for left threshold crossing")
+    lap_start_idx = nS
 
-        if len(next_ix) == 0:
-            print("No more crossings found")
+    while nS < tot_samples - 1:
+        # Find next crossing
+        remaining_pos = track_pos[nS + 1:]
+        if next_run == 1:
+            # For rightward runs, look for right threshold crossing
+            next_crosses = np.where(remaining_pos > right_end)[0]
+        else:
+            # For leftward runs, look for left threshold crossing
+            next_crosses = np.where(remaining_pos < left_end)[0]
+
+        if len(next_crosses) == 0:
             break
 
-        next_ix = next_ix[0]
-        if next_ix == 0:
-            nS += 1
-            continue
+        next_cross = next_crosses[0] + nS + 1
 
-        # Find the actual extremum after crossing threshold
-        search_end = min(nS + next_ix + 20, tot_samples)  # Look a bit beyond crossing
-        run_range = track_pos[nS + 1:search_end]
-        if len(run_range) == 0:
-            nS += next_ix
-            continue
+        # Find the start of the next lap
+        search_end = min(next_cross + 100, tot_samples)
 
-        # Use vectorized operations to find min/max
         if next_run == 1:
-            # For rightward runs, look for minimum after reaching right end
-            right_reached_ix = np.where(run_range > right_end)[0]
-            if len(right_reached_ix) > 0:
-                first_right_ix = right_reached_ix[0]
-                remaining_range = run_range[first_right_ix:]
-                if len(remaining_range) > 0:
-                    run_end = first_right_ix + np.argmin(remaining_range) + nS + 1
-                    print(f"Found rightward run end at position {track_pos[run_end]:.3f}")
-                else:
-                    run_end = nS + next_ix
+            # Current run is rightward, look for maximum (start of next leftward run)
+            next_lap_start = np.argmax(track_pos[next_cross:search_end]) + next_cross
+            # Find the minimum between current start and next start - this is the true end of current lap
+            end_segment = track_pos[next_cross:next_lap_start + 1]
+            if len(end_segment) > 0:
+                run_end = next_cross + np.argmin(end_segment)
             else:
-                run_end = nS + next_ix
+                run_end = next_cross
         else:
-            # For leftward runs, look for maximum after reaching left end
-            left_reached_ix = np.where(run_range < left_end)[0]
-            if len(left_reached_ix) > 0:
-                first_left_ix = left_reached_ix[0]
-                remaining_range = run_range[first_left_ix:]
-                if len(remaining_range) > 0:
-                    run_end = first_left_ix + np.argmax(remaining_range) + nS + 1
-                    print(f"Found leftward run end at position {track_pos[run_end]:.3f}")
+            # Current run is leftward, look for minimum (start of next rightward run)
+            next_lap_start = np.argmin(track_pos[next_cross:search_end]) + next_cross
+            # Find the maximum between current start and next start - this is the true end of current lap
+            end_segment = track_pos[next_cross:next_lap_start + 1]
+            if len(end_segment) > 0:
+                run_end = next_cross + np.argmax(end_segment)
+            else:
+                run_end = next_cross
+
+        # Verify lap reaches both ends by checking the whole segment
+        lap_segment = track_pos[lap_start_idx:run_end + 1]
+        if len(lap_segment) > 0:
+            lap_min = lap_segment.min()
+            lap_max = lap_segment.max()
+
+            # Check if it's a valid lap
+            if lap_min <= left_end and lap_max >= right_end:
+                if next_run == 1:
+                    rightward_times.append((timestamps[lap_start_idx], timestamps[run_end]))
                 else:
-                    run_end = nS + next_ix
-            else:
-                run_end = nS + next_ix
+                    leftward_times.append((timestamps[lap_start_idx], timestamps[run_end]))
 
-        # Verify lap reaches both ends using vectorized operations
-        lap_segment = track_pos[nS:run_end + 1]
-        lap_min = lap_segment.min()
-        lap_max = lap_segment.max()
-
-        # Check if the lap covers most of the track
-        track_coverage = lap_max - lap_min
-        if lap_min <= left_end and lap_max >= right_end and track_coverage >= 0.7:  # Ensure significant coverage
-            # Valid lap detected
-            if next_run == 1:
-                rightward_times.append((timestamps[nS], timestamps[run_end]))
-                print(f"Added rightward lap: {track_pos[nS]:.3f} to {track_pos[run_end]:.3f}")
-            else:
-                leftward_times.append((timestamps[nS], timestamps[run_end]))
-                print(f"Added leftward lap: {track_pos[nS]:.3f} to {track_pos[run_end]:.3f}")
-
+        # Update for next iteration
+        lap_start_idx = next_lap_start
+        nS = next_lap_start
         next_run = -next_run
-        nS = run_end
 
-    # Create IntervalSets efficiently using numpy arrays
     return {
         "rightward": nap.IntervalSet(
             start=np.array([t[0] for t in rightward_times]),
@@ -144,6 +123,7 @@ def get_lap_intervals(track_pos_tsd, track_end=0.15):
             end=np.array([t[1] for t in leftward_times])
         )
     }
+
 
 def plot_run_times(track_pos_tsd, run_intervals):
     """
@@ -179,4 +159,5 @@ def plot_run_times(track_pos_tsd, run_intervals):
     ax.set_ylabel("Position (normalized)")
 
     plt.show()
+
 
