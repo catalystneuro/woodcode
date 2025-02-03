@@ -94,26 +94,66 @@ def get_metadata(datapath, metaname, foldername):
     return metadata_dict
 
 
+from datetime import datetime
+import pytz
+from pathlib import Path
+
+
 def get_start_time(datapath, foldername):
-    # to do: if file not found,try using recording name and midnight
-    # if that fails, use placeholder time
+    """
+    Retrieves the recording start time from a metadata file or extracts it from the folder name.
 
-    print('Importing start time from txt file...')
-    # Read and extract the timestamp
+    Parameters:
+    - datapath (Path): Base directory containing the data.
+    - foldername (str): Folder name, used to extract date if the file is missing.
+
+    Returns:
+    - datetime: The localized recording start time.
+    """
+
+    print('Importing start time from Metadata.txt file...')
     file_path = datapath / foldername / 'Analysis' / "Metadata.txt"
-    with open(file_path, "r") as file:
-        for line in file:
-            if "Software Time" in line:
-                # Extract the numeric part of the timestamp using split and indexing
-                timestamp_str = line.split(":")[1].split()[0]  # Get the first part after the colon
-                timestamp = int(timestamp_str) / 1000.0  # Milliseconds since epoch
-                break
-    # Convert to datetime and localize
-    utc_datetime = datetime.utcfromtimestamp(timestamp)
-    start_time = pytz.timezone('Europe/London').localize(utc_datetime)
-    print(f"Recording start: {start_time}")
 
-    return start_time
+    # Attempt to read from file if it exists
+    if file_path.exists():
+        try:
+            with open(file_path, "r") as file:
+                for line in file:
+                    if "Software Time" in line:
+                        # Extract timestamp (milliseconds since epoch)
+                        timestamp_str = line.split(":")[1].split()[0]  # First numeric part after colon
+                        timestamp = int(timestamp_str) / 1000.0  # Convert to seconds
+                        break
+            # Convert to datetime and localize
+            utc_datetime = datetime.utcfromtimestamp(timestamp)
+            start_time = pytz.timezone('Europe/London').localize(utc_datetime)
+            print(f"Recording start time: {start_time}")
+            return start_time
+
+        except Exception as e:
+            print(f"Error reading file {file_path}: {e}")
+
+    # If file does not exist, extract from foldername
+    print(f"Metadata.txt file not found. Extracting date from folder name: {foldername}")
+
+    try:
+        # Extract YYMMDD from foldername (first 6 characters after '-')
+        date_str = foldername.split('-')[1][:6]  # Assumes format like "recording-YYMMDD-..."
+        recording_date = datetime.strptime(date_str, "%y%m%d").date()  # Convert to datetime.date
+
+        # Use midnight as placeholder time
+        start_time = datetime.combine(recording_date, datetime.min.time())
+        start_time = pytz.timezone('Europe/London').localize(start_time)
+
+        print(f"Recording start time: {start_time}")
+        return start_time
+
+    except Exception as e:
+        print(f"Error extracting date from folder name: {e}")
+
+    # If everything fails, return placeholder time (01/01/2000 at midnight)
+    print("Failed to determine start time. Using placeholder: 2000-01-01 00:00:00")
+    return pytz.timezone('Europe/London').localize(datetime(2000, 1, 1, 0, 0, 0))
 
 
 def get_matlab_position(pos_file, vbl_name='pos'):
@@ -121,7 +161,7 @@ def get_matlab_position(pos_file, vbl_name='pos'):
     Loads position from a MATLAB .mat file,
     ensuring correct format and dimensions.
     """
-    print('Importing position from mat file...')
+    print('Importing position from a .mat file...')
 
     try:
         # Try loading as an HDF5 (v7.3) file
@@ -146,7 +186,7 @@ def get_matlab_hd(hd_file, vbl_name='ang'):
     Loads head-direction data from a MATLAB .mat file,
     ensuring correct format and dimensions.
     """
-    print('Importing position from mat file...')
+    print('Importing head-direction from a .mat file...')
 
     try:
         # Try loading as an HDF5 (v7.3) file
@@ -154,22 +194,46 @@ def get_matlab_hd(hd_file, vbl_name='ang'):
             # Extract and process angle data
             hd = hd_data[vbl_name]['data'][()].T.squeeze()
             hd = np.atleast_1d(hd % (2 * np.pi))  # Ensure 1D
-            hd_index = hd_data['ang']['t'][()].T.squeeze()
+            hd_index = hd_data[vbl_name]['t'][()].T.squeeze()
             hd_index = np.atleast_1d(hd_index).ravel()  # Ensure index is 1D
 
     except OSError:
         # If not an HDF5 file, load using scipy.io (v7 or earlier)
         hd_data = spio.loadmat(hd_file, simplify_cells=True)
         hd = np.array(hd_data[vbl_name]['data']).squeeze()  # Extract inner array
-        hd_index = np.atleast_1d(hd_data['pos']['t'].squeeze()).ravel()
+        hd_index = np.atleast_1d(hd_data[vbl_name]['t'].squeeze()).ravel()
 
     hd_tsd = nap.Tsd(t=hd_index, d=hd)
 
     return hd_tsd
 
+def get_matlab_trackdistance(file_name, vbl_name='trackdist'):
+    """
+    Loads position from a MATLAB .mat file,
+    ensuring correct format and dimensions.
+    """
+    print('Importing track distance from a .mat file...')
+
+    try:
+        # Try loading as an HDF5 (v7.3) file
+        with h5py.File(file_name, 'r') as file_contents:
+            # Extract and process position data
+            print('Recent Matlab versions use HDF5 files and need a different loader. Please add code here.')
+
+    except OSError:
+        # If not an HDF5 file, load using scipy.io (v7 or earlier)
+        file_contents = spio.loadmat(file_name, simplify_cells=True)
+        vbl = np.array(file_contents[vbl_name][()]).squeeze()  # Extract inner array and remove unnecessary dimensions
+        data = vbl[:, 1]
+        index = vbl[:, 0]
+
+    tsd = nap.Tsd(t=index, d=data)
+
+    return tsd
+
 def get_matlab_spikes(path):
 
-    print('Importing data from mat files...')
+    print('Importing spikes and waveforms from .mat files...')
 
     # file names for spikes, angle, and epoch files
     spike_file = path / 'SpikeData.mat'
@@ -201,6 +265,8 @@ def read_xml(file_path):
     """
     Parses an XML file and extracts relevant information into a dictionary.
     """
+    print('Importing metadata from the .xml file...')
+
     tree = ET.parse(file_path)
     myroot = tree.getroot()
 
@@ -258,19 +324,8 @@ def read_xml(file_path):
             if chan_group:
                 spike_groups.append(np.array(chan_group))
 
-    data["spike_groups"] = np.array(spike_groups, dtype="object")
-
-    # Parse unit clusters
-    for unit in myroot.findall("units/unit"):
-        data["units"].append({
-            "group": int(unit.find("group").text),
-            "cluster": int(unit.find("cluster").text),
-            "structure": unit.find("structure").text or "",
-            "type": unit.find("type").text or "",
-            "isolationDistance": unit.find("isolationDistance").text or "",
-            "quality": unit.find("quality").text or "",
-            "notes": unit.find("notes").text or ""
-        })
+    data["spike_groups"] = spike_groups
+    #data["spike_groups"] = np.array(spike_groups, dtype="object")
 
     return data
 

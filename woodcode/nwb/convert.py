@@ -8,8 +8,12 @@ from pynwb.file import Subject
 import numpy as np
 from pynwb.ecephys import ElectricalSeries
 from pynwb.ecephys import LFP
+from pynwb.ecephys import TimeSeries
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 import scipy.io as spio
+from datetime import datetime
+from hdmf.common.table import DynamicTable
+import pprint
 
 
 def create_nwb_file(metadata, start_time):
@@ -18,11 +22,16 @@ def create_nwb_file(metadata, start_time):
     rec_id = metadata['file']['name'].split('-')
     print('Creating NWB file and adding metadata...')
 
+    # calculate animal age
+    dob_str = str(metadata['subject']['dob'])
+    dob = datetime(2000 + int(dob_str[:2]), int(dob_str[2:4]), int(dob_str[4:6]))
+    age_days = (start_time.date() - dob.date()).days
+
     # create an nwb file
     nwbfile = NWBFile(
         session_description=metadata['file']['session_description'],
         experiment_description=metadata['file']['experiment_description'],
-        identifier=rec_id[0],
+        identifier=metadata['file']['name'],
         session_start_time=start_time,
         session_id=rec_id[1],
         experimenter=metadata['file']['experimenter'],
@@ -31,9 +40,8 @@ def create_nwb_file(metadata, start_time):
         virus='')
 
     # add subject
-    age_weeks = metadata['subject']['age_weeks']
-    nwbfile.subject = Subject(age=f'P{age_weeks}W',
-                              description=metadata['subject']['line'],
+    nwbfile.subject = Subject(age=f"P{age_days}D",
+                              description=f"{metadata['subject']['line']} {int(metadata['subject']['stock_id'])}",
                               species='Rattus norvegicus',
                               subject_id=rec_id[0],
                               genotype=metadata['subject']['genotype'],
@@ -41,21 +49,18 @@ def create_nwb_file(metadata, start_time):
 
     return nwbfile
 
-def load_nwb_file(datapath, foldername):
+def load_nwb_file(file_path, file_name):
 
     # load NWB file
-    filepath = datapath / foldername
-    filename = foldername + '.nwb'
-    filepath = filepath / filename
-
-    data = nap.load_file(str(filepath))
+    file_name = file_name + '.nwb'
+    data = nap.load_file(str(file_path / file_name))
     print(data)
 
     return data
 
-def save_nwb_file(nwbfile,datapath, foldername):
+def save_nwb_file(nwbfile,file_path, file_name):
     print('Saving NWB file...')
-    with NWBHDF5IO(datapath / foldername / (foldername + '.nwb'), 'w') as io:
+    with NWBHDF5IO(file_path / (file_name + '.nwb'), 'w') as io:
         io.write(nwbfile)
     print('Done!')
 
@@ -161,7 +166,7 @@ def add_probes(nwbfile, metadata, xmldata):
     )
 
     # Print how shanks are called
-    print("Shank names:", shank_names)
+    #print("Shank names:", shank_names)
 
     return nwbfile
 
@@ -172,7 +177,7 @@ def add_tracking(nwbfile, pos, ang=None):
     # Create behavior module
     behavior_module = nwbfile.create_processing_module(
         name='behavior',
-        description='Tracking data acquired with Bonsai'
+        description='Behavioral data'
     )
 
     # Create the spatial series for position
@@ -204,11 +209,12 @@ def add_tracking(nwbfile, pos, ang=None):
 
 
 def add_sleep(nwbfile, sleep_path, folder_name):
-    # EPOCHS
-
-    print('Adding sleep stages...')
 
     sleep_file = sleep_path / (folder_name + '.SleepState.states.mat')
+    emg_file = sleep_path / (folder_name + '.EMGFromLFP.LFP.mat')
+
+    print('Adding sleep stages to NWB file...')
+
     sleepEpochs = spio.loadmat(sleep_file, simplify_cells=True)
     epWake = np.float32(sleepEpochs['SleepState']['ints']['WAKEstate'])
     epNREM = np.float32(sleepEpochs['SleepState']['ints']['NREMstate'])
@@ -239,13 +245,59 @@ def add_sleep(nwbfile, sleep_path, folder_name):
 
     nwbfile.add_time_intervals(sleep_stages)
 
+    print('Adding pseudoEMG to the NWB file...')
+
+    emg = spio.loadmat(emg_file, simplify_cells=True)
+    emg = TimeSeries(
+        name="pseudoEMG",
+        description="Pseudo EMG from correlated high-frequency LFP",
+        data=emg['EMGFromLFP']['data'],
+        unit="a.u.",
+        timestamps=emg['EMGFromLFP']['timestamps']
+    )
+
+    # Create an extracellular ephys module or add to the existing one
+    if 'ecephys' not in nwbfile.processing:
+        ecephys_module = nwbfile.create_processing_module(name='ecephys',
+                                                      description='Processed electrophysiological signals'
+                                                          )
+        ecephys_module.add(emg)
+    else:
+        nwbfile.processing['ecephys'].add(emg)
+
     return nwbfile
 
 
 def add_epochs(nwbfile, epochs, metadata):
+    """
+    Adds epochs to an NWB file.
+
+    Parameters:
+    - nwbfile: NWBFile object
+    - epochs: DataFrame containing 'Start' and 'End' times
+    - metadata: Dictionary containing epoch metadata
+
+    Returns:
+    - Updated NWBFile object
+    """
+
     print('Adding epochs to NWB file...')
+
+    # Extract all tags from metadata
+    epoch_tags = {str(i+1): metadata['epoch'].get(str(i+1), None) for i in range(epochs.shape[0])}
+
+    # Check that all epochs have corresponding tags
+    if None in epoch_tags.values():
+        missing_epochs = [k for k, v in epoch_tags.items() if v is None]
+        raise ValueError(f"Missing tags for epochs: {missing_epochs}")
+
+    # Add epochs to NWB file
     for epoch in range(epochs.shape[0]):
-        nwbfile.add_epoch(start_time=float(epochs['Start'][epoch]), stop_time=float(epochs['End'][epoch]), tags=metadata['epoch'][str(epoch+1)])
+        nwbfile.add_epoch(
+            start_time=float(epochs['Start'][epoch]),
+            stop_time=float(epochs['End'][epoch]),
+            tags=epoch_tags[str(epoch+1)]
+        )
 
     return nwbfile
 
@@ -253,7 +305,7 @@ def add_epochs(nwbfile, epochs, metadata):
 
 def add_lfp(nwbfile, lfp_path, xml_data):
 
-    print('Adding LFP...')
+    print('Adding LFP to the NWB file...')
 
     all_table_region = nwbfile.create_electrode_table_region(
         region=list(range(len(nwbfile.electrodes))),
@@ -261,20 +313,20 @@ def add_lfp(nwbfile, lfp_path, xml_data):
     )
 
     # get channel numbers in shank order
+    chan_order = np.concatenate(xml_data['spike_groups'])
 
-
+    # lazy load LFP
     lfp_data = nap.load_eeg(filepath=lfp_path, channel=None, n_channels=xml_data['n_channels'], frequency=float(xml_data['eeg_sampling_rate']), precision='int16',
                             bytes_size=2)
-
-    lfp_data = lfp_data[:, chanOrder]  # sort according to channel order
+    lfp_data = lfp_data[:, chan_order]  # get only probe channels
 
     # create ElectricalSeries
     lfp_elec_series = ElectricalSeries(
         name='LFP',
         data=H5DataIO(lfp_data, compression=True),  # use this function to compress
-        description='Local field potential (low-pass filtered at 625 Hz)',
+        description='Local field potential (downsampled DAT file)',
         electrodes=all_table_region,
-        rate=1250.
+        rate=float(xml_data['eeg_sampling_rate'])
     )
 
     # store ElectricalSeries in an LFP container
@@ -283,14 +335,148 @@ def add_lfp(nwbfile, lfp_path, xml_data):
     lfp = LFP(electrical_series=lfp_elec_series)
     warnings.resetwarnings()
 
-    ecephys_module = nwbfile.create_processing_module(name='ecephys',
+    # Create an extracellular ephys module or add to the existing one
+    if 'ecephys' not in nwbfile.processing:
+        ecephys_module = nwbfile.create_processing_module(name='ecephys',
                                                       description='Processed electrophysiological signals'
-                                                      )
-    ecephys_module.add(lfp)
+                                                          )
+        ecephys_module.add(lfp)
+    else:
+        nwbfile.processing['ecephys'].add(lfp)
+
 
     return nwbfile
 
 
 
+def add_misc_tsd(nwbfile, tsd, name='unnamed_series', description='', unit=''):
+
+    """
+    Adds a pynapple Tsd or TsdFrame to the 'misc' processing module in an NWB file.
+
+    Parameters:
+    - nwbfile: NWBFile object
+    - tsd: pynapple Tsd or TsdFrame
+    - name: Name of the TimeSeries
+    - description: Description of the TimeSeries
+    - unit: Unit of the TimeSeries data
+
+    Returns:
+    - Updated NWBFile object
+    """
+    print(f"Adding '{name}' to the NWB file...")
+
+    # grab or create the 'misc' module
+    if 'misc' not in nwbfile.processing:
+        module = nwbfile.create_processing_module(
+            name='misc',
+            description='Miscellaneous data'
+        )
+    else:
+        module = nwbfile.processing['misc']
+
+    # make a TimeSeries
+
+    misc_series = TimeSeries(
+        name=name,
+        data=tsd.values,
+        unit=unit,
+        timestamps=tsd.index.values
+    )
+
+    module.add(misc_series)
+    return nwbfile
 
 
+def collect_nwb_metadata(nwbfile):
+    """
+    Collects and displays all metadata from an NWB file in a structured format.
+
+    Parameters:
+    - nwbfile: An NWBFile object.
+
+    Returns:
+    - A dictionary containing all extracted metadata.
+    """
+
+    metadata = {}
+
+    # Extract top-level metadata
+    metadata["General Info"] = {
+        "session_description": nwbfile.session_description,
+        "identifier": nwbfile.identifier,
+        "session_start_time": nwbfile.session_start_time,
+        "experimenter": nwbfile.experimenter,
+        "lab": nwbfile.lab,
+        "institution": nwbfile.institution,
+        "experiment_description": nwbfile.experiment_description,
+        "related_publications": nwbfile.related_publications,
+        "keywords": nwbfile.keywords,
+        "notes": nwbfile.notes,
+        "pharmacology": nwbfile.pharmacology,
+        "protocol": nwbfile.protocol,
+        "slices": nwbfile.slices,
+        "source_script": nwbfile.source_script,
+        "source_script_file_name": nwbfile.source_script_file_name,
+        "data_collection": nwbfile.data_collection,
+    }
+
+    # Extract subject metadata
+    if nwbfile.subject:
+        metadata["Subject"] = {
+            "subject_id": nwbfile.subject.subject_id,
+            "age": nwbfile.subject.age,
+            "description": nwbfile.subject.description,
+            "species": nwbfile.subject.species,
+            "genotype": nwbfile.subject.genotype,
+            "sex": nwbfile.subject.sex,
+            "weight": nwbfile.subject.weight,
+            "date_of_birth": nwbfile.subject.date_of_birth,
+            "strain": getattr(nwbfile.subject, "strain", "N/A"),  # Optional field
+        }
+
+    # Extract device metadata
+    metadata["Devices"] = {name: device.description for name, device in nwbfile.devices.items()}
+
+    # Extract electrode group metadata
+    metadata["Electrode Groups"] = {
+        name: {
+            "description": group.description,
+            "location": group.location,
+            "device": group.device.name
+        }
+        for name, group in nwbfile.electrode_groups.items()
+    }
+
+    # Extract electrode table metadata
+    if nwbfile.electrodes is not None:
+        metadata["Electrodes"] = nwbfile.electrodes.to_dataframe().to_dict()
+
+    # Extract acquisition metadata
+    metadata["Acquisition"] = {name: type(obj).__name__ for name, obj in nwbfile.acquisition.items()}
+
+    # Extract processing modules
+    metadata["Processing Modules"] = {}
+    for module_name, module in nwbfile.processing.items():
+        module_data = {}
+        for data_name, data in module.data_interfaces.items():
+            module_data[data_name] = type(data).__name__
+        metadata["Processing Modules"][module_name] = module_data
+
+    # Extract intervals metadata (e.g., epochs)
+    metadata["Time Intervals"] = {}
+    for interval_name, interval_table in nwbfile.intervals.items():
+        if isinstance(interval_table, DynamicTable):
+            metadata["Time Intervals"][interval_name] = interval_table.to_dataframe().to_dict()
+
+    # Extract analysis metadata
+    metadata["Analysis"] = {name: type(obj).__name__ for name, obj in nwbfile.analysis.items()} if nwbfile.analysis else {}
+
+    # Extract lab metadata
+    metadata["Lab Metadata"] = {name: type(obj).__name__ for name, obj in nwbfile.lab_meta_data.items()} if nwbfile.lab_meta_data else {}
+
+    # Print metadata in a structured way
+    print("\n=== NWB Metadata ===")
+    pprint.pprint(metadata, width=120, compact=False)
+
+    return metadata
