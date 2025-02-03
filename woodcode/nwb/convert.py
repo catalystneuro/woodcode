@@ -390,6 +390,7 @@ def add_misc_tsd(nwbfile, tsd, name='unnamed_series', description='', unit=''):
     else:
         module = nwbfile.processing['misc']
 
+
     # make a TimeSeries
 
     misc_series = TimeSeries(
