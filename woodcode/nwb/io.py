@@ -8,6 +8,7 @@ import pandas as pd
 import json
 import re
 import pynapple as nap
+import pprint
 
 
 def get_openephys_events(datapath, foldername, time_offset=0, skip_first=0):
@@ -330,6 +331,77 @@ def read_xml(file_path):
     return data
 
 
+def read_nrs(file_path):
+    """
+    Parses an .nrs (Neuroscope) XML file and extracts relevant metadata.
+
+    Parameters:
+    - file_path (str or Path): Path to the .nrs XML file.
+
+    Returns:
+    - dict: Parsed metadata from the .nrs file.
+    """
+
+    print(f'Importing metadata from {file_path}...')
+
+    # Parse XML
+    tree = ET.parse(file_path)
+    root = tree.getroot()
+
+    # Initialize data structure
+    data = {
+        "files": [],
+        "displays": [],
+        "parameters": {},
+        "channels_selected": [],
+        "channels_shown": []
+    }
+
+    # Extract <files> section
+    files_section = root.find("files")
+    if files_section is not None:
+        for file in files_section.findall("file"):
+            data["files"].append({
+                "name": file.get("name", "Unknown"),
+                "type": file.get("type", "Unknown"),
+                "path": file.get("path", "Unknown")
+            })
+
+    # Extract <displays> section
+    displays_section = root.find("displays")
+    if displays_section is not None:
+        for display in displays_section.findall("display"):
+            data["displays"].append({
+                "name": display.get("name", "Unknown"),
+                "color": display.get("color", "Unknown"),
+                "scale": display.get("scale", "Unknown"),
+                "offset": display.get("offset", "Unknown")
+            })
+
+    # Extract additional parameters
+    for param in root.findall("parameter"):
+        key = param.get("name", "unknown_param")
+        value = param.text.strip() if param.text else None
+        data["parameters"][key] = value
+
+    # Extract channelsSelected (now correctly finding the nested elements)
+    channels_selected_section = root.find(".//channelsSelected")  # Use XPath to find it anywhere
+    if channels_selected_section is not None:
+        data["channels_selected"] = [
+            int(ch.text.strip()) for ch in channels_selected_section.findall("channel") if ch.text.strip().isdigit()
+        ]
+
+    # Extract channelsShown (now correctly finding the nested elements)
+    channels_shown_section = root.find(".//channelsShown")  # Use XPath to find it anywhere
+    if channels_shown_section is not None:
+        data["channels_shown"] = [
+            int(ch.text.strip()) for ch in channels_shown_section.findall("channel") if ch.text.strip().isdigit()
+        ]
+
+    return data
+
+
+
 def read_metadata(file_path, file_name, print_output=False):
     """
     Reads an Excel metadata file and structures it into a dictionary,
@@ -391,6 +463,7 @@ def read_metadata(file_path, file_name, print_output=False):
 
     # Print metadata if print_output is True
     if print_output:
-        print(json.dumps(metadata, indent=4, default=str))
+        #print(json.dumps(metadata, indent=4, default=str))
+        pprint.pprint(metadata, width=100)
 
     return metadata

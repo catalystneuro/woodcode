@@ -106,13 +106,21 @@ def add_units(nwbfile, spikes, waveforms, shank_id):
     return nwbfile
 
 
-def add_probes(nwbfile, metadata, xmldata):
+def add_probes(nwbfile, metadata, xmldata, nrsdata):
     # to do: add depth info
     """
     Adds probes, electrode groups, and electrodes to the NWB file.
     Properly assigns shanks to probes when xmldata['spike_groups']
     is a sequential list instead of a dictionary.
     """
+
+    # get a list of dead channels from the nrs file
+    good_channels = nrsdata['channels_shown']
+
+    # Add extra electrode columns
+    nwbfile.add_electrode_column(name='label', description='label of electrode')
+    nwbfile.add_electrode_column(name='is_faulty', description='Boolean column to indicate faulty electrodes')
+
     # Add probes as devices
     probe_devices = {}
     for probe in metadata["probe"]:
@@ -136,6 +144,7 @@ def add_probes(nwbfile, metadata, xmldata):
         raise ValueError("Mismatch between shank count in metadata and xmldata['spike_groups']")
 
     # Add electrode groups and electrodes
+    electrode_counter = 0
     shank_names = []
     for (probe_id, shank_id, probe_location, probe_step), (shank_idx, electrodes) in zip(shank_assignments, enumerate(
             xmldata["spike_groups"])):
@@ -151,13 +160,19 @@ def add_probes(nwbfile, metadata, xmldata):
         )
 
         # Add electrodes to the NWB electrode table
-        for _ in range(len(electrodes)):
+        for ielec in range(len(electrodes)):
+            elec_depth = probe_step * (len(electrodes) - ielec - 1)
+            elec_label = f"{group_name}elec{ielec}"
             nwbfile.add_electrode(
+                x=0., y=float(elec_depth), z=0.,  # add electrode position
                 group=electrode_group,
+                is_faulty=electrode_counter not in good_channels,
                 location=electrode_group.location,
                 filtering="none",
+                label=elec_label,
                 imp=np.nan,  # Add real impedance values if available
             )
+            electrode_counter += 1
 
     # Define table region RAW DAT FILE and LFP will refer to (all electrodes)
     all_table_region = nwbfile.create_electrode_table_region(
