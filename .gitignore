@@ -18,3 +18,7 @@ venv/
 *.log
 *.tmp
 .DS_Store
+
+# ssh
+eval "$(ssh-agent -s)"
+eval "$(ssh-agent -s)".pub

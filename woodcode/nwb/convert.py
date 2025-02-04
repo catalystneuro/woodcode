@@ -187,6 +187,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
 
 
 def add_tracking(nwbfile, pos, ang=None):
+    # to do: add units as input
     print('Adding tracking to NWB file...')
 
     # Create behavior module
