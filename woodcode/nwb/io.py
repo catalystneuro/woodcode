@@ -268,7 +268,21 @@ def read_xml(file_path):
     """
     print('Importing metadata from the .xml file...')
 
-    tree = ET.parse(file_path)
+    # account for file name variations
+    try:
+        tree = ET.parse(file_path)
+    except FileNotFoundError:
+        # Only modify the name part, not the whole path
+        parent = file_path.parent
+        name = file_path.name
+        if '-' in name:
+            alternative_name = name.replace('-', '_')
+        else:
+            alternative_name = name.replace('_', '-')
+
+        alternative_path = parent / alternative_name
+        tree = ET.parse(alternative_path)
+
     myroot = tree.getroot()
 
     data = {
@@ -344,8 +358,21 @@ def read_nrs(file_path):
 
     print(f'Importing metadata from {file_path}...')
 
-    # Parse XML
-    tree = ET.parse(file_path)
+    # account for file name variations
+    try:
+        tree = ET.parse(file_path)
+    except FileNotFoundError:
+        # Only modify the name part, not the whole path
+        parent = file_path.parent
+        name = file_path.name
+        if '-' in name:
+            alternative_name = name.replace('-', '_')
+        else:
+            alternative_name = name.replace('_', '-')
+
+        alternative_path = parent / alternative_name
+        tree = ET.parse(alternative_path)
+
     root = tree.getroot()
 
     # Initialize data structure
