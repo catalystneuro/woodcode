@@ -20,7 +20,8 @@ setup(
         "hdmf",
         "h5py",
         "pytz",
-        "pynapple==0.7.1"
+        "pynapple==0.7.1",
+        "selenium"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
