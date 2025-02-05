@@ -174,9 +174,14 @@ def get_matlab_position(pos_file, vbl_name='pos'):
 
     except OSError:
         # If not an HDF5 file, load using scipy.io (v7 or earlier)
+        # handle cases of matrix and tsToolbox format
         pos_data = spio.loadmat(pos_file, simplify_cells=True)
-        pos = np.array(pos_data[vbl_name]['data']).squeeze()  # Extract inner array and remove unnecessary dimensions
-        pos_index = np.atleast_1d(pos_data['pos']['t'].squeeze()).ravel()
+        if 'pos' in pos_data:
+            pos = pos_data['pos'][:, 1:]
+            pos_index = pos_data['pos'][:, 0]
+        else:
+            pos = np.array(pos_data[vbl_name]['data']).squeeze()  # Extract inner array and remove unnecessary dimensions
+            pos_index = np.atleast_1d(pos_data['pos']['t'].squeeze()).ravel()
 
     pos_tsdframe = nap.TsdFrame(t=pos_index, d=pos, columns=['x', 'y'])
 

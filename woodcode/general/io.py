@@ -26,7 +26,7 @@ def get_tickatlab_info(animal_id, username=None, password=None):
     dict
         Dictionary containing the animal's information, or None if lookup failed
     """
-
+    print("Looking up tick@lab")
     url = "https://www.resource-manager.brr.mvm.ed.ac.uk/tickatlab/default.aspx"
     driver = None
 
@@ -80,26 +80,45 @@ def get_tickatlab_info(animal_id, username=None, password=None):
         )))
         driver.execute_script("arguments[0].click();", apply_button)
 
-        # Wait for results and parse
+        # Wait for results
         time.sleep(2)
-        cells = driver.find_elements(By.TAG_NAME, "td")
+
+        # Find the data row that contains our animal
+        rows = driver.find_elements(By.CSS_SELECTOR, "tr.rowstyle, tr.altrowstyle")
+        target_row = None
+
+        for row in rows:
+            cells = row.find_elements(By.TAG_NAME, "td")
+            if len(cells) > 0 and str(animal_id) in cells[0].text:
+                target_row = cells
+                break
+
+        if not target_row:
+            print(f"No data found for animal ID: {animal_id}")
+            return None
+
+        # Extract data with corrected indices
+        # Print all cell contents for debugging
+        print("\nDebug - All cell contents:")
+        for i, cell in enumerate(target_row):
+            print(f"Cell {i}: {cell.text}")
 
         animal_data = {
-            'Animal_ID': cells[39].text,
-            'Cage_ID': cells[41].text,
-            'Strain': cells[42].text,
-            'DoB': cells[44].text,
-            'Age': cells[45].text,
-            'No_of_animals': cells[47].text,
-            'Sire': cells[48].text,
-            'Dam': cells[49].text,
-            'Team': cells[50].text,
-            'PPL': cells[51].text,
-            'Protocol': cells[52].text,
-            'Room': cells[53].text,
-            'Status': cells[54].text,
-            'Project_code': cells[55].text,
-            'Responsible_User': cells[57].text
+            'Animal_ID': target_row[0].text if len(target_row) > 0 else "N/A",
+            'Cage_ID': target_row[2].text if len(target_row) > 2 else "N/A",
+            'Strain': target_row[3].text if len(target_row) > 3 else "N/A",
+            'DoB': target_row[5].text if len(target_row) > 5 else "N/A",
+            'Age': target_row[6].text if len(target_row) > 6 else "N/A",
+            'No_of_animals': target_row[8].text if len(target_row) > 8 else "N/A",
+            'Sire': target_row[9].text if len(target_row) > 9 else "N/A",
+            'Dam': target_row[10].text if len(target_row) > 10 else "N/A",
+            'Team': target_row[11].text if len(target_row) > 11 else "N/A",
+            'PPL': target_row[12].text if len(target_row) > 12 else "N/A",
+            'Protocol': target_row[13].text if len(target_row) > 13 else "N/A",
+            'Room': target_row[14].text if len(target_row) > 14 else "N/A",
+            'Status': target_row[15].text if len(target_row) > 15 else "N/A",
+            'Project_code': target_row[16].text if len(target_row) > 16 else "N/A",
+            'Responsible_User': target_row[18].text if len(target_row) > 18 else "N/A"
         }
 
         print("\nExtracted Animal Data:")
@@ -115,12 +134,3 @@ def get_tickatlab_info(animal_id, username=None, password=None):
     finally:
         if driver:
             driver.quit()
-
-
-# Usage
-if __name__ == '__main__':
-    # Example usage with prompt for credentials
-    animal_info = get_animal_info("1773019")
-
-    # Or with provided credentials
-    # animal_info = get_animal_info("1773019", username="your_username", password="your_password")
