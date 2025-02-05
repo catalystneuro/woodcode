@@ -43,7 +43,7 @@ Homepage = "https://github.com/Wood-Dudchenko-lab/woodcode"
 "Bug Tracker" = "https://github.com/Wood-Dudchenko-lab/woodcode/issues"
 
 [tool.setuptools]
-packages = ["woodcode"]
+packages = ["woodcode", "hd_cells", "nwb", "place_cells"]
 
 [tool.setuptools.package-data]
 woodcode = ["*.txt", "*.rst"]
