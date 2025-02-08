@@ -1,15 +1,16 @@
-import os
+
 from pathlib import Path
 from typing import List
 import warnings
-import pynapple as nap
 from pynapple.io.interface_nwb import NWBFile
-import pandas as pd
+import h5py
 import numpy as np
+import pandas as pd
+import os
+import pynapple as nap
 
 # Filter the specific HDMF warning about cached namespace
 warnings.filterwarnings('ignore', message='Ignoring cached namespace.*', category=UserWarning)
-
 
 def get_cell_metadata(nwb_files, metadata_fields=None):
     """
@@ -118,10 +119,10 @@ def create_nwb_file_list(data_dir: str, output_file: str, recursive: bool = True
     return len(absolute_paths)
 
 
-def load_nwb_files(file_list_path: str) -> List[nap.NWBFile]:
+def load_nwb_files(file_list_path: str) -> List[dict]:
     """
     Load multiple NWB files using Pynapple from a list file containing full paths.
-    Lines starting with # are treated as comments and ignored.
+    Each NWB file is stored as a dictionary and includes its folder path.
 
     Parameters
     ----------
@@ -130,8 +131,8 @@ def load_nwb_files(file_list_path: str) -> List[nap.NWBFile]:
 
     Returns
     -------
-    List[nap.NWBFile]
-        List of loaded Pynapple NWB file objects
+    List[dict]
+        List of loaded Pynapple NWB file dictionaries with an added 'path' key
 
     Raises
     ------
@@ -172,6 +173,7 @@ def load_nwb_files(file_list_path: str) -> List[nap.NWBFile]:
 
         try:
             nwb_file = nap.load_file(str(path))
+            nwb_file["path"] = str(path.parent)  # Add folder path
             nwb_files.append(nwb_file)
         except Exception as e:
             skipped_files.append((file_path, str(e)))
@@ -187,3 +189,134 @@ def load_nwb_files(file_list_path: str) -> List[nap.NWBFile]:
 
     print(f"{len(nwb_files)} NWB files loaded")
     return nwb_files
+
+def save_analysis(file_path, file_name, mode="w", skip_keys=None, **kwargs):
+    """
+    Save NumPy arrays, pandas DataFrames, pandas Series, and Pynapple objects (Ts, Tsd, TsdFrame, IntervalSet) into an HDF5 file.
+
+    Parameters:
+    - file_path (str): Directory where the HDF5 file should be saved.
+    - file_name (str): Name of the HDF5 file (without extension).
+    - mode (str): "w" to create/overwrite a file, "a" to append to an existing file (overwrites keys by default).
+    - skip_keys (list, optional): List of keys to skip overwriting in append mode.
+    - kwargs: Named datasets (e.g., my_array=data, my_df=df, my_series=series).
+    """
+    # Ensure the directory exists
+    os.makedirs(file_path, exist_ok=True)
+
+    # Construct the full path for the HDF5 file
+    file_name = file_name + '.h5'
+    full_path = os.path.join(file_path, file_name)
+
+    with h5py.File(full_path, mode) as f:
+        if mode == "a":
+            existing_keys = list(f.keys())
+            if skip_keys is None:
+                skip_keys = []  # Default: No skipping, overwrite everything
+
+        for key, value in kwargs.items():
+            if mode == "a" and key in skip_keys:
+                print(f"Skipping existing key '{key}' (as requested).")
+                continue
+            elif key in f and mode == "a":
+                del f[key]  # Remove the existing key to overwrite it
+
+            # Store the dataset based on type
+            if isinstance(value, np.ndarray):
+                f.create_dataset(key, data=value)
+                f[key].attrs["type"] = "numpy"
+            elif isinstance(value, pd.DataFrame):
+                group = f.create_group(key)
+                group.create_dataset("values", data=value.to_numpy())
+                group.attrs["columns"] = list(value.columns)
+                group.attrs["index"] = list(value.index)
+                group.attrs["type"] = "pandas_dataframe"
+            elif isinstance(value, pd.Series):
+                group = f.create_group(key)
+                group.create_dataset("values", data=value.to_numpy())
+                group.attrs["index"] = list(value.index)
+                group.attrs["dtype"] = str(value.dtype)
+                group.attrs["type"] = "pandas_series"
+            elif isinstance(value, nap.Ts):
+                group = f.create_group(key)
+                group.create_dataset("timestamps", data=value.as_units("s").values)
+                group.attrs["type"] = "pynapple_ts"
+            elif isinstance(value, nap.Tsd):
+                group = f.create_group(key)
+                group.create_dataset("timestamps", data=value.index.as_units("s").values)
+                group.create_dataset("values", data=value.values)
+                group.attrs["type"] = "pynapple_tsd"
+            elif isinstance(value, nap.TsdFrame):
+                group = f.create_group(key)
+                group.create_dataset("timestamps", data=value.index.as_units("s").values)
+                group.create_dataset("values", data=value.to_numpy())
+                group.attrs["columns"] = list(value.columns)
+                group.attrs["type"] = "pynapple_tsdframe"
+            elif isinstance(value, nap.IntervalSet):
+                group = f.create_group(key)
+                group.create_dataset("start_times", data=value.start.as_units("s").values)
+                group.create_dataset("end_times", data=value.end.as_units("s").values)
+                group.attrs["type"] = "pynapple_intervalset"
+            else:
+                raise ValueError(f"Unsupported data type for key '{key}': {type(value)}")
+
+    print(f"Saved data to {full_path} (mode={mode})")
+
+
+def load_analysis(file_path, file_name):
+    """
+    Load NumPy arrays, pandas DataFrames, pandas Series, and Pynapple objects (Ts, Tsd, TsdFrame, IntervalSet) from an HDF5 file.
+
+    Parameters:
+    - file_path (str): Directory where the HDF5 file is located.
+    - file_name (str): Name of the HDF5 file (without extension).
+
+    Returns:
+    - dict: A dictionary containing loaded objects.
+    """
+    file_name = file_name + '.h5'
+    full_path = os.path.join(file_path, file_name)
+
+    if not os.path.exists(full_path):
+        raise FileNotFoundError(f"File '{full_path}' not found.")
+
+    data = {}
+    with h5py.File(full_path, "r") as f:
+        for key in f.keys():
+            obj_type = f[key].attrs.get("type", "unknown")
+
+            if obj_type == "numpy":
+                data[key] = f[key][:]
+            elif obj_type == "pandas_dataframe":
+                values = f[key]["values"][:]
+                columns = list(f[key].attrs["columns"])
+                index = list(f[key].attrs["index"])
+                data[key] = pd.DataFrame(values, columns=columns, index=index)
+            elif obj_type == "pandas_series":
+                values = f[key]["values"][:]
+                index = list(f[key].attrs["index"])
+                dtype = f[key].attrs["dtype"]
+                data[key] = pd.Series(values, index=index, dtype=dtype)
+            elif obj_type == "pynapple_ts":
+                timestamps = f[key]["timestamps"][:]
+                data[key] = nap.Ts(t=timestamps, time_units="s")
+            elif obj_type == "pynapple_tsd":
+                timestamps = f[key]["timestamps"][:]
+                values = f[key]["values"][:]
+                data[key] = nap.Tsd(t=timestamps, d=values, time_units="s")
+            elif obj_type == "pynapple_tsdframe":
+                timestamps = f[key]["timestamps"][:]
+                values = f[key]["values"][:]
+                columns = list(f[key].attrs["columns"])
+                data[key] = nap.TsdFrame(t=timestamps, d=values, columns=columns, time_units="s")
+            elif obj_type == "pynapple_intervalset":
+                start_times = f[key]["start_times"][:]
+                end_times = f[key]["end_times"][:]
+                data[key] = nap.IntervalSet(start=start_times, end=end_times, time_units="s")
+            else:
+                raise ValueError(f"Unknown type '{obj_type}' for key '{key}'")
+
+    print(f"Loaded data from {full_path}")
+    return data
+
+
