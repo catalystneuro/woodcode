@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import List
 import warnings
 import pynapple as nap
+from pynapple.io.interface_nwb import NWBFile
 import pandas as pd
 import numpy as np
 
@@ -23,6 +24,8 @@ def get_cell_metadata(nwb_files, metadata_fields=None):
         List of metadata fields to extract, specified as strings with dot notation
         e.g. ['lab', 'subject.genotype', 'subject.age']
     """
+    if isinstance(nwb_files, NWBFile):
+        nwb_files = [nwb_files]  # Store in a list if just a single nwb file
 
     recording_ids = [nwb.name for nwb in nwb_files]
 

@@ -113,8 +113,11 @@ def add_events(nwbfile, events, event_name="events"):
 
 
 
-def add_units(nwbfile, spikes, waveforms, shank_id):
+def add_units(nwbfile, xml_data, spikes, waveforms, shank_id):
     print('Adding units to NWB file...')
+
+    # Add extra unit column
+    nwbfile.add_unit_column(name="sampling_rate", description="Sampling rate of the raw ephys signal")
 
     shank_names = list(nwbfile.electrode_groups.keys())
     for ncell in range(len(spikes)):
@@ -122,6 +125,7 @@ def add_units(nwbfile, spikes, waveforms, shank_id):
         nwbfile.add_unit(id=ncell,
                          spike_times=spikes[ncell].index.to_numpy(),
                          waveform_mean=waveforms[ncell].T,
+                         sampling_rate=xml_data['dat_sampling_rate'],
                          electrode_group=nwbfile.electrode_groups[group_name])
     return nwbfile
 
