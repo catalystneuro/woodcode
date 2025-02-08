@@ -1,14 +1,74 @@
-
-
 import os
 from pathlib import Path
 from typing import List
+import warnings
 import pynapple as nap
+import pandas as pd
+import numpy as np
 
-import os
-from pathlib import Path
-from typing import List
-import pynapple as nap
+# Filter the specific HDMF warning about cached namespace
+warnings.filterwarnings('ignore', message='Ignoring cached namespace.*', category=UserWarning)
+
+
+def get_cell_metadata(nwb_files, metadata_fields=None):
+    """
+    Extract custom metadata from multiple NWB files with one row per cell.
+    Column names will use only the last part of the field path.
+
+    Parameters
+    ----------
+    nwb_files : list
+        List of loaded NWB files
+    metadata_fields : list, optional
+        List of metadata fields to extract, specified as strings with dot notation
+        e.g. ['lab', 'subject.genotype', 'subject.age']
+    """
+
+    recording_ids = [nwb.name for nwb in nwb_files]
+
+    if metadata_fields is None:
+        raise ValueError("Please specify a list of nwb fields to extract (e.g. 'protocol' or 'subject.genotype')")
+
+
+    all_metadata = []  # List to store DataFrames from each recording
+
+    for file, rec_id in zip(nwb_files, recording_ids):
+        nwb = file.nwb
+        n_cells = len(nwb.units)
+
+        # Basic metadata for each cell
+        metadata = {
+            'nwb_file': [rec_id] * n_cells,
+        }
+
+        # Extract custom metadata fields
+        for field in metadata_fields:
+            try:
+                # Split field path and get the last part for column name
+                parts = field.split('.')
+                column_name = parts[-1]  # Only keep last part
+
+                # Navigate through the object hierarchy
+                value = nwb
+                for part in parts:
+                    value = getattr(value, part)
+
+                # Add to metadata dictionary
+                metadata[column_name] = [value] * n_cells
+
+            except AttributeError:
+                print(f"Warning: Field '{field}' not found in recording {rec_id}")
+                column_name = parts[-1]
+                metadata[column_name] = [None] * n_cells
+
+        # Create DataFrame for this recording
+        df = pd.DataFrame(metadata)
+        all_metadata.append(df)  # Append the DataFrame to our list
+
+    if all_metadata:
+        return pd.concat(all_metadata, ignore_index=True)
+    else:
+        raise ValueError("No metadata could be extracted from the files")
 
 
 def create_nwb_file_list(data_dir: str, output_file: str, recursive: bool = False) -> int:
@@ -28,22 +88,13 @@ def create_nwb_file_list(data_dir: str, output_file: str, recursive: bool = Fals
     -------
     int
         Number of NWB files found and written to the list
-
-    Raises
-    ------
-    FileNotFoundError
-        If data_dir doesn't exist
-    ValueError
-        If no NWB files are found
     """
-    data_dir = Path(data_dir).resolve()  # Get absolute path
+    data_dir = Path(data_dir).resolve()
     output_file = Path(output_file)
 
-    # Check if directory exists
     if not data_dir.exists():
         raise FileNotFoundError(f"Directory not found: {data_dir}")
 
-    # Find all .nwb files
     if recursive:
         nwb_files = list(data_dir.rglob("*.nwb"))
     else:
@@ -52,14 +103,13 @@ def create_nwb_file_list(data_dir: str, output_file: str, recursive: bool = Fals
     if not nwb_files:
         raise ValueError(f"No NWB files found in {data_dir}")
 
-    # Convert to absolute paths
     absolute_paths = [str(f.resolve()) for f in nwb_files]
-
-    # Sort alphabetically for consistency
     absolute_paths.sort()
 
-    # Write to .list file
     with open(output_file, 'w') as f:
+        f.write("# NWB files list - one file per line\n")
+        f.write(f"# Source directory: {data_dir}\n")
+        f.write(f"# Total files: {len(absolute_paths)}\n\n")
         for file_path in absolute_paths:
             f.write(f"{file_path}\n")
 
@@ -69,6 +119,7 @@ def create_nwb_file_list(data_dir: str, output_file: str, recursive: bool = Fals
 def load_nwb_files(file_list_path: str) -> List[nap.NWBFile]:
     """
     Load multiple NWB files using Pynapple from a list file containing full paths.
+    Lines starting with # are treated as comments and ignored.
 
     Parameters
     ----------
@@ -85,42 +136,52 @@ def load_nwb_files(file_list_path: str) -> List[nap.NWBFile]:
     FileNotFoundError
         If file_list_path or any NWB file doesn't exist
     ValueError
-        If file_list_path is empty or contains invalid file names
+        If file_list_path contains no valid file paths
     """
     file_list_path = Path(file_list_path)
 
-    # Check if file list exists
     if not file_list_path.exists():
         raise FileNotFoundError(f"File list not found: {file_list_path}")
 
-    # Read file paths from the list
+    # Read file paths from the list, skipping comments and empty lines
     with open(file_list_path, 'r') as f:
-        file_paths = [line.strip() for line in f if line.strip()]
+        file_paths = [
+            line.strip()
+            for line in f
+            if line.strip() and not line.strip().startswith('#')
+        ]
 
     if not file_paths:
-        raise ValueError(f"No file paths found in {file_list_path}")
+        raise ValueError(f"No valid file paths found in {file_list_path}")
 
-    # List to store loaded NWB files
     nwb_files = []
+    skipped_files = []
 
-    # Load each NWB file
     for file_path in file_paths:
         path = Path(file_path)
 
-        # Ensure file exists and has .nwb extension
         if not path.exists():
-            raise FileNotFoundError(f"NWB file not found: {path}")
+            skipped_files.append((file_path, "File not found"))
+            continue
+
         if path.suffix.lower() != '.nwb':
-            raise ValueError(f"File is not an NWB file: {path}")
+            skipped_files.append((file_path, "Not an NWB file"))
+            continue
 
         try:
-            # Load the NWB file using Pynapple
             nwb_file = nap.load_file(str(path))
             nwb_files.append(nwb_file)
         except Exception as e:
-            raise ValueError(f"Error loading NWB file {path}: {str(e)}")
+            skipped_files.append((file_path, str(e)))
 
+    # Report any skipped files
+    if skipped_files:
+        print("\nWarning: Some files were skipped:")
+        for file_path, reason in skipped_files:
+            print(f"- {file_path}: {reason}")
+
+    if not nwb_files:
+        raise ValueError("No NWB files were successfully loaded")
+
+    print(f"{len(nwb_files)} NWB files loaded")
     return nwb_files
-
-
-
