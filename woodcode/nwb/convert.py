@@ -32,7 +32,7 @@ def create_nwb_file(metadata, start_time):
         identifier=metadata['file']['name'],
         session_start_time=start_time,
         session_id=rec_id[1],
-        protocol=metadata['file']['name'],
+        protocol=metadata['file']['protocol'],
         experimenter=metadata['file']['experimenter'],
         lab=metadata['file']['lab'],
         institution=metadata['file']['institution'],

@@ -71,7 +71,7 @@ def get_cell_metadata(nwb_files, metadata_fields=None):
         raise ValueError("No metadata could be extracted from the files")
 
 
-def create_nwb_file_list(data_dir: str, output_file: str, recursive: bool = False) -> int:
+def create_nwb_file_list(data_dir: str, output_file: str, recursive: bool = True) -> int:
     """
     Scan a directory for NWB files and create a .list file containing their full paths.
 
@@ -107,9 +107,8 @@ def create_nwb_file_list(data_dir: str, output_file: str, recursive: bool = Fals
     absolute_paths.sort()
 
     with open(output_file, 'w') as f:
-        f.write("# NWB files list - one file per line\n")
-        f.write(f"# Source directory: {data_dir}\n")
-        f.write(f"# Total files: {len(absolute_paths)}\n\n")
+        f.write("# NWB files list - one file path per line\n")
+        f.write("# Add # at the start of a line to exclude files from upload\n\n")
         for file_path in absolute_paths:
             f.write(f"{file_path}\n")
 
