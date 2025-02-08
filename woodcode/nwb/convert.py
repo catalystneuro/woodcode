@@ -1,20 +1,18 @@
 from pathlib import Path
-import warnings
-import pynapple as nap
 from pynwb import NWBHDF5IO, NWBFile
+from pynwb.ecephys import ElectricalSeries, LFP, TimeSeries
 from pynwb.behavior import SpatialSeries, Position, CompassDirection
 from pynwb.epoch import TimeIntervals
 from pynwb.file import Subject
-import numpy as np
-from pynwb.ecephys import ElectricalSeries
-from pynwb.ecephys import LFP
-from pynwb.ecephys import TimeSeries
 from hdmf.backends.hdf5.h5_utils import H5DataIO
+from hdmf.common.table import DynamicTable
 import scipy.io as spio
 from datetime import datetime
-from hdmf.common.table import DynamicTable
 import pprint
-
+import numpy as np
+import pandas as pd
+import warnings
+import pynapple as nap
 
 def create_nwb_file(metadata, start_time):
     # get info from folder name
@@ -34,6 +32,7 @@ def create_nwb_file(metadata, start_time):
         identifier=metadata['file']['name'],
         session_start_time=start_time,
         session_id=rec_id[1],
+        protocol=metadata['file']['name'],
         experimenter=metadata['file']['experimenter'],
         lab=metadata['file']['lab'],
         institution=metadata['file']['institution'],
@@ -58,10 +57,19 @@ def load_nwb_file(file_path, file_name):
 
     return data
 
-def save_nwb_file(nwbfile,file_path, file_name):
+
+def save_nwb_file(nwbfile, file_path, file_name):
     print('Saving NWB file...')
+
+    # Create the folder path if it doesn't exist
+    if not file_path.exists():
+        file_path.mkdir(parents=True, exist_ok=True)
+        print(f'Created directory: {file_path}')
+
+    # Save the NWB file
     with NWBHDF5IO(file_path / (file_name + '.nwb'), 'w') as io:
         io.write(nwbfile)
+
     print('Done!')
 
 
@@ -75,23 +83,35 @@ def add_events(nwbfile, events, event_name="events"):
     # Ensure events is a dictionary
     if not isinstance(events, dict):
         raise TypeError(
-            "events must be a dictionary where keys are labels and values are pynapple IntervalSet instances.")
+            "events must be a dictionary where keys are labels and values are pynapple IntervalSet instances."
+        )
 
     # Ensure all values in events are IntervalSet instances
     if not all(isinstance(interval_set, nap.IntervalSet) for interval_set in events.values()):
         raise TypeError("All values in events must be pynapple IntervalSet instances.")
 
-    # Create a TimeIntervals table
-    events_table = TimeIntervals(name=event_name)
-    events_table.add_column(name="label", description="Type of event")
-
+    # Convert events into a pandas DataFrame
+    data = []
     for label, interval_set in events.items():
-        for start, end in zip(interval_set['start'], interval_set['end']):
-            events_table.add_row(start_time=start, stop_time=end, label=label)
+        df = pd.DataFrame({
+            "start_time": interval_set["start"],
+            "stop_time": interval_set["end"],
+            "label": [label] * len(interval_set)
+        })
+        data.append(df)
 
+    # Concatenate all event data
+    events_df = pd.concat(data, ignore_index=True)
+
+    # Create TimeIntervals from the DataFrame, now with a name
+    events_table = TimeIntervals.from_dataframe(events_df, name=event_name)
+
+    # Add to NWB file
     nwbfile.add_time_intervals(events_table)
 
     return nwbfile
+
+
 
 def add_units(nwbfile, spikes, waveforms, shank_id):
     print('Adding units to NWB file...')
