@@ -1,6 +1,6 @@
 
 from pathlib import Path
-from typing import List
+from typing import List, Dict
 import warnings
 from pynapple.io.interface_nwb import NWBFile
 import h5py
@@ -119,7 +119,7 @@ def create_nwb_file_list(data_dir: str, output_file: str, recursive: bool = True
     return len(absolute_paths)
 
 
-def load_nwb_files(file_list_path: str) -> List[dict]:
+def load_nwb_files(file_list_path: str) -> List[NWBFile]:
     """
     Load multiple NWB files using Pynapple from a list file containing full paths.
     Each NWB file is stored as a dictionary and includes its folder path.
@@ -189,6 +189,49 @@ def load_nwb_files(file_list_path: str) -> List[dict]:
 
     print(f"{len(nwb_files)} NWB files loaded")
     return nwb_files
+
+
+def filter_nwb_files(nwb_files: List[NWBFile], key: str, value) -> List[NWBFile]:
+    """
+    Filter NWB files based on a specified metadata key-value pair.
+
+    Parameters
+    ----------
+    nwb_files : List[NWBFile]
+        List of NWB files loaded using Pynapple.
+    key : str
+        The metadata key to check (e.g., "subject.genotype").
+    value : Any
+        The value that the key must match for the NWB file to be included.
+
+    Returns
+    -------
+    List[NWBFile]
+        A list of NWB files that meet the filtering criterion.
+    """
+
+    if isinstance(nwb_files, NWBFile):
+        nwb_files = [nwb_files]  # Store in a list if just a single NWB file
+
+    filtered_files = []
+
+    for nwb_file in nwb_files:
+        # Navigate nested metadata keys (e.g., "subject.genotype")
+        keys = key.split(".")
+        metadata = nwb_file.nwb  # Access the actual NWB structure from Pynapple
+
+        try:
+            for k in keys:
+                metadata = getattr(metadata, k)  # Use attribute access
+            if metadata == value:
+                filtered_files.append(nwb_file)
+        except AttributeError:
+            # Skip if key is missing or not structured as expected
+            continue
+
+    print(f"{len(filtered_files)} NWB files match the criterion: {key} == {value}")
+    return filtered_files
+
 
 def save_analysis(file_path, file_name, mode="w", skip_keys=None, **kwargs):
     """

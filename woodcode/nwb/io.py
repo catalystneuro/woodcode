@@ -14,7 +14,7 @@ import pprint
 def get_openephys_events(datapath, foldername, time_offset=0, skip_first=0):
 # to do: account for instances when TTL is up at epoch edges
 
-    print('Importing events npy files...')
+    print('Importing events from OpenEphys npy files...')
     # importing events
     states = np.load(datapath / foldername / 'Analysis' / 'states.npy')
     timestamps = np.load(datapath / foldername / 'Analysis' / 'timestamps.npy')
