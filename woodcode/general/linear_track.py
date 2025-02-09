@@ -114,11 +114,11 @@ def get_lap_intervals(track_pos_tsd, track_end=0.15):
         next_run = -next_run
 
     return {
-        "rightward": nap.IntervalSet(
+        "direction_1": nap.IntervalSet(
             start=np.array([t[0] for t in rightward_times]),
             end=np.array([t[1] for t in rightward_times])
         ),
-        "leftward": nap.IntervalSet(
+        "direction_2": nap.IntervalSet(
             start=np.array([t[0] for t in leftward_times]),
             end=np.array([t[1] for t in leftward_times])
         )
@@ -146,7 +146,7 @@ def plot_run_times(track_pos_tsd, run_intervals):
 
     # Plot shaded regions for each run
     for direction, intervals in run_intervals.items():
-        color = [0.75, 0.75, 0.75] if direction == "rightward" else [0.9, 0.9, 0.9]
+        color = [0.75, 0.75, 0.75] if direction == "direction_1" else [0.9, 0.9, 0.9]
         for start, end in zip(intervals.start, intervals.end):
             ax.axvspan(start, end, color=color, alpha=0.5)
 

@@ -1,6 +1,6 @@
 
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Union, Any
 import warnings
 from pynapple.io.interface_nwb import NWBFile
 import h5py
@@ -191,9 +191,12 @@ def load_nwb_files(file_list_path: str) -> List[NWBFile]:
     return nwb_files
 
 
-def filter_nwb_files(nwb_files: List[NWBFile], key: str, value) -> List[NWBFile]:
+from typing import List, Union
+from pynwb import NWBFile
+
+def filter_nwb_files(nwb_files: List[NWBFile], key: str, values: Union[Any, List[Any]]) -> List[NWBFile]:
     """
-    Filter NWB files based on a specified metadata key-value pair.
+    Filter NWB files based on a specified metadata key-value pair or multiple possible values.
 
     Parameters
     ----------
@@ -201,8 +204,9 @@ def filter_nwb_files(nwb_files: List[NWBFile], key: str, value) -> List[NWBFile]
         List of NWB files loaded using Pynapple.
     key : str
         The metadata key to check (e.g., "subject.genotype").
-    value : Any
-        The value that the key must match for the NWB file to be included.
+    values : Any or List[Any]
+        The value(s) that the key must match for the NWB file to be included.
+        Can be a single value or a list of values.
 
     Returns
     -------
@@ -212,6 +216,9 @@ def filter_nwb_files(nwb_files: List[NWBFile], key: str, value) -> List[NWBFile]
 
     if isinstance(nwb_files, NWBFile):
         nwb_files = [nwb_files]  # Store in a list if just a single NWB file
+
+    if not isinstance(values, (list, tuple)):
+        values = [values]  # Convert a single value to a list for easier comparison
 
     filtered_files = []
 
@@ -223,14 +230,15 @@ def filter_nwb_files(nwb_files: List[NWBFile], key: str, value) -> List[NWBFile]
         try:
             for k in keys:
                 metadata = getattr(metadata, k)  # Use attribute access
-            if metadata == value:
+            if metadata in values:
                 filtered_files.append(nwb_file)
         except AttributeError:
             # Skip if key is missing or not structured as expected
             continue
 
-    print(f"{len(filtered_files)} NWB files match the criterion: {key} == {value}")
+    print(f"{len(filtered_files)} files match the criterion: {key} in {values}")
     return filtered_files
+
 
 
 def save_analysis(file_path, file_name, mode="w", skip_keys=None, **kwargs):

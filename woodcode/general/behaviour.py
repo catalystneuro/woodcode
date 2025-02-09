@@ -2,11 +2,15 @@ import numpy as np
 import pandas as pd
 import pynapple as nap
 
+import numpy as np
+import pandas as pd
+import pynapple as nap
+
 def compute_velocity(pos: nap.TsdFrame, window_size: int = None, sampling_rate: float = None) -> nap.Tsd:
     """
     Computes the velocity of an animal based on position data.
 
-    Parameterss:
+    Parameters:
     -----------
     pos : nap.TsdFrame
         A TsdFrame with time as the index and two columns (x, y) for position data.
@@ -28,7 +32,7 @@ def compute_velocity(pos: nap.TsdFrame, window_size: int = None, sampling_rate: 
         raise ValueError("Input TsdFrame must have exactly two columns (x, y).")
 
     # Extract timestamps and position data
-    timestamps = pos.index
+    timestamps = pos.index.to_numpy()  # Convert to NumPy array
     pos_values = pos.values  # Convert to NumPy array
 
     # Determine tracking interval
@@ -53,7 +57,8 @@ def compute_velocity(pos: nap.TsdFrame, window_size: int = None, sampling_rate: 
     if window_size is not None:
         vel_series = vel_series.rolling(window=window_size, center=True).mean()
 
-    # Convert back to nap.Tsd
-    vel_tsd = nap.Tsd(vel_series.index, vel_series.values)
+    # Convert back to nap.Tsd (ensuring timestamps are NumPy arrays)
+    vel_tsd = nap.Tsd(t=np.array(vel_series.index), d=vel_series.values)
 
     return vel_tsd
+

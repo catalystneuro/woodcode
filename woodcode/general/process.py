@@ -22,6 +22,7 @@ def get_waveform_features(nwbfile, plot_result=False):
     Returns:
     - waveform_features (pd.DataFrame): DataFrame containing waveform features, including trough-to-peak durations.
     """
+    # to do: add cell position based on probe layout
 
     # Get waveform and sampling rate info from the NWB file
     waveforms = nwbfile.nwb.units['waveform_mean'].data[:]
