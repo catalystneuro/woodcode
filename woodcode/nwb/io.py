@@ -176,12 +176,12 @@ def get_matlab_position(pos_file, vbl_name='pos'):
         # If not an HDF5 file, load using scipy.io (v7 or earlier)
         # handle cases of matrix and tsToolbox format
         pos_data = spio.loadmat(pos_file, simplify_cells=True)
-        if 'pos' in pos_data:
-            pos = pos_data['pos'][:, 1:]
-            pos_index = pos_data['pos'][:, 0]
-        else:
+        if 'data' in pos_data[vbl_name]:
             pos = np.array(pos_data[vbl_name]['data']).squeeze()  # Extract inner array and remove unnecessary dimensions
             pos_index = np.atleast_1d(pos_data['pos']['t'].squeeze()).ravel()
+        else:
+            pos = pos_data['pos'][:, 1:]
+            pos_index = pos_data['pos'][:, 0]
 
     pos_tsdframe = nap.TsdFrame(t=pos_index, d=pos, columns=['x', 'y'])
 
@@ -206,8 +206,12 @@ def get_matlab_hd(hd_file, vbl_name='ang'):
     except OSError:
         # If not an HDF5 file, load using scipy.io (v7 or earlier)
         hd_data = spio.loadmat(hd_file, simplify_cells=True)
-        hd = np.array(hd_data[vbl_name]['data']).squeeze()  # Extract inner array
-        hd_index = np.atleast_1d(hd_data[vbl_name]['t'].squeeze()).ravel()
+        if 'data' in hd_data[vbl_name]:
+            hd = np.array(hd_data[vbl_name]['data']).squeeze()  # Extract inner array
+            hd_index = np.atleast_1d(hd_data[vbl_name]['t'].squeeze()).ravel()
+        else:
+            pos = hd_data[vbl_name][:, 1:]
+            pos_index = hd_data[vbl_name][:, 0]
 
     hd_tsd = nap.Tsd(t=hd_index, d=hd)
 
