@@ -2,6 +2,7 @@ import pynapple as nap
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 def trim_int_to_tsd(int, tsd):
 
@@ -57,32 +58,45 @@ def get_waveform_features(nwbfile, plot_result=False):
 
     # Create a DataFrame for the results
     waveform_features = pd.DataFrame({
-        'Cell_Index': np.arange(n_cells),
-        'Max_Channel_Index': max_channel_indices,
-        'Trough_to_Peak': trough_to_peak_durations
+        'cell_index': np.arange(n_cells),
+        'max_channel_index': max_channel_indices,
+        'trough_to_peak': trough_to_peak_durations
     })
 
     if plot_result:
-        fig, axs = plt.subplots(2, 1, figsize=(10, 8))
+        fig, axs = plt.subplots(2, 1, figsize=(4, 6), constrained_layout=True)
+
+        # Use a color palette for aesthetics
+        colors = sns.color_palette("husl", n_cells)
 
         # Plot all mean waveforms individually, normalized
         for i in range(n_cells):
             min_val = np.min(max_waveforms[i])
             normalized_waveform = max_waveforms[i] / abs(min_val)  # Normalize so min is 1
 
-            axs[0].plot(t, normalized_waveform, label=f"Cell {i}")
+            axs[0].plot(t, normalized_waveform, color=colors[i], alpha=0.8, lw=1)
 
-        axs[0].set_xlabel("Time (ms)")
-        axs[0].set_ylabel("Normalized Amplitude")
-        axs[0].set_title("Normalized Mean Waveforms for Each Cell")
+        # Formatting for waveform plot
+        axs[0].set_xlabel("Time (ms)", fontsize=8, fontname="Arial")
+        axs[0].set_ylabel("Normalized Amplitude", fontsize=8, fontname="Arial")
+        axs[0].set_title("Normalized Mean Waveforms", fontsize=8, fontweight="bold", pad=10)
+        axs[0].spines["top"].set_visible(False)
+        axs[0].spines["right"].set_visible(False)
+        axs[0].tick_params(direction="out", length=4, width=1, labelsize=10)
 
-        # Plot histogram of trough-to-peak durations
-        axs[1].hist(trough_to_peak_durations, bins=20, color="blue", alpha=0.7, edgecolor="black")
-        axs[1].set_xlabel("Trough-to-Peak Duration (ms)")
-        axs[1].set_ylabel("Count")
-        axs[1].set_title("Distribution of Trough-to-Peak Durations")
+        # Plot histogram of trough-to-peak durations with KDE overlay
+        sns.histplot(trough_to_peak_durations, bins=20, color="gray", alpha=0.7, edgecolor="black",
+                     ax=axs[1])
 
-        plt.tight_layout()
+        # Formatting for histogram
+        axs[1].set_xlabel("Trough-to-Peak Duration (ms)", fontsize=8, fontname="Arial")
+        axs[1].set_ylabel("Count", fontsize=8, fontname="Arial")
+        axs[1].set_title("Trough-to-Peak Duration Distribution", fontsize=8, fontweight="bold", pad=10)
+        axs[1].spines["top"].set_visible(False)
+        axs[1].spines["right"].set_visible(False)
+        axs[1].tick_params(direction="out", length=4, width=1, labelsize=10)
+
+        # Show the final polished figure
         plt.show()
 
     return waveform_features
