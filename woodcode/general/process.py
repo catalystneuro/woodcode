@@ -11,10 +11,25 @@ def trim_int_to_tsd(int, tsd):
 
     return new_int
 
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
 def get_waveform_features(nwbfile, plot_result=False):
     """
     Extracts waveform features from an NWB file, selecting the waveform with the highest amplitude
     and computing trough-to-peak duration for each cell without upsampling.
+
+    Additionally, assigns NaN to trough-to-peak duration if the average of the first 1/3
+    of samples is lower than the average of the second 2/3.
 
     Parameters:
     - nwbfile: NWB file object containing spike waveforms.
@@ -23,7 +38,6 @@ def get_waveform_features(nwbfile, plot_result=False):
     Returns:
     - waveform_features (pd.DataFrame): DataFrame containing waveform features, including trough-to-peak durations.
     """
-    # to do: add cell position based on probe layout
 
     # Get waveform and sampling rate info from the NWB file
     waveforms = nwbfile.nwb.units['waveform_mean'].data[:]
@@ -55,6 +69,19 @@ def get_waveform_features(nwbfile, plot_result=False):
 
     # Compute trough-to-peak durations in milliseconds
     trough_to_peak_durations = t[peak_indices] - t[trough_indices]
+
+    # **New Feature: Assign NaN if first 1/4 mean < second 1/4 mean**
+    baseline_idx = n_samples // 4
+    trough_idx = n_samples // 2
+    first_quarter_mean = np.mean(max_waveforms[:, :baseline_idx], axis=1)
+    second_quarter_mean = np.mean(max_waveforms[:, baseline_idx:trough_idx], axis=1)
+
+    mask = first_quarter_mean < second_quarter_mean
+    num_positive_waveforms = np.sum(mask)  # Count how many waveforms meet the condition
+    trough_to_peak_durations[mask] = np.nan  # Assign NaN where condition is met
+
+    # Display how many positive waveforms were detected
+    print(f"Detected {num_positive_waveforms} positive waveforms (assigned NaN).")
 
     # Create a DataFrame for the results
     waveform_features = pd.DataFrame({
@@ -100,3 +127,5 @@ def get_waveform_features(nwbfile, plot_result=False):
         plt.show()
 
     return waveform_features
+
+

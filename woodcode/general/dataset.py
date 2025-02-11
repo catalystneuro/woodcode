@@ -1,4 +1,4 @@
-
+import fmatch
 from pathlib import Path
 from typing import List, Dict, Union, Any
 import warnings
@@ -194,9 +194,14 @@ def load_nwb_files(file_list_path: str) -> List[NWBFile]:
 from typing import List, Union
 from pynwb import NWBFile
 
+import fnmatch
+from typing import List, Union, Any
+from pynapple import NWBFile  # Assuming NWBFile comes from Pynapple
+
 def filter_nwb_files(nwb_files: List[NWBFile], key: str, values: Union[Any, List[Any]]) -> List[NWBFile]:
     """
-    Filter NWB files based on a specified metadata key-value pair or multiple possible values.
+    Filter NWB files based on a specified metadata key-value pair or multiple possible values,
+    allowing wildcard matching.
 
     Parameters
     ----------
@@ -206,7 +211,7 @@ def filter_nwb_files(nwb_files: List[NWBFile], key: str, values: Union[Any, List
         The metadata key to check (e.g., "subject.genotype").
     values : Any or List[Any]
         The value(s) that the key must match for the NWB file to be included.
-        Can be a single value or a list of values.
+        Supports wildcards (e.g., 'spin*' matches 'spin1', 'spin2').
 
     Returns
     -------
@@ -230,14 +235,18 @@ def filter_nwb_files(nwb_files: List[NWBFile], key: str, values: Union[Any, List
         try:
             for k in keys:
                 metadata = getattr(metadata, k)  # Use attribute access
-            if metadata in values:
+
+            # Check for exact match OR wildcard match
+            if any(fnmatch.fnmatch(str(metadata), str(val)) for val in values):
                 filtered_files.append(nwb_file)
+
         except AttributeError:
             # Skip if key is missing or not structured as expected
             continue
 
     print(f"{len(filtered_files)} files match the criterion: {key} in {values}")
     return filtered_files
+
 
 
 
