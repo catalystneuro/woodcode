@@ -159,30 +159,66 @@ def get_start_time(datapath, foldername):
 
 def get_matlab_position(pos_file, vbl_name='pos'):
     """
-    Loads position from a MATLAB .mat file,
-    ensuring correct format and dimensions.
+    Loads position from a MATLAB .mat file (either v7.3/HDF5 or older v7),
+    ensuring correct format and dimensions, and returns a TsdFrame.
+
+    Parameters
+    ----------
+    pos_file : str
+        Path to the .mat file containing position data.
+    vbl_name : str, optional
+        Name of the variable in the .mat file that holds the position data.
+        Defaults to 'pos'.
+
+    Returns
+    -------
+    nap.TsdFrame
+        A TsdFrame object with columns ['x', 'y'].
     """
     print('Importing position from a .mat file...')
 
     try:
-        # Try loading as an HDF5 (v7.3) file
+        # Attempt to open as an HDF5 (v7.3) file
         with h5py.File(pos_file, 'r') as pos_data:
-            # Extract and process position data
+            # Check that vbl_name actually exists in the file
+            if vbl_name not in pos_data:
+                raise ValueError(f"Variable '{vbl_name}' not found in HDF5 file {pos_file}")
+
+            # Extract position array and time array
             pos = pos_data[vbl_name]['data'][()].T
             pos_index = pos_data[vbl_name]['t'][()].T.squeeze()
-            pos_index = np.atleast_1d(pos_index).ravel()  # Ensure index is 1D
+            pos_index = np.atleast_1d(pos_index).ravel()
 
     except OSError:
         # If not an HDF5 file, load using scipy.io (v7 or earlier)
-        # handle cases of matrix and tsToolbox format
         pos_data = spio.loadmat(pos_file, simplify_cells=True)
-        if 'data' in pos_data[vbl_name]:
-            pos = np.array(pos_data[vbl_name]['data']).squeeze()  # Extract inner array and remove unnecessary dimensions
-            pos_index = np.atleast_1d(pos_data['pos']['t'].squeeze()).ravel()
-        else:
-            pos = pos_data['pos'][:, 1:]
-            pos_index = pos_data['pos'][:, 0]
 
+        # Make sure the requested variable is present
+        if vbl_name not in pos_data:
+            raise ValueError(f"Variable '{vbl_name}' not found in MAT-file {pos_file}")
+
+        # Possible older style: a dictionary with 'data' and 't'
+        if isinstance(pos_data[vbl_name], dict) and 'data' in pos_data[vbl_name]:
+            try:
+                pos = np.array(pos_data[vbl_name]['data']).squeeze()
+                pos_index = np.atleast_1d(pos_data[vbl_name]['t']).ravel()
+            except KeyError as e:
+                raise ValueError(
+                    f"Expected 'data' and 't' fields in '{vbl_name}' dict, but got {e}"
+                )
+        else:
+            # Otherwise, assume pos_data[vbl_name] is a 2D array with columns = [time, x, y, ...]
+            arr = np.array(pos_data[vbl_name])
+            if arr.ndim != 2 or arr.shape[1] < 2:
+                raise ValueError(
+                    f"'{vbl_name}' must be a 2D array with at least 2 columns ([time, x, y, ...])."
+                )
+            pos_index = arr[:, 0]
+            pos = arr[:, 1:]
+
+    # Finally, build the TsdFrame
+    # By default, label columns as ['x', 'y']. If your data has more columns,
+    # you can adjust this part accordingly (e.g., ['x', 'y', 'z'] for 3D).
     pos_tsdframe = nap.TsdFrame(t=pos_index, d=pos, columns=['x', 'y'])
 
     return pos_tsdframe

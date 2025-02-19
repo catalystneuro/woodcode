@@ -7,7 +7,6 @@ from selenium.webdriver.support.ui import Select
 from getpass import getpass, GetPassWarning
 import time
 
-
 def get_tickatlab_info(animal_id, username=None, password=None):
     url = "https://www.resource-manager.brr.mvm.ed.ac.uk/tickatlab/default.aspx"
     driver = None
