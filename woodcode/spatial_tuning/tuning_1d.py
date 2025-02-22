@@ -123,7 +123,7 @@ def compute_1d_tuning_correlation(data1, data2, method: str = "pearson", circula
         else:  # Kendall
             corrs = np.array([kendalltau(data1[:, i], data2[:, i])[0] for i in range(n_cols)])
 
-        return corrs.reshape(1, -1)  # Shape: (1, n_features)
+        return corrs#.reshape(1, -1)  # Shape: (1, n_features)
 
     else:
         # Circular mode: Compute correlations for each shift
