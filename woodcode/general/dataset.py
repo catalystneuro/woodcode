@@ -248,18 +248,97 @@ def filter_nwb_files(nwb_files: List[NWBFile], key: str, values: Union[Any, List
     return filtered_files
 
 
+import os
+import h5py
+import numpy as np
+import pandas as pd
+import pynapple as nap
+
+
+def _save_to_hdf(parent_group, key, value):
+    """
+    Recursively save `value` into the HDF5 group `parent_group` under name `key`.
+    Handles dictionary, numpy, pandas, and pynapple objects.
+    """
+
+    # If key already exists in parent_group, delete it to avoid conflicts
+    if key in parent_group:
+        del parent_group[key]
+
+    # 1) Dictionary
+    if isinstance(value, dict):
+        # Create a new subgroup for this dict
+        subgroup = parent_group.create_group(key)
+        subgroup.attrs["type"] = "dict"
+        # Recursively save each key-value pair
+        for subkey, subval in value.items():
+            _save_to_hdf(subgroup, subkey, subval)
+
+    # 2) Numpy array
+    elif isinstance(value, np.ndarray):
+        ds = parent_group.create_dataset(key, data=value)
+        ds.attrs["type"] = "numpy"
+
+    # 3) Pandas DataFrame
+    elif isinstance(value, pd.DataFrame):
+        group = parent_group.create_group(key)
+        group.attrs["type"] = "pandas_dataframe"
+        group.create_dataset("values", data=value.to_numpy())
+        group.attrs["columns"] = list(value.columns)
+        group.attrs["index"] = list(value.index)
+
+    # 4) Pandas Series
+    elif isinstance(value, pd.Series):
+        group = parent_group.create_group(key)
+        group.attrs["type"] = "pandas_series"
+        group.create_dataset("values", data=value.to_numpy())
+        group.attrs["index"] = list(value.index)
+        group.attrs["dtype"] = str(value.dtype)
+
+    # 5) Pynapple Ts
+    elif isinstance(value, nap.Ts):
+        group = parent_group.create_group(key)
+        group.attrs["type"] = "pynapple_ts"
+        group.create_dataset("timestamps", data=value.as_units("s").values)
+
+    # 6) Pynapple Tsd
+    elif isinstance(value, nap.Tsd):
+        group = parent_group.create_group(key)
+        group.attrs["type"] = "pynapple_tsd"
+        group.create_dataset("timestamps", data=value.index.as_units("s").values)
+        group.create_dataset("values", data=value.values)
+
+    # 7) Pynapple TsdFrame
+    elif isinstance(value, nap.TsdFrame):
+        group = parent_group.create_group(key)
+        group.attrs["type"] = "pynapple_tsdframe"
+        group.create_dataset("timestamps", data=value.index.as_units("s").values)
+        group.create_dataset("values", data=value.to_numpy())
+        group.attrs["columns"] = list(value.columns)
+
+    # 8) Pynapple IntervalSet
+    elif isinstance(value, nap.IntervalSet):
+        group = parent_group.create_group(key)
+        group.attrs["type"] = "pynapple_intervalset"
+        group.create_dataset("start_times", data=value.start.as_units("s").values)
+        group.create_dataset("end_times", data=value.end.as_units("s").values)
+
+    else:
+        raise ValueError(f"Unsupported data type for key '{key}': {type(value)}")
 
 
 def save_analysis(file_path, file_name, mode="w", skip_keys=None, **kwargs):
     """
-    Save NumPy arrays, pandas DataFrames, pandas Series, and Pynapple objects (Ts, Tsd, TsdFrame, IntervalSet) into an HDF5 file.
+    Save NumPy arrays, pandas DataFrames, pandas Series, Pynapple objects,
+    and now dictionaries (possibly nested) into an HDF5 file.
 
     Parameters:
     - file_path (str): Directory where the HDF5 file should be saved.
     - file_name (str): Name of the HDF5 file (without extension).
-    - mode (str): "w" to create/overwrite a file, "a" to append to an existing file (overwrites keys by default).
+    - mode (str): "w" to create/overwrite a file, "a" to append to an existing file
+                  (overwrites keys by default).
     - skip_keys (list, optional): List of keys to skip overwriting in append mode.
-    - kwargs: Named datasets (e.g., my_array=data, my_df=df, my_series=series).
+    - kwargs: Named datasets (e.g., my_array=data, my_df=df, my_series=series, my_dict=some_dict).
     """
     # Ensure the directory exists
     os.makedirs(file_path, exist_ok=True)
@@ -270,113 +349,110 @@ def save_analysis(file_path, file_name, mode="w", skip_keys=None, **kwargs):
 
     with h5py.File(full_path, mode) as f:
         if mode == "a":
-            existing_keys = list(f.keys())
             if skip_keys is None:
                 skip_keys = []  # Default: No skipping, overwrite everything
 
         for key, value in kwargs.items():
-            if mode == "a" and key in skip_keys:
+            if mode == "a" and key in f and key in skip_keys:
                 print(f"Skipping existing key '{key}' (as requested).")
                 continue
-            elif key in f and mode == "a":
-                del f[key]  # Remove the existing key to overwrite it
+            elif mode == "a" and key in f:
+                # Remove the existing key to overwrite it
+                del f[key]
 
-            # Store the dataset based on type
-            if isinstance(value, np.ndarray):
-                f.create_dataset(key, data=value)
-                f[key].attrs["type"] = "numpy"
-            elif isinstance(value, pd.DataFrame):
-                group = f.create_group(key)
-                group.create_dataset("values", data=value.to_numpy())
-                group.attrs["columns"] = list(value.columns)
-                group.attrs["index"] = list(value.index)
-                group.attrs["type"] = "pandas_dataframe"
-            elif isinstance(value, pd.Series):
-                group = f.create_group(key)
-                group.create_dataset("values", data=value.to_numpy())
-                group.attrs["index"] = list(value.index)
-                group.attrs["dtype"] = str(value.dtype)
-                group.attrs["type"] = "pandas_series"
-            elif isinstance(value, nap.Ts):
-                group = f.create_group(key)
-                group.create_dataset("timestamps", data=value.as_units("s").values)
-                group.attrs["type"] = "pynapple_ts"
-            elif isinstance(value, nap.Tsd):
-                group = f.create_group(key)
-                group.create_dataset("timestamps", data=value.index.as_units("s").values)
-                group.create_dataset("values", data=value.values)
-                group.attrs["type"] = "pynapple_tsd"
-            elif isinstance(value, nap.TsdFrame):
-                group = f.create_group(key)
-                group.create_dataset("timestamps", data=value.index.as_units("s").values)
-                group.create_dataset("values", data=value.to_numpy())
-                group.attrs["columns"] = list(value.columns)
-                group.attrs["type"] = "pynapple_tsdframe"
-            elif isinstance(value, nap.IntervalSet):
-                group = f.create_group(key)
-                group.create_dataset("start_times", data=value.start.as_units("s").values)
-                group.create_dataset("end_times", data=value.end.as_units("s").values)
-                group.attrs["type"] = "pynapple_intervalset"
-            else:
-                raise ValueError(f"Unsupported data type for key '{key}': {type(value)}")
+            _save_to_hdf(f, key, value)
 
     print(f"Saved data to {full_path} (mode={mode})")
 
 
+def _load_from_hdf(hdf_obj):
+    """
+    Recursively load a Python object from an HDF5 object (which can be either
+    a Group or a Dataset). Returns the corresponding Python object.
+    """
+    # If hdf_obj is a dataset, we can read directly
+    if isinstance(hdf_obj, h5py.Dataset):
+        data_type = hdf_obj.attrs.get("type", None)
+
+        if data_type == "numpy":
+            return hdf_obj[()]  # returns a NumPy array
+        else:
+            raise ValueError(f"Unrecognized dataset type: {data_type}")
+
+    else:
+        # hdf_obj is a group
+        group_type = hdf_obj.attrs.get("type", None)
+
+        # 1) Dictionary
+        if group_type == "dict":
+            loaded_dict = {}
+            for key in hdf_obj.keys():
+                loaded_dict[key] = _load_from_hdf(hdf_obj[key])
+            return loaded_dict
+
+        # 2) Pandas DataFrame
+        elif group_type == "pandas_dataframe":
+            values = hdf_obj["values"][()]
+            columns = hdf_obj.attrs["columns"]
+            index = hdf_obj.attrs["index"]
+            # Construct DataFrame
+            df = pd.DataFrame(values, index=index, columns=columns)
+            return df
+
+        # 3) Pandas Series
+        elif group_type == "pandas_series":
+            values = hdf_obj["values"][()]
+            index = hdf_obj.attrs["index"]
+            dtype = hdf_obj.attrs["dtype"]
+            # Construct Series
+            s = pd.Series(values, index=index, dtype=dtype)
+            return s
+
+        # 4) Pynapple Ts
+        elif group_type == "pynapple_ts":
+            timestamps = hdf_obj["timestamps"][()]
+            return nap.Ts(t=timestamps, time_units="s")
+
+        # 5) Pynapple Tsd
+        elif group_type == "pynapple_tsd":
+            timestamps = hdf_obj["timestamps"][()]
+            values = hdf_obj["values"][()]
+            return nap.Tsd(t=timestamps, d=values, time_units="s")
+
+        # 6) Pynapple TsdFrame
+        elif group_type == "pynapple_tsdframe":
+            timestamps = hdf_obj["timestamps"][()]
+            values = hdf_obj["values"][()]
+            columns = hdf_obj.attrs["columns"]
+            return nap.TsdFrame(t=timestamps, d=values, columns=columns, time_units="s")
+
+        # 7) Pynapple IntervalSet
+        elif group_type == "pynapple_intervalset":
+            start_times = hdf_obj["start_times"][()]
+            end_times = hdf_obj["end_times"][()]
+            return nap.IntervalSet(start=start_times, end=end_times, time_units="s")
+
+        else:
+            # If there's no recognized type, it might be a group with sub-groups/datasets
+            # but missing the "type" attribute. You can handle that if needed.
+            raise ValueError(f"Unsupported or missing 'type' attribute in group: {hdf_obj.name}")
+
+
 def load_analysis(file_path, file_name):
     """
-    Load NumPy arrays, pandas DataFrames, pandas Series, and Pynapple objects (Ts, Tsd, TsdFrame, IntervalSet) from an HDF5 file.
+    Load objects (NumPy, pandas, pynapple, or dictionaries thereof) from an HDF5 file.
 
-    Parameters:
-    - file_path (str): Directory where the HDF5 file is located.
-    - file_name (str): Name of the HDF5 file (without extension).
-
-    Returns:
-    - dict: A dictionary containing loaded objects.
+    Returns a dictionary where keys are the top-level groups/datasets in the HDF5 file
+    and values are the corresponding loaded Python objects.
     """
     file_name = file_name + '.h5'
     full_path = os.path.join(file_path, file_name)
 
-    if not os.path.exists(full_path):
-        raise FileNotFoundError(f"File '{full_path}' not found.")
+    loaded_data = {}
 
-    data = {}
     with h5py.File(full_path, "r") as f:
         for key in f.keys():
-            obj_type = f[key].attrs.get("type", "unknown")
-
-            if obj_type == "numpy":
-                data[key] = f[key][:]
-            elif obj_type == "pandas_dataframe":
-                values = f[key]["values"][:]
-                columns = list(f[key].attrs["columns"])
-                index = list(f[key].attrs["index"])
-                data[key] = pd.DataFrame(values, columns=columns, index=index)
-            elif obj_type == "pandas_series":
-                values = f[key]["values"][:]
-                index = list(f[key].attrs["index"])
-                dtype = f[key].attrs["dtype"]
-                data[key] = pd.Series(values, index=index, dtype=dtype)
-            elif obj_type == "pynapple_ts":
-                timestamps = f[key]["timestamps"][:]
-                data[key] = nap.Ts(t=timestamps, time_units="s")
-            elif obj_type == "pynapple_tsd":
-                timestamps = f[key]["timestamps"][:]
-                values = f[key]["values"][:]
-                data[key] = nap.Tsd(t=timestamps, d=values, time_units="s")
-            elif obj_type == "pynapple_tsdframe":
-                timestamps = f[key]["timestamps"][:]
-                values = f[key]["values"][:]
-                columns = list(f[key].attrs["columns"])
-                data[key] = nap.TsdFrame(t=timestamps, d=values, columns=columns, time_units="s")
-            elif obj_type == "pynapple_intervalset":
-                start_times = f[key]["start_times"][:]
-                end_times = f[key]["end_times"][:]
-                data[key] = nap.IntervalSet(start=start_times, end=end_times, time_units="s")
-            else:
-                raise ValueError(f"Unknown type '{obj_type}' for key '{key}'")
+            loaded_data[key] = _load_from_hdf(f[key])
 
     print(f"Loaded data from {full_path}")
-    return data
-
-
+    return loaded_data
