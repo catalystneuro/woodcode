@@ -41,6 +41,7 @@ def get_waveform_features(nwbfile, plot_result=False):
 
     # Get waveform and sampling rate info from the NWB file
     waveforms = nwbfile.nwb.units['waveform_mean'].data[:]
+
     sampling_rate = nwbfile.nwb.units['sampling_rate'].data[0]
 
     # Unpack shape dynamically
