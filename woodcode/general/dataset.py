@@ -12,6 +12,7 @@ import pynapple as nap
 # Filter the specific HDMF warning about cached namespace
 warnings.filterwarnings('ignore', message='Ignoring cached namespace.*', category=UserWarning)
 
+
 def get_cell_metadata(nwb_files, metadata_fields=None):
     """
     Extract custom metadata from multiple NWB files with one row per cell.
