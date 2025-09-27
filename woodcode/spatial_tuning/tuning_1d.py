@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from scipy.ndimage import gaussian_filter1d
 from scipy.stats import kendalltau
+import pynapple as nap
 
 
 def smooth_1d_tuning_curves(tuning_curves,
@@ -139,4 +140,137 @@ def compute_1d_tuning_correlation(data1, data2, method: str = "pearson", circula
             shift_correlations[shift, :] = corrs  # Store correlations for each shift
 
         return shift_correlations  # Shape: (n_bins, n_features)
+
+
+def compute_1d_occupancy(feature: nap.Tsd, nb_bins: int,
+                              minmax: tuple,
+                              ep: nap.IntervalSet = None) -> pd.Series:
+    """
+    Compute histogram of occupancy of the animal's heading angle.
+    Mimics pynapple.compute_1d_tuning_curves argument style.
+    Parameters
+    ----------
+    feature : nap.Tsd
+      Time series with heading angle samples (radians).
+    nb_bins : int, optional
+      Number of bins. Default is 20.
+    minmax : tuple, optional
+      (min, max) range for heading angles. Default is (0, 2π).
+    ep : nap.IntervalSet, optional
+      Epochs to restrict analysis. If None, use the entire feature.
+    Returns
+    -------
+    pd.Series
+      pandas Series of length `nb_bins` with occupancy counts per bin.
+    """
+    if ep is not None:
+        feature = feature.restrict(ep)
+    values = np.mod(feature.values, 2 * np.pi)
+    bin_edges = np.linspace(minmax[0], minmax[1], nb_bins + 1)
+    counts, _ = np.histogram(values, bins=bin_edges)
+    bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+
+    return pd.Series(counts, index=bin_centers)
+
+
+def compute_vector_length(tcs):
+    """
+    Compute Rayleigh mean vector length for tuning curves.
+
+    Parameters
+    ----------
+    tcs : numpy.ndarray, pandas.Series, or pandas.DataFrame
+        Tuning curves.
+        - If DataFrame or Series, index should represent bin angles (radians).
+        - If ndarray, bins are assumed uniformly spaced between 0 and 2π.
+
+    Returns
+    -------
+    rayleigh_vector_length : pandas.Series
+        Rayleigh vector length for each cell.
+        - If input is Series or 1D array, returns length-1 Series.
+    """
+    # If pandas object, extract bins from index
+    if isinstance(tcs, (pd.Series, pd.DataFrame)):
+        bins_arr = np.asarray(tcs.index, dtype=float)
+        tcs_arr = np.asarray(tcs, dtype=float)
+    else:
+        # Assume uniform bins across [0, 2π)
+        n_bins = tcs.shape[0] if tcs.ndim > 1 else len(tcs)
+        bins_arr = np.linspace(0, 2*np.pi, n_bins, endpoint=False)
+        tcs_arr = np.asarray(tcs, dtype=float)
+
+    # Ensure 2D (nBins, nCells)
+    if tcs_arr.ndim == 1:
+        tcs_arr = tcs_arr[:, None]
+
+    # Complex unit vectors for each bin
+    unit_vectors = np.cos(bins_arr) + 1j * np.sin(bins_arr)
+
+    # Weighted complex sum across bins for each cell
+    weighted_sum = tcs_arr.T @ unit_vectors
+
+    # Rayleigh vector length
+    vector_length = np.abs(weighted_sum) / tcs_arr.sum(axis=0)
+
+    # Build pandas index
+    if isinstance(tcs, pd.DataFrame):
+        index = tcs.columns
+    elif isinstance(tcs, pd.Series):
+        index = pd.Index([tcs.name or "cell0"], name="cell")
+    else:
+        n_cells = tcs_arr.shape[1]
+        index = pd.RangeIndex(n_cells, name="cell")
+
+    return pd.Series(vector_length, index=index, name="rayleigh_vector_length")
+
+
+def compute_hd_info(tcs, occ=None):
+    """
+    Compute head-direction (HD) information (bits per spike) for each cell.
+
+    Parameters
+    ----------
+    tcs : numpy.ndarray or pandas.DataFrame
+        HD tuning curves, shape (n_bins, n_cells).
+    occ : numpy.ndarray, pandas.Series or pandas.DataFrame, optional
+        Occupancy distribution, shape (n_bins,) or (n_bins, 1).
+        If None, uniform occupancy is assumed.
+
+    Returns
+    -------
+    hd_info : pandas.Series
+        HD information values (bits per spike), indexed by cell if available.
+    """
+    # Convert tuning curves to array
+    tcs_arr = np.asarray(tcs, dtype=float)
+
+    # Handle occupancy
+    if occ is None:
+        occ_arr = np.full(tcs_arr.shape[0], 1.0 / tcs_arr.shape[0])
+    else:
+        occ_arr = np.asarray(occ, dtype=float).ravel()
+        occ_arr /= occ_arr.sum()
+
+    # Mean firing rate across bins (per cell)
+    f = occ_arr @ tcs_arr + 1e-12  # avoid div-by-zero
+
+    # Normalised rates (lambda / mean)
+    ratio = tcs_arr / f
+
+    # Compute info directly (ignoring bins where ratio <= 0)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        contrib = occ_arr[:, None] * ratio * np.log2(ratio)
+    hd_info = np.nansum(contrib, axis=0)
+
+    # Wrap into pandas.Series
+    if isinstance(tcs, pd.DataFrame):
+        index = tcs.columns
+    else:
+        index = pd.RangeIndex(tcs_arr.shape[1], name="cell")
+
+    return pd.Series(hd_info, index=index, name="hd_info")
+
+
+
 
