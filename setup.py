@@ -5,7 +5,7 @@ setup(
     version="0.1.2",
     author="Wood/Dudchenko lab members",
     author_email="a.j.duszkiewicz@gmail.com",
-    description="A python package for neural and behavioural data analysis in Wood/Dudchenko lab",
+    description="A python package for neural and behavioural analysis in Wood/Dudchenko lab",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/Wood-Dudchenko-lab/woodcode",
