@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="woodcode",
-    version="0.1.1",
+    version="0.1.2",
     author="Wood/Dudchenko lab members",
     author_email="a.j.duszkiewicz@gmail.com",
     description="A python package for neural and behavioural data analysis in Wood/Dudchenko lab",
