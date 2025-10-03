@@ -18,7 +18,7 @@ def load_all_params(params_dir=None, project_name=None):
     """
     Loads and merges all YAML parameter files from a given directory.
 
-    - Merges all module-specific parameters (general, nwb, spatial_tuning, etc.).
+    - Merges all module-specific parameters (general, nwb, cell_analysis, etc.).
     - If a project-specific YAML exists (e.g., experiment_1.yaml), it overrides module defaults.
 
     :param params_dir: Directory containing parameter YAML files.
