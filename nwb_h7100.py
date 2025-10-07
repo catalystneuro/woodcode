@@ -2,9 +2,8 @@ from pathlib import Path
 import pandas as pd
 import woodcode.nwb as nwb
 
-
 def main():
-    dataset_path = Path('/Volumes/T7/CatalystNeuro/Dudchenko/NWB_Conversion/H7115-250618')
+    dataset_path = Path('/Volumes/T7/CatalystNeuro/Dudchenko/NWB_Conversion')
     folder_name = 'H7115-250618'
     xml_path = dataset_path / folder_name / (folder_name + '.xml')  # path to xml file
     nrs_path = dataset_path / folder_name / (folder_name + '.nrs')  # path to xml file
@@ -28,7 +27,7 @@ def main():
     events = nwb.io.get_openephys_events(dataset_path, folder_name, time_offset=epochs.at[len(epochs)-1, 'Start'], skip_first=16)  # load LED events
 
     # CONSTRUCT NWB FILE
-    nwbfile = nwb.convert.create_nwb_file(metadata, start_time)
+    nwbfile = nwb.convert.create_nwb_file(metadata, start_time)    
     # add probes
     nwbfile = nwb.convert.add_probes(nwbfile, metadata, xml_data, nrs_data)
     # add tracking
@@ -47,8 +46,5 @@ def main():
     # load NWB file (for testing)
    # data = nwb.convert.load_nwb_file(save_path, folder_name)
 
-    print()
 
 main()
-
-
