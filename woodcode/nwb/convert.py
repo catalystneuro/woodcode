@@ -522,3 +522,36 @@ def collect_nwb_metadata(nwbfile):
     pprint.pprint(metadata, width=120, compact=False)
 
     return metadata
+
+from ndx_franklab_novela import CameraDevice
+from pynwb.image import ImageSeries
+def add_video(
+        *,
+        nwbfile: NWBFile,
+        video_file_path: Path,
+        timestamps: np.ndarray,
+        metadata: dict,
+) -> NWBFile:
+    camera_device_metadata = metadata["Video"]["CameraDevice"]
+    camera_device = CameraDevice(
+        name=camera_device_metadata["name"],
+        meters_per_pixel=camera_device_metadata["meters_per_pixel"],
+        model=camera_device_metadata["model"],
+        lens=camera_device_metadata["lens"],
+        camera_name=camera_device_metadata["camera_name"],
+    )
+    nwbfile.add_device(camera_device)
+
+    image_series_metadata = metadata["Video"]["ImageSeries"]
+    image_series = ImageSeries(
+        name=image_series_metadata["name"],
+        description=image_series_metadata["description"],
+        unit=image_series_metadata["unit"],
+        external_file=[str(video_file_path)],
+        format="external",
+        timestamps=timestamps,
+        device=camera_device,
+    )
+    nwbfile.add_acquisition(image_series)
+
+    return nwbfile
