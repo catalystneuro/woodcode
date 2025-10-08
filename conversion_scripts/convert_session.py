@@ -54,18 +54,12 @@ def session_to_nwb(
 
     # CONSTRUCT NWB FILE
     nwbfile = nwb.convert.create_nwb_file(metadata, start_time)    
-    # add probes
-    nwbfile = nwb.convert.add_probes(nwbfile, metadata, xml_data, nrs_data)
-    # add tracking
-    nwbfile = nwb.convert.add_tracking(nwbfile, pos, hd)
-    # add spikes
-    nwbfile = nwb.convert.add_units(nwbfile, xml_data, spikes, waveforms, shank_id)  # get shank names from NWB file
-    # Add event times
-    nwbfile = nwb.convert.add_events(nwbfile, events)
-    # Add epochs
-    nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
-    # Add sleep scoring and pseudo EMG
-    nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name)
+    # nwbfile = nwb.convert.add_probes(nwbfile, metadata, xml_data, nrs_data)
+    # nwbfile = nwb.convert.add_tracking(nwbfile, pos, hd)
+    # nwbfile = nwb.convert.add_units(nwbfile, xml_data, spikes, waveforms, shank_id)  # get shank names from NWB file
+    # nwbfile = nwb.convert.add_events(nwbfile, events)
+    # nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
+    # nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name)
 
     # save NWB file
     nwb.convert.save_nwb_file(nwbfile, save_path, folder_name)
@@ -74,7 +68,7 @@ def session_to_nwb(
 def main():
     """Define paths and convert example sessions to NWB."""
     dataset_path = Path('/Volumes/T7/CatalystNeuro/Dudchenko/NWB_Conversion')
-    output_folder_path = Path('/Volumes/T7/CatalystNeuro/Dudchenko/conversion_nwb')
+    output_folder_path = Path('/Volumes/T7/CatalystNeuro/Spyglass/raw')
     if output_folder_path.exists():
         shutil.rmtree(output_folder_path)
 
