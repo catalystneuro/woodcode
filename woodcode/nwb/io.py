@@ -11,13 +11,13 @@ import pynapple as nap
 import pprint
 
 
-def get_openephys_events(datapath, foldername, time_offset=0, skip_first=0):
+def get_openephys_events(states_path, timestamps_path, time_offset=0, skip_first=0):
 # to do: account for instances when TTL is up at epoch edges
 
     print('Importing events from OpenEphys npy files...')
     # importing events
-    states = np.load(datapath / foldername / 'Analysis' / 'states.npy')
-    timestamps = np.load(datapath / foldername / 'Analysis' / 'timestamps.npy')
+    states = np.load(states_path)
+    timestamps = np.load(timestamps_path)
     events = pd.Series(states, index=timestamps+time_offset)
     events = events.iloc[skip_first:]
 
@@ -100,20 +100,20 @@ import pytz
 from pathlib import Path
 
 
-def get_start_time(datapath, foldername):
+def get_start_time(foldername, metadata_path):
     """
     Retrieves the recording start time from a metadata file or extracts it from the folder name.
 
     Parameters:
-    - datapath (Path): Base directory containing the data.
     - foldername (str): Folder name, used to extract date if the file is missing.
+    - metadata_path (Path): Path to the Metadata.txt file.
 
     Returns:
     - datetime: The localized recording start time.
     """
 
     print('Importing start time from Metadata.txt file...')
-    file_path = datapath / foldername / 'Analysis' / "Metadata.txt"
+    file_path = metadata_path
 
     # Attempt to read from file if it exists
     if file_path.exists():

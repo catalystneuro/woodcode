@@ -43,14 +43,14 @@ def session_to_nwb(
     xml_data = nwb.io.read_xml(xml_path)  # load all ephys info from the xml file
     nrs_data = nwb.io.read_nrs(nrs_path)  # load faulty channel info from the nrs file (i.e. channels not shown in Neuroscope)
     metadata = nwb.io.read_metadata(meta_path, folder_name, print_output=True)  # Load all metadata from the xlsx file
-    start_time = nwb.io.get_start_time(dataset_path, folder_name)  # load start time from Metadata.txt file
+    start_time = nwb.io.get_start_time(folder_name, dataset_path / folder_name / 'Analysis' / 'Metadata.txt')  # load start time from Metadata.txt file
 
     # Load tracking, epochs and spikes from Matlab files (mostly loaded as pynapple objects)
     pos = nwb.io.get_matlab_position(mat_path / 'TrackingProcessed.mat', vbl_name='pos')
     hd = nwb.io.get_matlab_hd(mat_path / 'TrackingProcessed.mat', vbl_name='ang')
     epochs = pd.read_csv(mat_path / 'Epoch_TS.csv', header=None, names=['Start', 'End'])
     spikes, waveforms, shank_id = nwb.io.get_matlab_spikes(mat_path)
-    events = nwb.io.get_openephys_events(dataset_path, folder_name, time_offset=epochs.at[len(epochs)-1, 'Start'], skip_first=16)  # load LED events
+    events = nwb.io.get_openephys_events(dataset_path / folder_name / 'Analysis' / 'states.npy', dataset_path / folder_name / 'Analysis' / 'timestamps.npy', time_offset=epochs.at[len(epochs)-1, 'Start'], skip_first=16)  # load LED events
 
     # CONSTRUCT NWB FILE
     nwbfile = nwb.convert.create_nwb_file(metadata, start_time)    
