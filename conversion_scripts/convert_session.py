@@ -50,7 +50,7 @@ def session_to_nwb(
     hd = nwb.io.get_matlab_hd(mat_path / 'TrackingProcessed.mat', vbl_name='ang')
     epochs = pd.read_csv(mat_path / 'Epoch_TS.csv', header=None, names=['Start', 'End'])
     spikes, waveforms, shank_id = nwb.io.get_matlab_spikes(mat_path)
-    events = nwb.io.get_openephys_events(dataset_path / folder_name / 'Analysis' / 'states.npy', dataset_path / folder_name / 'Analysis' / 'timestamps.npy', time_offset=epochs.at[len(epochs)-1, 'Start'], skip_first=16)  # load LED events
+    events = nwb.io.get_openephys_events(mat_path / 'states.npy', mat_path / 'timestamps.npy', time_offset=epochs.at[len(epochs)-1, 'Start'], skip_first=16)  # load LED events
 
     # CONSTRUCT NWB FILE
     nwbfile = nwb.convert.create_nwb_file(metadata, start_time)    
