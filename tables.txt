@@ -1,0 +1,18 @@
+=== NWB File ===
+*nwb_file_name nwb_file_a
++------------+ +--------+
+H7115-250618_. =BLOB=    
+ (Total: 1)
+
+=== Session ===
+*nwb_file_name subject_id     institution_na lab_name       session_id     session_descri session_start_ timestamps_ref experiment_des
++------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
+H7115-250618_. H7115          University of  Wood/Dudchenko 250618         Cue rotations  2025-06-18 14: 2025-06-18 14: Reorientation 
+ (Total: 1)
+
+=== Subject ===
+*subject_id    age      description    genotype     sex     species       
++------------+ +------+ +------------+ +----------+ +-----+ +------------+
+H7115          P79D     Fmr1 1915968   KO           M       Rattus norvegi
+ (Total: 1)
+
