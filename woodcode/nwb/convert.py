@@ -528,7 +528,7 @@ from pynwb.image import ImageSeries
 def add_video(
         *,
         nwbfile: NWBFile,
-        video_file_path: Path,
+        video_file_paths: list[Path],
         metadata: dict,
         timestamps: np.ndarray | None = None,
         rate: float | None = None,
@@ -552,7 +552,7 @@ def add_video(
     image_series = ImageSeries(
         name=image_series_metadata["name"],
         description=image_series_metadata["description"],
-        external_file=[str(video_file_path)],
+        external_file=video_file_paths,
         format="external",
         timestamps=timestamps,
         rate=rate,
