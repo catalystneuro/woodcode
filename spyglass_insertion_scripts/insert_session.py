@@ -48,6 +48,11 @@ def print_tables(nwbfile_path: Path):
         print("=== Subject ===", file=f)
         print(sgc.Subject(), file=f)
 
+        print("=== Camera Device ===", file=f)
+        print(sgc.CameraDevice & {"camera_name": "my_camera_name"}, file=f)
+        print("=== Video File ===", file=f)
+        print(sgc.VideoFile & {"camera_name": "my_camera_name"}, file=f)
+
 
 def main():
     nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H7115-250618.nwb")

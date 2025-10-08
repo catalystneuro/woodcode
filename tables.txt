@@ -7,7 +7,7 @@ H7115-250618_. =BLOB=
 === Session ===
 *nwb_file_name subject_id     institution_na lab_name       session_id     session_descri session_start_ timestamps_ref experiment_des
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H7115-250618_. H7115          University of  Wood/Dudchenko 250618         Cue rotations  2025-06-18 14: 2025-06-18 14: Reorientation 
+H7115-250618_. H7115          University of  Wood/Dudchenko 250618         Cue rotations  2025-06-18 00: 2025-06-18 00: Reorientation 
  (Total: 1)
 
 === Subject ===
@@ -15,4 +15,16 @@ H7115-250618_. H7115          University of  Wood/Dudchenko 250618         Cue r
 +------------+ +------+ +------------+ +----------+ +-----+ +------------+
 H7115          P79D     Fmr1 1915968   KO           M       Rattus norvegi
  (Total: 1)
+
+=== Camera Device ===
+*camera_name   meters_per_pix manufacturer   model     lens     camera_id    
++------------+ +------------+ +------------+ +-------+ +------+ +-----------+
+
+ (Total: 0)
+
+=== Video File ===
+*nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
++------------+ +-------+ +------------+ +------------+ +------------+
+
+ (Total: 0)
 

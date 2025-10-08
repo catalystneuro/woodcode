@@ -13,6 +13,7 @@ def session_to_nwb(
     meta_path: Path,
     mat_path: Path,
     sleep_path: Path,
+    video_file_path: Path,
     save_path: Path
 ):
     """Convert a session to NWB format.
@@ -61,6 +62,25 @@ def session_to_nwb(
     # nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
     # nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name)
 
+    metadata = {
+        'Video': {
+            'ImageSeries': {
+                'name': 'Video',
+                'description': 'Video capturing and marker tracking were performed using Bonsai software 51 at 40 Hz. For the juvenile recordings, images were acquired through a Logitech C930e camera. To synchronise the images with the electrophysiology data, an Arduino microcontroller was programmed to send a random sequence of pulses to both the OpenEphys system and a LED light within the frame of the camera. The times when the LED light shone were detected by Bonsai and synchronisation of the pulses in the light and the electrophysiology data was done offline. For the adult recordings, images were acquired through an acA1300-75gc Basler camera with a LMVZ4411 Kowa lens, positioned at the ceiling of the rig. This camera was connected to the OpenEphys board, sending a pulse for each frame taken, allowing the synchronisation of the two streams of information.',
+                'source': str(video_file_path)
+            },
+            'CameraDevice': {
+                'name': 'camera_device 0', # This MUST be formatted exactly "camera_device {camera_id}" to be compatible with spyglass
+                'meters_per_pixel': 0.0016, # TODO: update this value
+                'manufacturer': 'Logitech',
+                'model': 'C930e',
+                'lens': 'built-in',
+                'camera_name': 'Video Camera',
+            },
+        }
+    }
+    nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_path=video_file_path, metadata=metadata, rate=40.0)
+
     # save NWB file
     nwb.convert.save_nwb_file(nwbfile, save_path, folder_name)
 
@@ -79,6 +99,7 @@ def main():
     meta_path = dataset_path / 'CatalystNeuro_metadata.xlsx'  # path to metadata file
     mat_path = dataset_path / folder_name / "Processed" / 'Analysis'
     sleep_path = dataset_path / folder_name / "Processed" / 'Sleep'
+    video_file_path = dataset_path / folder_name / "Raw" / "2025-06-18_15-23-44" / "Record Node 101" / "experiment1" / "recording1" / "BonsaiVideo2025-06-18T15_23_50.avi"
     save_path = output_folder_path
 
     session_to_nwb(
@@ -89,6 +110,7 @@ def main():
         meta_path=meta_path,
         mat_path=mat_path,
         sleep_path=sleep_path,
+        video_file_path=video_file_path,
         save_path=save_path
     )
 

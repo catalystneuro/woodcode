@@ -529,9 +529,15 @@ def add_video(
         *,
         nwbfile: NWBFile,
         video_file_path: Path,
-        timestamps: np.ndarray,
         metadata: dict,
+        timestamps: np.ndarray | None = None,
+        rate: float | None = None,
 ) -> NWBFile:
+    if timestamps is None and rate is None:
+        raise ValueError("Either timestamps or rate must be provided.")
+    if timestamps is not None and rate is not None:
+        raise ValueError("Only one of timestamps or rate should be provided.")
+    
     camera_device_metadata = metadata["Video"]["CameraDevice"]
     camera_device = CameraDevice(
         name=camera_device_metadata["name"],
@@ -546,10 +552,10 @@ def add_video(
     image_series = ImageSeries(
         name=image_series_metadata["name"],
         description=image_series_metadata["description"],
-        unit=image_series_metadata["unit"],
         external_file=[str(video_file_path)],
         format="external",
         timestamps=timestamps,
+        rate=rate,
         device=camera_device,
     )
     nwbfile.add_acquisition(image_series)
