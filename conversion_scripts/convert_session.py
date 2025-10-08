@@ -67,18 +67,18 @@ def session_to_nwb(
 
 def main():
     """Define paths and convert example sessions to NWB."""
-    dataset_path = Path('/Volumes/T7/CatalystNeuro/Dudchenko/NWB_Conversion')
+    dataset_path = Path('/Volumes/T7/CatalystNeuro/Dudchenko')
     output_folder_path = Path('/Volumes/T7/CatalystNeuro/Spyglass/raw')
     if output_folder_path.exists():
         shutil.rmtree(output_folder_path)
 
     # Example session
     folder_name = 'H7115-250618'
-    xml_path = dataset_path / folder_name / (folder_name + '.xml')  # path to xml file
-    nrs_path = dataset_path / folder_name / (folder_name + '.nrs')  # path to xml file
+    xml_path = dataset_path / folder_name / "Processed" / (folder_name + '.xml')  # path to xml file
+    nrs_path = dataset_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
     meta_path = dataset_path / 'CatalystNeuro_metadata.xlsx'  # path to metadata file
-    mat_path = dataset_path / folder_name / 'Analysis'
-    sleep_path = dataset_path / folder_name / 'Sleep'
+    mat_path = dataset_path / folder_name / "Processed" / 'Analysis'
+    sleep_path = dataset_path / folder_name / "Processed" / 'Sleep'
     save_path = output_folder_path
 
     session_to_nwb(
