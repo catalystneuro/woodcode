@@ -79,10 +79,20 @@ def session_to_nwb(
 
     metadata = {
         'Video': {
-            'ImageSeries': {
-                'name': 'Video',
-                'description': 'Video capturing and marker tracking were performed using Bonsai software 51 at 40 Hz. For the juvenile recordings, images were acquired through a Logitech C930e camera. To synchronise the images with the electrophysiology data, an Arduino microcontroller was programmed to send a random sequence of pulses to both the OpenEphys system and a LED light within the frame of the camera. The times when the LED light shone were detected by Bonsai and synchronisation of the pulses in the light and the electrophysiology data was done offline. For the adult recordings, images were acquired through an acA1300-75gc Basler camera with a LMVZ4411 Kowa lens, positioned at the ceiling of the rig. This camera was connected to the OpenEphys board, sending a pulse for each frame taken, allowing the synchronisation of the two streams of information.',
-            },
+            'ImageSeries': [
+                {
+                    'name': 'Video1',
+                    'description': 'Video during epoch 1. Video capturing and marker tracking were performed using Bonsai software 51 at 40 Hz. For the juvenile recordings, images were acquired through a Logitech C930e camera. To synchronise the images with the electrophysiology data, an Arduino microcontroller was programmed to send a random sequence of pulses to both the OpenEphys system and a LED light within the frame of the camera. The times when the LED light shone were detected by Bonsai and synchronisation of the pulses in the light and the electrophysiology data was done offline. For the adult recordings, images were acquired through an acA1300-75gc Basler camera with a LMVZ4411 Kowa lens, positioned at the ceiling of the rig. This camera was connected to the OpenEphys board, sending a pulse for each frame taken, allowing the synchronisation of the two streams of information.',
+                },
+                {
+                    'name': 'Video2',
+                    'description': 'Video during epoch 2. Video capturing and marker tracking were performed using Bonsai software 51 at 40 Hz. For the juvenile recordings, images were acquired through a Logitech C930e camera. To synchronise the images with the electrophysiology data, an Arduino microcontroller was programmed to send a random sequence of pulses to both the OpenEphys system and a LED light within the frame of the camera. The times when the LED light shone were detected by Bonsai and synchronisation of the pulses in the light and the electrophysiology data was done offline. For the adult recordings, images were acquired through an acA1300-75gc Basler camera with a LMVZ4411 Kowa lens, positioned at the ceiling of the rig. This camera was connected to the OpenEphys board, sending a pulse for each frame taken, allowing the synchronisation of the two streams of information.',
+                },
+                {
+                    'name': 'Video3',
+                    'description': 'Video during epoch 3. Video capturing and marker tracking were performed using Bonsai software 51 at 40 Hz. For the juvenile recordings, images were acquired through a Logitech C930e camera. To synchronise the images with the electrophysiology data, an Arduino microcontroller was programmed to send a random sequence of pulses to both the OpenEphys system and a LED light within the frame of the camera. The times when the LED light shone were detected by Bonsai and synchronisation of the pulses in the light and the electrophysiology data was done offline. For the adult recordings, images were acquired through an acA1300-75gc Basler camera with a LMVZ4411 Kowa lens, positioned at the ceiling of the rig. This camera was connected to the OpenEphys board, sending a pulse for each frame taken, allowing the synchronisation of the two streams of information.',
+                },
+            ],
             'CameraDevice': {
                 'name': 'camera_device 0', # This MUST be formatted exactly "camera_device {camera_id}" to be compatible with spyglass
                 'meters_per_pixel': 0.0016, # TODO: update this value

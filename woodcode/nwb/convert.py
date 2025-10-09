@@ -559,26 +559,29 @@ def add_video(
         timestamp_file_paths: list[Path],
         metadata: dict,
 ) -> NWBFile:
-    # Get starting frames from video files
-    starting_frames = [0]
-    for video_file_path in video_file_paths[:-1]:
-        cap = cv2.VideoCapture(video_file_path)
-        if not cap.isOpened():
-            raise IOError("Cannot open video file")
-        frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        starting_frame = starting_frames[-1] + frame_count
-        starting_frames.append(starting_frame)
-
     # Load timestamps from .csv files
-    all_timestamps = np.array([])
-    for timestamp_file_path in timestamp_file_paths:
+    all_timestamps = []
+
+    # load timestamps from the first file to get starting datetime
+    timstamp_file_path = timestamp_file_paths[0]
+    timestamps_df = pd.read_csv(timstamp_file_path, parse_dates=["Item3.Timestamp"])
+    starting_datetime = timestamps_df["Item3.Timestamp"].iloc[0]
+    timestamps_df["timestamps"] = (timestamps_df["Item3.Timestamp"] - starting_datetime).dt.total_seconds()
+    timestamps = timestamps_df["timestamps"].to_numpy()
+    dt = np.mean(np.diff(timestamps))
+    timestamps = np.concatenate((timestamps, [timestamps[-1] + dt])) # Last frame is missing from the csv file TODO: double check with the Dudchenko lab
+    all_timestamps.append(timestamps)
+
+    # load timestamps from the rest of the files normalized to the starting datetime
+    for timestamp_file_path in timestamp_file_paths[1:]:
         timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=["Item3.Timestamp"])
-        timestamps_df["timestamps"] = (timestamps_df["Item3.Timestamp"] - timestamps_df["Item3.Timestamp"].iloc[0]).dt.total_seconds()
+        timestamps_df["timestamps"] = (timestamps_df["Item3.Timestamp"] - starting_datetime).dt.total_seconds()
         timestamps = timestamps_df["timestamps"].to_numpy()
         dt = np.mean(np.diff(timestamps))
         timestamps = np.concatenate((timestamps, [timestamps[-1] + dt])) # Last frame is missing from the csv file TODO: double check with the Dudchenko lab
-        all_timestamps = np.concatenate((all_timestamps, timestamps))
+        all_timestamps.append(timestamps)
 
+    # Add camera device
     camera_device_metadata = metadata["Video"]["CameraDevice"]
     camera_device = CameraDevice(
         name=camera_device_metadata["name"],
@@ -589,16 +592,17 @@ def add_video(
     )
     nwbfile.add_device(camera_device)
 
+    # Add image series for each video file
     image_series_metadata = metadata["Video"]["ImageSeries"]
-    image_series = ImageSeries(
-        name=image_series_metadata["name"],
-        description=image_series_metadata["description"],
-        external_file=video_file_paths,
-        starting_frame=starting_frames,
-        format="external",
-        timestamps=all_timestamps,
-        device=camera_device,
-    )
-    nwbfile.add_acquisition(image_series)
+    for meta, timestamps, file_path in zip(image_series_metadata, all_timestamps, video_file_paths):
+        image_series = ImageSeries(
+            name=meta["name"],
+            description=meta["description"],
+            external_file=[file_path],
+            format="external",
+            timestamps=timestamps,
+            device=camera_device,
+        )
+        nwbfile.add_acquisition(image_series)
 
     return nwbfile

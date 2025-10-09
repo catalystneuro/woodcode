@@ -66,6 +66,7 @@ def main():
     nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
 
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    sgc.Task.delete()
 
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
     print_tables(nwbfile_path=nwbfile_path)

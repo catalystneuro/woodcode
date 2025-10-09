@@ -43,9 +43,8 @@ H7115-250618_. 3         wake_cue_rot   None           03             cylindrica
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
-H7115-250618_. 1         0              Video Camera   0f358d8e-cd83-
-H7115-250618_. 2         0              Video Camera   0f358d8e-cd83-
- (Total: 2)
+H7115-250618_. 1         0              Video Camera   c3dd2ec9-2a63-
+ (Total: 1)
 
 === Camera Device ===
 *camera_name   meters_per_pix manufacturer   model     lens         camera_id    
