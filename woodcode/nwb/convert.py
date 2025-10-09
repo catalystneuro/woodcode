@@ -341,6 +341,31 @@ def add_epochs(nwbfile, epochs, metadata):
             tags=epoch_tags[str(epoch+1)]
         )
 
+    # Add tasks to NWB file
+    unique_tasks = set(epoch_tags.values())
+    tasks_module = nwbfile.create_processing_module(name="tasks", description="tasks module")
+    tasks_metadata = metadata["task"]
+    for task in unique_tasks:
+        task_metadata = tasks_metadata[task]
+        description = task_metadata["description"]
+        environment = task_metadata["environment"]
+        camera_id = [0]
+        task_epochs = [epoch for epoch, tag in epoch_tags.items() if tag == task]
+        task_table = DynamicTable(name=task, description=description)
+        task_table.add_column(name="task_name", description="Name of the task.")
+        task_table.add_column(name="task_description", description="Description of the task.")
+        task_table.add_column(name="task_environment", description="The environment the animal was in.")
+        task_table.add_column(name="camera_id", description="Camera ID.")
+        task_table.add_column(name="task_epochs", description="Task epochs.")
+        task_table.add_row(
+            task_name=task,
+            task_description=description,
+            task_environment=environment,
+            camera_id=camera_id,
+            task_epochs=task_epochs,
+        )
+        tasks_module.add(task_table)
+
     return nwbfile
 
 

@@ -60,6 +60,20 @@ def session_to_nwb(
     # nwbfile = nwb.convert.add_tracking(nwbfile, pos, hd)
     # nwbfile = nwb.convert.add_units(nwbfile, xml_data, spikes, waveforms, shank_id)  # get shank names from NWB file
     # nwbfile = nwb.convert.add_events(nwbfile, events)
+    metadata["task"] = {
+        'wake': {
+            'description': 'The rat was awake and foraging for scattered cereal in a cylindrical open field. The recording environment consisted of a cylindrical arena of 73 cm diameter, with 54 cm tall walls, painted light blue. A prominent visual cue was positioned at the top of the wall on the north side; this was 31.5 cm wide and 26 cm tall and consisted of two black horizontal stripes with a white stripe between them.',
+            'environment': 'cylindrical_open_field',
+        },
+        'sleep': {
+            'description': 'The rat was given a 90-minute sleep opportunity in a container placed inside the recording arena, during which recordings continued.',
+            'environment': 'sleep_container',
+        },
+        'wake_cue_rot': {
+            'description': 'The rat was awake and foraging for scattered cereal in a cylindrical open field. The recording environment consisted of a cylindrical arena of 73 cm diameter, with 54 cm tall walls, painted light blue. A prominent visual cue was positioned at the top of the wall on the north side; this was 31.5 cm wide and 26 cm tall and consisted of two black horizontal stripes with a white stripe between them.',
+            'environment': 'cylindrical_open_field',
+        },
+    }
     nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
     # nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name)
 
