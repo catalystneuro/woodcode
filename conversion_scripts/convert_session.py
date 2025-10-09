@@ -95,6 +95,8 @@ def session_to_nwb(
     }
     nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, timestamp_file_paths=timestamps_file_paths, metadata=metadata)
 
+    behavior_module = nwbfile.create_processing_module(name="behavior", description="behavior module")
+
     # save NWB file
     nwb.convert.save_nwb_file(nwbfile, save_path, folder_name)
 

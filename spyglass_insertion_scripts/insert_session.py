@@ -48,10 +48,17 @@ def print_tables(nwbfile_path: Path):
         print("=== Subject ===", file=f)
         print(sgc.Subject(), file=f)
 
-        print("=== Camera Device ===", file=f)
-        print(sgc.CameraDevice & {"camera_name": "my_camera_name"}, file=f)
+        print("=== IntervalList ===", file=f)
+        print(sgc.IntervalList & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== Task ===", file=f)
+        print(sgc.Task(), file=f)
+        print("=== Task Epoch ===", file=f)
+        print(sgc.TaskEpoch & {"nwb_file_name": nwb_copy_file_name}, file=f)
+
         print("=== Video File ===", file=f)
-        print(sgc.VideoFile & {"camera_name": "my_camera_name"}, file=f)
+        print(sgc.VideoFile & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== Camera Device ===", file=f)
+        print(sgc.CameraDevice(), file=f)
 
 
 def main():

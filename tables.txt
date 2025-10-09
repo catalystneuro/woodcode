@@ -16,9 +16,25 @@ H7115-250618_. H7115          University of  Wood/Dudchenko 250618         Cue r
 H7115          P79D     Fmr1 1915968   KO           M       Rattus norvegi
  (Total: 1)
 
-=== Camera Device ===
-*camera_name   meters_per_pix manufacturer   model     lens     camera_id    
-+------------+ +------------+ +------------+ +-------+ +------+ +-----------+
+=== IntervalList ===
+*nwb_file_name *interval_list valid_time pipeline    
++------------+ +------------+ +--------+ +----------+
+H7115-250618_. sleep          =BLOB=                 
+H7115-250618_. wake           =BLOB=                 
+H7115-250618_. wake_cue_rot   =BLOB=                 
+ (Total: 3)
+
+=== Task ===
+*task_name     task_descripti task_type     task_subtype  
++------------+ +------------+ +-----------+ +------------+
+sleep          The rat was gi None          None          
+wake           The rat was aw None          None          
+wake_cue_rot   The rat was aw None          None          
+ (Total: 3)
+
+=== Task Epoch ===
+*nwb_file_name *epoch    task_name     camera_name    interval_list_ task_environme camera_nam
++------------+ +-------+ +-----------+ +------------+ +------------+ +------------+ +--------+
 
  (Total: 0)
 
@@ -27,4 +43,10 @@ H7115          P79D     Fmr1 1915968   KO           M       Rattus norvegi
 +------------+ +-------+ +------------+ +------------+ +------------+
 
  (Total: 0)
+
+=== Camera Device ===
+*camera_name   meters_per_pix manufacturer   model     lens         camera_id    
++------------+ +------------+ +------------+ +-------+ +----------+ +-----------+
+Video Camera   0.0016                        C930e     built-in     0            
+ (Total: 1)
 
