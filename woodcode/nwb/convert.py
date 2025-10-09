@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 import warnings
 import pynapple as nap
+import cv2
 
 def create_nwb_file(metadata, start_time):
     # get info from folder name
@@ -548,11 +549,21 @@ def add_video(
     )
     nwbfile.add_device(camera_device)
 
+    starting_frames = [0]
+    for video_file_path in video_file_paths[:-1]:
+        cap = cv2.VideoCapture(video_file_path)
+        if not cap.isOpened():
+            raise IOError("Cannot open video file")
+        frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        starting_frame = starting_frames[-1] + frame_count
+        starting_frames.append(starting_frame)
+
     image_series_metadata = metadata["Video"]["ImageSeries"]
     image_series = ImageSeries(
         name=image_series_metadata["name"],
         description=image_series_metadata["description"],
         external_file=video_file_paths,
+        starting_frame=starting_frames,
         format="external",
         timestamps=timestamps,
         rate=rate,
