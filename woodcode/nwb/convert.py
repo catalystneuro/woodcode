@@ -530,15 +530,29 @@ def add_video(
         *,
         nwbfile: NWBFile,
         video_file_paths: list[Path],
+        timestamp_file_paths: list[Path],
         metadata: dict,
-        timestamps: np.ndarray | None = None,
-        rate: float | None = None,
 ) -> NWBFile:
-    if timestamps is None and rate is None:
-        raise ValueError("Either timestamps or rate must be provided.")
-    if timestamps is not None and rate is not None:
-        raise ValueError("Only one of timestamps or rate should be provided.")
-    
+    # Get starting frames from video files
+    starting_frames = [0]
+    for video_file_path in video_file_paths[:-1]:
+        cap = cv2.VideoCapture(video_file_path)
+        if not cap.isOpened():
+            raise IOError("Cannot open video file")
+        frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        starting_frame = starting_frames[-1] + frame_count
+        starting_frames.append(starting_frame)
+
+    # Load timestamps from .csv files
+    all_timestamps = np.array([])
+    for timestamp_file_path in timestamp_file_paths:
+        timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=["Item3.Timestamp"])
+        timestamps_df["timestamps"] = (timestamps_df["Item3.Timestamp"] - timestamps_df["Item3.Timestamp"].iloc[0]).dt.total_seconds()
+        timestamps = timestamps_df["timestamps"].to_numpy()
+        dt = np.mean(np.diff(timestamps))
+        timestamps = np.concatenate((timestamps, [timestamps[-1] + dt])) # Last frame is missing from the csv file TODO: double check with the Dudchenko lab
+        all_timestamps = np.concatenate((all_timestamps, timestamps))
+
     camera_device_metadata = metadata["Video"]["CameraDevice"]
     camera_device = CameraDevice(
         name=camera_device_metadata["name"],
@@ -549,15 +563,6 @@ def add_video(
     )
     nwbfile.add_device(camera_device)
 
-    starting_frames = [0]
-    for video_file_path in video_file_paths[:-1]:
-        cap = cv2.VideoCapture(video_file_path)
-        if not cap.isOpened():
-            raise IOError("Cannot open video file")
-        frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        starting_frame = starting_frames[-1] + frame_count
-        starting_frames.append(starting_frame)
-
     image_series_metadata = metadata["Video"]["ImageSeries"]
     image_series = ImageSeries(
         name=image_series_metadata["name"],
@@ -565,8 +570,7 @@ def add_video(
         external_file=video_file_paths,
         starting_frame=starting_frames,
         format="external",
-        timestamps=timestamps,
-        rate=rate,
+        timestamps=all_timestamps,
         device=camera_device,
     )
     nwbfile.add_acquisition(image_series)

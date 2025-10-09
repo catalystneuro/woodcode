@@ -14,6 +14,7 @@ def session_to_nwb(
     mat_path: Path,
     sleep_path: Path,
     video_file_paths: list[Path],
+    timestamps_file_paths: list[Path],
     save_path: Path
 ):
     """Convert a session to NWB format.
@@ -78,7 +79,7 @@ def session_to_nwb(
             },
         }
     }
-    nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, metadata=metadata, rate=40.0)
+    nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, timestamp_file_paths=timestamps_file_paths, metadata=metadata)
 
     # save NWB file
     nwb.convert.save_nwb_file(nwbfile, save_path, folder_name)
@@ -103,6 +104,11 @@ def main():
         dataset_path / folder_name / "Raw" / "2025-06-18_15-23-44" / "Record Node 101" / "experiment1" / "recording2" / "BonsaiVideo2025-06-18T15_36_52.avi",
         dataset_path / folder_name / "Raw" / "2025-06-18_15-23-44" / "Record Node 101" / "experiment1" / "recording3" / "BonsaiVideo2025-06-18T17_10_04.avi",
     ]
+    timestamps_file_paths = [
+        dataset_path / folder_name / "Raw" / "2025-06-18_15-23-44" / "Record Node 101" / "experiment1" / "recording1" / "BonsaiTracking2025-06-18T15_23_48.csv",
+        dataset_path / folder_name / "Raw" / "2025-06-18_15-23-44" / "Record Node 101" / "experiment1" / "recording2" / "BonsaiTracking2025-06-18T15_36_51.csv",
+        dataset_path / folder_name / "Raw" / "2025-06-18_15-23-44" / "Record Node 101" / "experiment1" / "recording3" / "BonsaiTracking2025-06-18T17_10_02.csv",
+    ]
     save_path = output_folder_path
 
     session_to_nwb(
@@ -114,6 +120,7 @@ def main():
         mat_path=mat_path,
         sleep_path=sleep_path,
         video_file_paths=video_file_paths,
+        timestamps_file_paths=timestamps_file_paths,
         save_path=save_path
     )
 
