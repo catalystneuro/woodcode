@@ -19,9 +19,9 @@ H7115          P79D     Fmr1 1915968   KO           M       Rattus norvegi
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline    
 +------------+ +------------+ +--------+ +----------+
-H7115-250618_. sleep          =BLOB=                 
-H7115-250618_. wake           =BLOB=                 
-H7115-250618_. wake_cue_rot   =BLOB=                 
+H7115-250618_. 01             =BLOB=                 
+H7115-250618_. 02             =BLOB=                 
+H7115-250618_. 03             =BLOB=                 
  (Total: 3)
 
 === Task ===
@@ -33,16 +33,19 @@ wake_cue_rot   The rat was aw None          None
  (Total: 3)
 
 === Task Epoch ===
-*nwb_file_name *epoch    task_name     camera_name    interval_list_ task_environme camera_nam
-+------------+ +-------+ +-----------+ +------------+ +------------+ +------------+ +--------+
-
- (Total: 0)
+*nwb_file_name *epoch    task_name      camera_name    interval_list_ task_environme camera_nam
++------------+ +-------+ +------------+ +------------+ +------------+ +------------+ +--------+
+H7115-250618_. 1         wake           None           01             cylindrical_op =BLOB=    
+H7115-250618_. 2         sleep          None           02             sleep_containe =BLOB=    
+H7115-250618_. 3         wake_cue_rot   None           03             cylindrical_op =BLOB=    
+ (Total: 3)
 
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
-
- (Total: 0)
+H7115-250618_. 1         0              Video Camera   0f358d8e-cd83-
+H7115-250618_. 2         0              Video Camera   0f358d8e-cd83-
+ (Total: 2)
 
 === Camera Device ===
 *camera_name   meters_per_pix manufacturer   model     lens         camera_id    

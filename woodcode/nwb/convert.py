@@ -335,10 +335,11 @@ def add_epochs(nwbfile, epochs, metadata):
 
     # Add epochs to NWB file
     for epoch in range(epochs.shape[0]):
+        tag = f"{(epoch+1):02d}"  # Spyglass requires 2-digit string epoch numbers
         nwbfile.add_epoch(
             start_time=float(epochs['Start'][epoch]),
             stop_time=float(epochs['End'][epoch]),
-            tags=epoch_tags[str(epoch+1)]
+            tags=[tag],
         )
 
     # Add tasks to NWB file
