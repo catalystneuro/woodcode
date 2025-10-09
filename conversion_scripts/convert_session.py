@@ -60,7 +60,7 @@ def session_to_nwb(
     # nwbfile = nwb.convert.add_tracking(nwbfile, pos, hd)
     # nwbfile = nwb.convert.add_units(nwbfile, xml_data, spikes, waveforms, shank_id)  # get shank names from NWB file
     # nwbfile = nwb.convert.add_events(nwbfile, events)
-    # nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
+    nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
     # nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name)
 
     metadata = {
