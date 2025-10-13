@@ -10,7 +10,7 @@ import datajoint as dj
 from pathlib import Path
 import sys
 
-dj_local_conf_path = "/Users/pauladkisson/Documents/CatalystNeuro/JadhavConv/spyglass/dj_local_conf.json"
+dj_local_conf_path = "/Users/pauladkisson/Documents/CatalystNeuro/Spyglass/spyglass/dj_local_conf.json"
 dj.config.load(dj_local_conf_path)  # load config for database connection info
 
 # General Spyglass Imports

@@ -13,7 +13,8 @@ import numpy as np
 import pandas as pd
 import warnings
 import pynapple as nap
-import cv2
+from ndx_franklab_novela import CameraDevice
+from pynwb.image import ImageSeries
 
 def create_nwb_file(metadata, start_time):
     # get info from folder name
@@ -550,8 +551,7 @@ def collect_nwb_metadata(nwbfile):
 
     return metadata
 
-from ndx_franklab_novela import CameraDevice
-from pynwb.image import ImageSeries
+
 def add_video(
         *,
         nwbfile: NWBFile,
@@ -559,6 +559,8 @@ def add_video(
         timestamp_file_paths: list[Path],
         metadata: dict,
 ) -> NWBFile:
+    print("Adding video to NWB file...")
+
     # Load timestamps from .csv files
     all_timestamps = []
 
