@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import warnings
 import pynapple as nap
-from ndx_franklab_novela import CameraDevice
+from ndx_franklab_novela import CameraDevice, DataAcqDevice, Probe, Shank, ShanksElectrode, NwbElectrodeGroup
 from pynwb.image import ImageSeries
 
 def create_nwb_file(metadata, start_time):
@@ -136,7 +136,7 @@ def add_units(nwbfile, xml_data, spikes, waveforms, shank_id):
 def add_probes(nwbfile, metadata, xmldata, nrsdata):
     # to do: add depth info
     """
-    Adds probes, electrode groups, and electrodes to the NWB file.
+    Adds probes, electrode groups, and electrodes to the NWB file using Spyglass-compatible types.
     Properly assigns shanks to probes when xmldata['spike_groups']
     is a sequential list instead of a dictionary.
     """
@@ -144,19 +144,36 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
     # get a list of dead channels from the nrs file
     good_channels = nrsdata['channels_shown']
 
-    # Add extra electrode columns
+    # Add DataAcqDevice (Spyglass requirement)
+    data_acq_device = DataAcqDevice(
+        name="data_acquisition_device",
+        system="Unknown",  # TODO: Replace placeholder - actual system name needed
+        amplifier="Unknown",  # TODO: Replace placeholder - actual amplifier name needed
+        adc_circuit="Unknown",  # TODO: Replace placeholder - actual ADC circuit name needed
+    )
+    nwbfile.add_device(data_acq_device)
+
+    # Add extra electrode columns (Spyglass requirements)
     nwbfile.add_electrode_column(name='label', description='label of electrode')
     nwbfile.add_electrode_column(name='is_faulty', description='Boolean column to indicate faulty electrodes')
+    nwbfile.add_electrode_column(name='probe_shank', description='Shank ID within probe')
+    nwbfile.add_electrode_column(name='probe_electrode', description='Electrode ID within shank')
+    nwbfile.add_electrode_column(name='bad_channel', description='Boolean indicating if channel is bad')
+    nwbfile.add_electrode_column(name='ref_elect_id', description='Reference electrode ID')
 
-    # Add probes as devices
+    # Add probes as Probe devices (Spyglass-compatible)
     probe_devices = {}
     for probe in metadata["probe"]:
         probe_name = f"Probe {probe['id']}"
-        probe_devices[probe['id']] = nwbfile.create_device(
-            name=probe_name,
-            description=probe["description"],
-            manufacturer=probe.get("type", "Unknown Manufacturer"),
-        )
+        
+        # Create list to hold all shanks for this probe
+        probe_shanks = []
+        
+        probe_devices[probe['id']] = {
+            'name': probe_name,
+            'shanks': probe_shanks,
+            'metadata': probe
+        }
 
     # Determine how many shanks belong to each probe
     shank_assignments = []
@@ -170,40 +187,95 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
     if len(shank_assignments) != len(xmldata["spike_groups"]):
         raise ValueError("Mismatch between shank count in metadata and xmldata['spike_groups']")
 
-    # Add electrode groups and electrodes
+    # Build Shank objects with ShanksElectrode objects
+    for (probe_id, shank_id, probe_location, probe_step), (shank_idx, electrodes) in zip(
+        shank_assignments, enumerate(xmldata["spike_groups"])
+    ):
+        shanks_electrodes = []
+        for ielec in range(len(electrodes)):
+            elec_depth = probe_step * (len(electrodes) - ielec - 1)
+            
+            # Create ShanksElectrode with relative positions
+            shanks_electrode = ShanksElectrode(
+                name=str(ielec),
+                rel_x=0.0,  # TODO: Replace placeholder - actual relative X position needed
+                rel_y=float(elec_depth),
+                rel_z=0.0,  # TODO: Replace placeholder - actual relative Z position needed
+            )
+            shanks_electrodes.append(shanks_electrode)
+        
+        # Create Shank object
+        shank = Shank(
+            name=str(shank_id),
+            shanks_electrodes=shanks_electrodes
+        )
+        
+        # Add shank to the appropriate probe
+        probe_devices[probe_id]['shanks'].append(shank)
+
+    # Now create the actual Probe devices and add them to nwbfile
+    actual_probe_devices = {}
+    for probe_id, probe_info in probe_devices.items():
+        probe_metadata = probe_info['metadata']
+        probe = Probe(
+            name=probe_info['name'],
+            id=probe_id,
+            probe_type=probe_metadata.get("type", "Unknown"),
+            units="um",  # TODO: Replace placeholder - actual units needed (commonly micrometers)
+            probe_description=probe_metadata["description"],
+            contact_side_numbering=False,  # TODO: Replace placeholder - actual numbering scheme needed
+            contact_size=1.0,  # TODO: Replace placeholder - actual contact size needed
+            shanks=probe_info['shanks'],
+        )
+        nwbfile.add_device(probe)
+        actual_probe_devices[probe_id] = probe
+
+    # Add electrode groups and electrodes using NwbElectrodeGroup (Spyglass-compatible)
     electrode_counter = 0
     shank_names = []
-    for (probe_id, shank_id, probe_location, probe_step), (shank_idx, electrodes) in zip(shank_assignments, enumerate(
-            xmldata["spike_groups"])):
-
-        # Create Electrode Group
+    for (probe_id, shank_id, probe_location, probe_step), (shank_idx, electrodes) in zip(
+        shank_assignments, enumerate(xmldata["spike_groups"])
+    ):
+        # Create NwbElectrodeGroup (Spyglass-compatible)
         group_name = f"probe{probe_id}shank{shank_id}"
         shank_names.append(group_name)
-        electrode_group = nwbfile.create_electrode_group(
+        electrode_group = NwbElectrodeGroup(
             name=group_name,
             description=f"Electrodes from {group_name}, step: {probe_step}",
             location=probe_location,
-            device=probe_devices[probe_id],
+            device=actual_probe_devices[probe_id],
+            targeted_location=probe_location,  # TODO: Replace placeholder - actual targeted location if different
+            targeted_x=0.0,  # TODO: Replace placeholder - actual targeted X coordinate needed
+            targeted_y=0.0,  # TODO: Replace placeholder - actual targeted Y coordinate needed
+            targeted_z=0.0,  # TODO: Replace placeholder - actual targeted Z coordinate needed
+            units="um",  # TODO: Replace placeholder - actual units for targeted coordinates needed
         )
+        nwbfile.add_electrode_group(electrode_group)
 
         # Add electrodes to the NWB electrode table
         for ielec in range(len(electrodes)):
             elec_depth = probe_step * (len(electrodes) - ielec - 1)
             elec_label = f"{group_name}elec{ielec}"
+            is_bad_channel = electrode_counter not in good_channels
+            
             nwbfile.add_electrode(
                 x=0., y=float(elec_depth), z=0.,  # add electrode position
                 group=electrode_group,
-                is_faulty=electrode_counter not in good_channels,
+                is_faulty=is_bad_channel,
                 location=electrode_group.location,
                 filtering="none",
                 label=elec_label,
                 imp=np.nan,  # Add real impedance values if available
+                probe_shank=shank_id,
+                probe_electrode=ielec,
+                bad_channel=is_bad_channel,
+                ref_elect_id=0,  # TODO: Replace placeholder - actual reference electrode ID needed
             )
             electrode_counter += 1
 
     # Define table region RAW DAT FILE and LFP will refer to (all electrodes)
     all_table_region = nwbfile.create_electrode_table_region(
-        region=list(range(len(electrodes))),
+        region=list(range(len(nwbfile.electrodes))),
         description='all electrodes',
     )
 
