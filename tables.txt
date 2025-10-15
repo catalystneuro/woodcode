@@ -81,22 +81,35 @@ H7115-250618_. probe1         1             Cambridge Neur Electrodes fro Right
  (Total: 1)
 
 === Probe ===
-*probe_id    probe_type     data_acquisiti contact_side_n
-+----------+ +------------+ +------------+ +------------+
-
- (Total: 0)
+*probe_id      probe_type     data_acquisiti contact_side_n
++------------+ +------------+ +------------+ +------------+
+Cambridge Neur Cambridge Neur None           False         
+ (Total: 1)
 
 === Probe Shank ===
-*probe_id    *probe_shank  
-+----------+ +------------+
-
- (Total: 0)
+*probe_id      *probe_shank  
++------------+ +------------+
+Cambridge Neur 1             
+Cambridge Neur 2             
+ (Total: 2)
 
 === Probe Electrode ===
-*probe_id    *probe_shank   *probe_electro contact_size   rel_x     rel_y     rel_z    
-+----------+ +------------+ +------------+ +------------+ +-------+ +-------+ +-------+
-
- (Total: 0)
+*probe_id      *probe_shank   *probe_electro contact_size   rel_x     rel_y     rel_z    
++------------+ +------------+ +------------+ +------------+ +-------+ +-------+ +-------+
+Cambridge Neur 1              0              1.0            0.0       400.0     0.0      
+Cambridge Neur 1              1              1.0            0.0       450.0     0.0      
+Cambridge Neur 1              2              1.0            0.0       600.0     0.0      
+Cambridge Neur 1              3              1.0            0.0       200.0     0.0      
+Cambridge Neur 1              4              1.0            0.0       750.0     0.0      
+Cambridge Neur 1              5              1.0            0.0       50.0      0.0      
+Cambridge Neur 1              6              1.0            0.0       700.0     0.0      
+Cambridge Neur 1              7              1.0            0.0       475.0     0.0      
+Cambridge Neur 1              8              1.0            0.0       325.0     0.0      
+Cambridge Neur 1              9              1.0            0.0       425.0     0.0      
+Cambridge Neur 1              10             1.0            0.0       175.0     0.0      
+Cambridge Neur 1              11             1.0            0.0       575.0     0.0      
+   ...
+ (Total: 64)
 
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
