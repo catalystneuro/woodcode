@@ -1,0 +1,77 @@
+"""SpyGlass database insertion script for the example dataset.
+
+This module provides functions for inserting converted NWB files from the example dataset into a SpyGlass database. 
+It handles data ingestion, custom table population, and validation testing for the database integration pipeline.
+"""
+
+from pynwb import NWBHDF5IO
+import numpy as np
+import datajoint as dj
+from pathlib import Path
+import sys
+
+dj_local_conf_path = "/Users/pauladkisson/Documents/CatalystNeuro/Spyglass/spyglass/dj_local_conf.json"
+dj.config.load(dj_local_conf_path)  # load config for database connection info
+
+# General Spyglass Imports
+import spyglass.common as sgc  # this import connects to the database
+import spyglass.data_import as sgi
+from spyglass.utils.nwb_helper_fn import get_nwb_copy_filename
+
+
+def insert_session(nwbfile_path: Path, rollback_on_fail: bool = True, raise_err: bool = False):
+    """Insert complete session data from NWB file into SpyGlass database.
+
+    Performs comprehensive insertion of all session data including standard
+    SpyGlass tables and custom task-specific tables. This is the main entry
+    point for database ingestion of converted NWB files.
+
+    Parameters
+    ----------
+    nwbfile_path : Path
+        Path to the converted NWB file to insert into the database.
+    rollback_on_fail : bool, optional
+        Whether to rollback database transaction if insertion fails, by default True.
+    raise_err : bool, optional
+        Whether to raise exceptions on insertion errors, by default False.
+    """
+    sgi.insert_sessions(str(nwbfile_path), rollback_on_fail=rollback_on_fail, raise_err=raise_err)
+
+
+def print_tables(nwbfile_path: Path):
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    with open("tables.txt", "w") as f:
+        print("=== NWB File ===", file=f)
+        print(sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== Session ===", file=f)
+        print(sgc.Session & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== Subject ===", file=f)
+        print(sgc.Subject(), file=f)
+
+        print("=== IntervalList ===", file=f)
+        print(sgc.IntervalList & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== Task ===", file=f)
+        print(sgc.Task(), file=f)
+        print("=== Task Epoch ===", file=f)
+        print(sgc.TaskEpoch & {"nwb_file_name": nwb_copy_file_name}, file=f)
+
+        print("=== Video File ===", file=f)
+        print(sgc.VideoFile & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== Camera Device ===", file=f)
+        print(sgc.CameraDevice(), file=f)
+
+
+def main():
+    nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H7115-250618.nwb")
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+
+    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    sgc.Task.delete()
+
+    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    print_tables(nwbfile_path=nwbfile_path)
+
+
+if __name__ == "__main__":
+    main()
+    print("Done!")

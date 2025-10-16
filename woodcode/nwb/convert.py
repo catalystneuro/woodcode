@@ -13,6 +13,8 @@ import numpy as np
 import pandas as pd
 import warnings
 import pynapple as nap
+from ndx_franklab_novela import CameraDevice
+from pynwb.image import ImageSeries
 
 def create_nwb_file(metadata, start_time):
     # get info from folder name
@@ -334,11 +336,37 @@ def add_epochs(nwbfile, epochs, metadata):
 
     # Add epochs to NWB file
     for epoch in range(epochs.shape[0]):
+        tag = f"{(epoch+1):02d}"  # Spyglass requires 2-digit string epoch numbers
         nwbfile.add_epoch(
             start_time=float(epochs['Start'][epoch]),
             stop_time=float(epochs['End'][epoch]),
-            tags=epoch_tags[str(epoch+1)]
+            tags=[tag],
         )
+
+    # Add tasks to NWB file
+    unique_tasks = set(epoch_tags.values())
+    tasks_module = nwbfile.create_processing_module(name="tasks", description="tasks module")
+    tasks_metadata = metadata["task"]
+    for task in unique_tasks:
+        task_metadata = tasks_metadata[task]
+        description = task_metadata["description"]
+        environment = task_metadata["environment"]
+        camera_id = [0]
+        task_epochs = [epoch for epoch, tag in epoch_tags.items() if tag == task]
+        task_table = DynamicTable(name=task, description=description)
+        task_table.add_column(name="task_name", description="Name of the task.")
+        task_table.add_column(name="task_description", description="Description of the task.")
+        task_table.add_column(name="task_environment", description="The environment the animal was in.")
+        task_table.add_column(name="camera_id", description="Camera ID.")
+        task_table.add_column(name="task_epochs", description="Task epochs.")
+        task_table.add_row(
+            task_name=task,
+            task_description=description,
+            task_environment=environment,
+            camera_id=camera_id,
+            task_epochs=task_epochs,
+        )
+        tasks_module.add(task_table)
 
     return nwbfile
 
@@ -522,3 +550,61 @@ def collect_nwb_metadata(nwbfile):
     pprint.pprint(metadata, width=120, compact=False)
 
     return metadata
+
+
+def add_video(
+        *,
+        nwbfile: NWBFile,
+        video_file_paths: list[Path],
+        timestamp_file_paths: list[Path],
+        metadata: dict,
+) -> NWBFile:
+    print("Adding video to NWB file...")
+
+    # Load timestamps from .csv files
+    all_timestamps = []
+
+    # load timestamps from the first file to get starting datetime
+    timstamp_file_path = timestamp_file_paths[0]
+    timestamps_df = pd.read_csv(timstamp_file_path, parse_dates=["Item3.Timestamp"])
+    starting_datetime = timestamps_df["Item3.Timestamp"].iloc[0]
+    timestamps_df["timestamps"] = (timestamps_df["Item3.Timestamp"] - starting_datetime).dt.total_seconds()
+    timestamps = timestamps_df["timestamps"].to_numpy()
+    dt = np.mean(np.diff(timestamps))
+    timestamps = np.concatenate((timestamps, [timestamps[-1] + dt])) # Last frame is missing from the csv file TODO: double check with the Dudchenko lab
+    all_timestamps.append(timestamps)
+
+    # load timestamps from the rest of the files normalized to the starting datetime
+    for timestamp_file_path in timestamp_file_paths[1:]:
+        timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=["Item3.Timestamp"])
+        timestamps_df["timestamps"] = (timestamps_df["Item3.Timestamp"] - starting_datetime).dt.total_seconds()
+        timestamps = timestamps_df["timestamps"].to_numpy()
+        dt = np.mean(np.diff(timestamps))
+        timestamps = np.concatenate((timestamps, [timestamps[-1] + dt])) # Last frame is missing from the csv file TODO: double check with the Dudchenko lab
+        all_timestamps.append(timestamps)
+
+    # Add camera device
+    camera_device_metadata = metadata["Video"]["CameraDevice"]
+    camera_device = CameraDevice(
+        name=camera_device_metadata["name"],
+        meters_per_pixel=camera_device_metadata["meters_per_pixel"],
+        model=camera_device_metadata["model"],
+        lens=camera_device_metadata["lens"],
+        camera_name=camera_device_metadata["camera_name"],
+    )
+    nwbfile.add_device(camera_device)
+
+    # Add image series for each video file
+    image_series_metadata = metadata["Video"]["ImageSeries"]
+    for meta, timestamps, file_path in zip(image_series_metadata, all_timestamps, video_file_paths):
+        image_series = ImageSeries(
+            name=meta["name"],
+            description=meta["description"],
+            external_file=[file_path],
+            format="external",
+            timestamps=timestamps,
+            device=camera_device,
+        )
+        nwbfile.add_acquisition(image_series)
+
+    return nwbfile

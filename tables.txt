@@ -1,0 +1,57 @@
+=== NWB File ===
+*nwb_file_name nwb_file_a
++------------+ +--------+
+H7115-250618_. =BLOB=    
+ (Total: 1)
+
+=== Session ===
+*nwb_file_name subject_id     institution_na lab_name       session_id     session_descri session_start_ timestamps_ref experiment_des
++------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
+H7115-250618_. H7115          University of  Wood/Dudchenko 250618         Cue rotations  2025-06-18 00: 2025-06-18 00: Reorientation 
+ (Total: 1)
+
+=== Subject ===
+*subject_id    age      description    genotype     sex     species       
++------------+ +------+ +------------+ +----------+ +-----+ +------------+
+H7115          P79D     Fmr1 1915968   KO           M       Rattus norvegi
+ (Total: 1)
+
+=== IntervalList ===
+*nwb_file_name *interval_list valid_time pipeline    
++------------+ +------------+ +--------+ +----------+
+H7115-250618_. 01             =BLOB=                 
+H7115-250618_. 02             =BLOB=                 
+H7115-250618_. 03             =BLOB=                 
+ (Total: 3)
+
+=== Task ===
+*task_name     task_descripti task_type     task_subtype  
++------------+ +------------+ +-----------+ +------------+
+sleep          The rat was gi None          None          
+wake           The rat was aw None          None          
+wake_cue_rot   The rat was aw None          None          
+ (Total: 3)
+
+=== Task Epoch ===
+*nwb_file_name *epoch    task_name      camera_name    interval_list_ task_environme camera_nam
++------------+ +-------+ +------------+ +------------+ +------------+ +------------+ +--------+
+H7115-250618_. 1         wake           None           01             cylindrical_op =BLOB=    
+H7115-250618_. 2         sleep          None           02             sleep_containe =BLOB=    
+H7115-250618_. 3         wake_cue_rot   None           03             cylindrical_op =BLOB=    
+ (Total: 3)
+
+=== Video File ===
+*nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
++------------+ +-------+ +------------+ +------------+ +------------+
+H7115-250618_. 1         0              Video Camera   3b3aabb8-f9db-
+H7115-250618_. 2         0              Video Camera   01666112-c951-
+H7115-250618_. 3         0              Video Camera   c032fc47-967f-
+ (Total: 3)
+
+=== Camera Device ===
+*camera_name   meters_per_pix manufacturer   model        lens         camera_id    
++------------+ +------------+ +------------+ +----------+ +----------+ +-----------+
+my_camera_name 1.0                           my_model     my_lens      1            
+Video Camera   0.0016                        C930e        built-in     0            
+ (Total: 2)
+

@@ -40,6 +40,8 @@ dependencies = [
     "seaborn>=0.11.0",
     "fmatch>=0.0.9",
     "jupyter>=1.1.1"
+    "ndx-franklab-novela",
+    "opencv-python",
 ]
 
 [project.urls]
