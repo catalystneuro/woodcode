@@ -64,6 +64,8 @@ def print_tables(nwbfile_path: Path):
         print(sgc.CameraDevice(), file=f)
 
         # Electrode/Probe tables
+        print("=== Data Acquisition Device ===", file=f)
+        print(sgc.DataAcquisitionDevice(), file=f)
         print("=== Electrode ===", file=f)
         print(sgc.Electrode & {"nwb_file_name": nwb_copy_file_name}, file=f)
         print("=== Electrode Group ===", file=f)
@@ -84,6 +86,7 @@ def main():
 
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
     (sgc.ProbeType & {"probe_type": "Cambridge Neurotech H7 probe"}).delete()
+    (sgc.DataAcquisitionDevice & {"name": "data_acquisition_device"}).delete()
     sgc.Task.delete()
 
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)

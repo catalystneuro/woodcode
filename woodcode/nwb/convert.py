@@ -167,7 +167,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
     # Add DataAcqDevice (Spyglass requirement)
     data_acq_device = DataAcqDevice(
         name="data_acquisition_device",
-        system="Unknown",  # TODO: Replace placeholder - actual system name needed
+        system="OpenEphys",
         amplifier="Unknown",  # TODO: Replace placeholder - actual amplifier name needed
         adc_circuit="Unknown",  # TODO: Replace placeholder - actual ADC circuit name needed
     )
@@ -178,10 +178,6 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
     nwbfile.add_electrode_column(name='probe_electrode', description='Electrode ID within shank')
     nwbfile.add_electrode_column(name='bad_channel', description='Boolean indicating if channel is bad')
     nwbfile.add_electrode_column(name='ref_elect_id', description='Reference electrode ID')
-
-    # Dudchenko lab custom electrode columns
-    # nwbfile.add_electrode_column(name='label', description='label of electrode')
-    # nwbfile.add_electrode_column(name='is_faulty', description='Boolean column to indicate faulty electrodes')
 
     # Build Shank objects with ShanksElectrode objects, organized by probe
     probe_id_to_shanks = {}  # Maps probe_id -> list of Shank objects
@@ -198,9 +194,9 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
             
             shanks_electrode = ShanksElectrode(
                 name=str(electrode_id),
-                rel_x=0.0,  # TODO: Replace placeholder - actual relative X position needed
+                rel_x=0.0,
                 rel_y=float(elec_depth),
-                rel_z=0.0,  # TODO: Replace placeholder - actual relative Z position needed
+                rel_z=0.0,
             )
             shanks_electrodes.append(shanks_electrode)
         
@@ -220,7 +216,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
             name=probe_name,
             id=probe_id,
             probe_type=probe_metadata["type"],
-            units="um",  # TODO: Replace placeholder - actual units needed (commonly micrometers)
+            units="um",
             probe_description=probe_metadata["description"],
             contact_side_numbering=False,  # TODO: Replace placeholder - actual numbering scheme needed
             contact_size=1.0,  # TODO: Replace placeholder - actual contact size needed
@@ -236,7 +232,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
             description=f"Electrodes from {group_name}, step: {probe_step}",
             location=probe_location,
             device=probe,
-            targeted_location=probe_location,  # TODO: Replace placeholder - actual targeted location if different
+            targeted_location=probe_location,
             targeted_x=0.0,  # TODO: Replace placeholder - actual targeted X coordinate needed
             targeted_y=0.0,  # TODO: Replace placeholder - actual targeted Y coordinate needed
             targeted_z=0.0,  # TODO: Replace placeholder - actual targeted Z coordinate needed
@@ -253,21 +249,18 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
         # Add electrodes to the NWB electrode table
         for ielec, electrode_id in enumerate(shank_electrode_ids):
             elec_depth = probe_step * (len(shank_electrode_ids) - ielec - 1)
-            elec_label = f"{group_name}elec{electrode_id}"
             is_bad_channel = electrode_counter not in good_channels
             
             nwbfile.add_electrode(
-                x=0., y=float(elec_depth), z=0.,  # add electrode position
+                x=0.,
+                y=float(elec_depth),
+                z=0.,
                 group=electrode_group,
-                # is_faulty=is_bad_channel,
                 location=electrode_group.location,
-                filtering="none",
-                # label=elec_label,
-                imp=np.nan,  # Add real impedance values if available
                 probe_shank=shank_id,
                 probe_electrode=electrode_id,
                 bad_channel=is_bad_channel,
-                ref_elect_id=0,  # TODO: Replace placeholder - actual reference electrode ID needed
+                ref_elect_id=-1,  # TODO: Replace placeholder - actual reference electrode ID needed
             )
             electrode_counter += 1
 
@@ -278,9 +271,6 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
     )
     from pynwb.testing.mock.ecephys import mock_ElectricalSeries
     mock_ElectricalSeries(electrodes=all_table_region, nwbfile=nwbfile, data=np.ones((10, len(nwbfile.electrodes))))
-
-    # Print how shanks are called
-    #print("Shank names:", shank_names)
 
     return nwbfile
 
