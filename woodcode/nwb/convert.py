@@ -158,11 +158,9 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
     if len(shank_assignments) != len(xmldata["spike_groups"]):
         raise ValueError("Mismatch between shank count in metadata and xmldata['spike_groups']")
 
-    shank_id_to_electrode_ids = {}
-    for (_, shank_id, _, _), shank_electrode_ids in zip(shank_assignments, xmldata["spike_groups"]):
-        shank_electrode_ids = [int(electrode_id) for electrode_id in shank_electrode_ids]
-        shank_id_to_electrode_ids[shank_id] = shank_electrode_ids
-
+    shank_id_to_num_electrodes = {}
+    for (_, shank_id, _, _), electrodes in zip(shank_assignments, xmldata["spike_groups"]):
+        shank_id_to_num_electrodes[shank_id] = len(electrodes)
 
     # Add DataAcqDevice (Spyglass requirement)
     data_acq_device = DataAcqDevice(
@@ -182,18 +180,18 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
     # Build Shank objects with ShanksElectrode objects, organized by probe
     probe_id_to_shanks = {}  # Maps probe_id -> list of Shank objects
     for probe_id, shank_id, probe_location, probe_step in shank_assignments:
-        shank_electrode_ids = shank_id_to_electrode_ids[shank_id]
+        num_electrodes = shank_id_to_num_electrodes[shank_id]
         # Initialize probe entry if needed
         if probe_id not in probe_id_to_shanks:
             probe_id_to_shanks[probe_id] = []
         
         # Build ShanksElectrode objects for this shank
         shanks_electrodes = []
-        for ielec, electrode_id in enumerate(shank_electrode_ids):
-            elec_depth = probe_step * (len(shank_electrode_ids) - ielec - 1)
-            
+        for ielec in range(num_electrodes):
+            elec_depth = probe_step * (num_electrodes - ielec - 1)
+
             shanks_electrode = ShanksElectrode(
-                name=str(electrode_id),
+                name=str(ielec),
                 rel_x=0.0,
                 rel_y=float(elec_depth),
                 rel_z=0.0,
@@ -242,13 +240,13 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
 
     # Add electrode groups and electrodes using NwbElectrodeGroup (Spyglass-compatible)
     electrode_counter = 0
-    for (probe_id, shank_id, probe_location, probe_step), (shank_idx, shank_electrode_ids) in zip(
+    for (probe_id, shank_id, probe_location, probe_step), (shank_idx, electrodes) in zip(
         shank_assignments, enumerate(xmldata["spike_groups"])
     ):
-        shank_electrode_ids = shank_id_to_electrode_ids[shank_id]
+        num_electrodes = shank_id_to_num_electrodes[shank_id]
         # Add electrodes to the NWB electrode table
-        for ielec, electrode_id in enumerate(shank_electrode_ids):
-            elec_depth = probe_step * (len(shank_electrode_ids) - ielec - 1)
+        for ielec in range(num_electrodes):
+            elec_depth = probe_step * (num_electrodes - ielec - 1)
             is_bad_channel = electrode_counter not in good_channels
             
             nwbfile.add_electrode(
@@ -258,7 +256,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
                 group=electrode_group,
                 location=electrode_group.location,
                 probe_shank=shank_id,
-                probe_electrode=electrode_id,
+                probe_electrode=ielec,
                 bad_channel=is_bad_channel,
                 ref_elect_id=-1,  # TODO: Replace placeholder - actual reference electrode ID needed
             )
