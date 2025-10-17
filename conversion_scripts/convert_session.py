@@ -16,7 +16,8 @@ def session_to_nwb(
     video_file_paths: list[Path],
     timestamps_file_paths: list[Path],
     lfp_file_path: Path,
-    save_path: Path
+    save_path: Path,
+    stub_test: bool = False,
 ):
     """Convert a session to NWB format.
     
@@ -44,6 +45,8 @@ def session_to_nwb(
         Path to the LFP file
     save_path : Path
         Path to save the NWB file
+    stub_test : bool, optional
+        Whether to stub data for testing, by default False
     """
     save_path.mkdir(parents=True, exist_ok=True)
 
@@ -111,7 +114,7 @@ def session_to_nwb(
         }
     }
     nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, timestamp_file_paths=timestamps_file_paths, metadata=metadata)
-    nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=xml_data)
+    nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=xml_data, stub_test=stub_test)
 
     behavior_module = nwbfile.create_processing_module(name="behavior", description="behavior module")
 
@@ -121,6 +124,7 @@ def session_to_nwb(
 
 def main():
     """Define paths and convert example sessions to NWB."""
+    stub_test = True
     dataset_path = Path('/Volumes/T7/CatalystNeuro/Dudchenko')
     output_folder_path = Path('/Volumes/T7/CatalystNeuro/Spyglass/raw')
     if output_folder_path.exists():
@@ -157,7 +161,8 @@ def main():
         video_file_paths=video_file_paths,
         timestamps_file_paths=timestamps_file_paths,
         lfp_file_path=lfp_file_path,
-        save_path=save_path
+        save_path=save_path,
+        stub_test=stub_test,
     )
 
 

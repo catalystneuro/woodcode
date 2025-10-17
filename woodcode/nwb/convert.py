@@ -434,7 +434,7 @@ def add_epochs(nwbfile, epochs, metadata):
 
 
 
-def add_lfp(nwbfile, lfp_path, xml_data):
+def add_lfp(nwbfile, lfp_path, xml_data, stub_test=False):
 
     print('Adding LFP to the NWB file...')
 
@@ -450,6 +450,8 @@ def add_lfp(nwbfile, lfp_path, xml_data):
     lfp_data = nap.load_eeg(filepath=lfp_path, channel=None, n_channels=xml_data['n_channels'], frequency=float(xml_data['eeg_sampling_rate']), precision='int16',
                             bytes_size=2)
     lfp_data = lfp_data[:, chan_order]  # get only probe channels
+    if stub_test:
+        lfp_data = lfp_data[:100, :]
 
     # create ElectricalSeries
     lfp_elec_series = ElectricalSeries(
