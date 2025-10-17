@@ -15,6 +15,7 @@ def session_to_nwb(
     sleep_path: Path,
     video_file_paths: list[Path],
     timestamps_file_paths: list[Path],
+    lfp_file_path: Path,
     save_path: Path
 ):
     """Convert a session to NWB format.
@@ -35,6 +36,12 @@ def session_to_nwb(
         Path to the Matlab analysis directory
     sleep_path : Path
         Path to the sleep directory
+    video_file_paths : list[Path]
+        List of paths to video files
+    timestamps_file_paths : list[Path]
+        List of paths to timestamp CSV files
+    lfp_file_path : Path
+        Path to the LFP file
     save_path : Path
         Path to save the NWB file
     """
@@ -104,6 +111,7 @@ def session_to_nwb(
         }
     }
     nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, timestamp_file_paths=timestamps_file_paths, metadata=metadata)
+    nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=xml_data)
 
     behavior_module = nwbfile.create_processing_module(name="behavior", description="behavior module")
 
@@ -135,6 +143,7 @@ def main():
         dataset_path / folder_name / "Raw" / "2025-06-18_15-23-44" / "Record Node 101" / "experiment1" / "recording2" / "BonsaiTracking2025-06-18T15_36_51.csv",
         dataset_path / folder_name / "Raw" / "2025-06-18_15-23-44" / "Record Node 101" / "experiment1" / "recording3" / "BonsaiTracking2025-06-18T17_10_02.csv",
     ]
+    lfp_file_path = dataset_path / folder_name / "Processed" / (folder_name + '.lfp')
     save_path = output_folder_path
 
     session_to_nwb(
@@ -147,6 +156,7 @@ def main():
         sleep_path=sleep_path,
         video_file_paths=video_file_paths,
         timestamps_file_paths=timestamps_file_paths,
+        lfp_file_path=lfp_file_path,
         save_path=save_path
     )
 
