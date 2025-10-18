@@ -179,6 +179,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
 
     # Build Shank objects with ShanksElectrode objects, organized by probe
     probe_id_to_shanks = {}  # Maps probe_id -> list of Shank objects
+    electrode_counter = 0  # Global electrode counter across all shanks and probes
     for probe_id, shank_id, probe_location, probe_step in shank_assignments:
         num_electrodes = shank_id_to_num_electrodes[shank_id]
         # Initialize probe entry if needed
@@ -191,12 +192,13 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
             elec_depth = probe_step * (num_electrodes - ielec - 1)
 
             shanks_electrode = ShanksElectrode(
-                name=str(ielec),
+                name=str(electrode_counter),
                 rel_x=0.0,
                 rel_y=float(elec_depth),
                 rel_z=0.0,
             )
             shanks_electrodes.append(shanks_electrode)
+            electrode_counter += 1
         
         # Create Shank object and add to probe
         shank = Shank(
@@ -256,7 +258,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
                 group=electrode_group,
                 location=electrode_group.location,
                 probe_shank=shank_id,
-                probe_electrode=ielec,
+                probe_electrode=electrode_counter,
                 bad_channel=is_bad_channel,
                 ref_elect_id=-1,  # TODO: Replace placeholder - actual reference electrode ID needed
             )

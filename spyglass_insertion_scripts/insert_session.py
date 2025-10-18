@@ -17,6 +17,7 @@ dj.config.load(dj_local_conf_path)  # load config for database connection info
 import spyglass.common as sgc  # this import connects to the database
 import spyglass.data_import as sgi
 from spyglass.utils.nwb_helper_fn import get_nwb_copy_filename
+import spyglass.lfp as sglfp
 
 
 def insert_session(nwbfile_path: Path, rollback_on_fail: bool = True, raise_err: bool = False):
@@ -78,6 +79,10 @@ def print_tables(nwbfile_path: Path):
         print(sgc.Probe.Electrode & {"probe_id": "Cambridge Neurotech H7 probe"}, file=f)
         print("=== Raw ===", file=f)
         print(sgc.Raw & {"nwb_file_name": nwb_copy_file_name}, file=f)
+
+        # LFP tables
+        print("=== ImportedLFP ===", file=f)
+        print(sglfp.ImportedLFP & {"nwb_file_name": nwb_copy_file_name}, file=f)
 
 
 def main():
