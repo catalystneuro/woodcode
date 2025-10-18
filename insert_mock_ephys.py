@@ -17,7 +17,6 @@ dj.config.load(dj_local_conf_path)  # load config for database connection info
 import spyglass.common as sgc  # this import connects to the database
 import spyglass.data_import as sgi
 from spyglass.utils.nwb_helper_fn import get_nwb_copy_filename
-import spyglass.lfp as sglfp
 
 
 def insert_session(nwbfile_path: Path, rollback_on_fail: bool = True, raise_err: bool = False):
@@ -65,33 +64,26 @@ def print_tables(nwbfile_path: Path):
         print(sgc.CameraDevice(), file=f)
 
         # Electrode/Probe tables
-        print("=== Data Acquisition Device ===", file=f)
-        print(sgc.DataAcquisitionDevice(), file=f)
         print("=== Electrode ===", file=f)
         print(sgc.Electrode & {"nwb_file_name": nwb_copy_file_name}, file=f)
         print("=== Electrode Group ===", file=f)
         print(sgc.ElectrodeGroup & {"nwb_file_name": nwb_copy_file_name}, file=f)
         print("=== Probe ===", file=f)
-        print(sgc.Probe & {"probe_id": "Cambridge Neurotech H7 probe"}, file=f)
+        print(sgc.Probe & {"probe_id": "my_probe_type"}, file=f)
         print("=== Probe Shank ===", file=f)
-        print(sgc.Probe.Shank & {"probe_id": "Cambridge Neurotech H7 probe"}, file=f)
+        print(sgc.Probe.Shank & {"probe_id": "my_probe_type"}, file=f)
         print("=== Probe Electrode ===", file=f)
-        print(sgc.Probe.Electrode & {"probe_id": "Cambridge Neurotech H7 probe"}, file=f)
+        print(sgc.Probe.Electrode & {"probe_id": "my_probe_type"}, file=f)
         print("=== Raw ===", file=f)
         print(sgc.Raw & {"nwb_file_name": nwb_copy_file_name}, file=f)
 
-        # LFP tables
-        print("=== ImportedLFP ===", file=f)
-        print(sglfp.ImportedLFP & {"nwb_file_name": nwb_copy_file_name}, file=f)
-
 
 def main():
-    nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H7115-250618.nwb")
+    nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/mock_ephys.nwb")
     nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
 
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    (sgc.ProbeType & {"probe_type": "Cambridge Neurotech H7 probe"}).delete()
-    (sgc.DataAcquisitionDevice & {"name": "data_acquisition_device"}).delete()
+    (sgc.ProbeType & {"probe_type": "my_probe_type"}).delete()
     sgc.Task.delete()
 
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
