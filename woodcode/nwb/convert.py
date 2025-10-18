@@ -224,8 +224,11 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
         )
         nwbfile.add_device(probe)
 
-        group_name = f"probe{probe_id}"
-        probe_step = probe_metadata["step"]
+    # Add NwbElectrodeGroup objects for each shank
+    for probe_id, shank_id, probe_location, probe_step in shank_assignments:
+        probe_name = f"Probe {probe_id}"
+        probe = nwbfile.devices[probe_name]
+        group_name = f"probe{probe_id}_shank{shank_id}"
         probe_location = probe_metadata["location"]
         electrode_group = NwbElectrodeGroup(
             name=group_name,
@@ -240,13 +243,14 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
         )
         nwbfile.add_electrode_group(electrode_group)
 
-    # Add electrode groups and electrodes using NwbElectrodeGroup (Spyglass-compatible)
+    # Add Electrodes to the NWBFile
     electrode_counter = 0
     for (probe_id, shank_id, probe_location, probe_step), (shank_idx, electrodes) in zip(
         shank_assignments, enumerate(xmldata["spike_groups"])
     ):
+        group_name = f"probe{probe_id}_shank{shank_id}"
+        electrode_group = nwbfile.electrode_groups[group_name]
         num_electrodes = shank_id_to_num_electrodes[shank_id]
-        # Add electrodes to the NWB electrode table
         for ielec in range(num_electrodes):
             elec_depth = probe_step * (num_electrodes - ielec - 1)
             is_bad_channel = electrode_counter not in good_channels
