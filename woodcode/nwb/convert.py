@@ -669,16 +669,16 @@ def add_video(
 
     return nwbfile
 
-import xml.etree.ElementTree as ET
 from spikeinterface.extractors import OpenEphysBinaryRecordingExtractor
-from neuroconv.tools.spikeinterface.spikeinterface import _recording_traces_to_hdmf_iterator, _stub_recording
+from neuroconv.tools.spikeinterface.spikeinterface import _stub_recording
 from neuroconv.utils import calculate_regular_series_rate
 import pynwb
 from .multi_segment_recording_data_chunk_iterator import MultiSegmentRecordingDataChunkIterator
-def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, epochs: pd.DataFrame, stub_test: bool = False) -> NWBFile:
+def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, epochs: pd.DataFrame, xml_data: dict, stub_test: bool = False) -> NWBFile:
     print("Adding raw ephys to NWB file...")
 
     segment_starting_times = epochs.Start.values
+    chan_order = np.concatenate(xml_data['spike_groups'])
 
     stream_name = "Record Node 101#Acquisition_Board-100.Rhythm Data"
     recording = OpenEphysBinaryRecordingExtractor(folder_path=folder_path, stream_name=stream_name)
@@ -730,6 +730,7 @@ def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, epochs: pd.DataFrame, stu
     ephys_data_iterator = MultiSegmentRecordingDataChunkIterator(
         recording=recording,
         segment_indices=segment_indices,
+        chan_order=chan_order,
     )
     eseries_kwargs.update(data=ephys_data_iterator)
 

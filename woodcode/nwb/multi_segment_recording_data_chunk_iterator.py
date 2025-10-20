@@ -18,6 +18,7 @@ class MultiSegmentRecordingDataChunkIterator(GenericDataChunkIterator):
         self,
         recording: BaseRecording,
         segment_indices: list[int],
+        chan_order: np.ndarray,
         buffer_gb: float | None = None,
         buffer_shape: tuple | None = None,
         chunk_mb: float | None = None,
@@ -26,6 +27,7 @@ class MultiSegmentRecordingDataChunkIterator(GenericDataChunkIterator):
         progress_bar_class: tqdm | None = None,
         progress_bar_options: dict | None = None,
     ):
+        self._chan_order = chan_order
         self._dcis, self._start_frames, self._end_frames = [], [], []
         num_frames = 0
         for segment_index in segment_indices:
@@ -56,42 +58,53 @@ class MultiSegmentRecordingDataChunkIterator(GenericDataChunkIterator):
         iterators_range = np.searchsorted(self._end_frames, (start, stop - 1), side="right")
         iterators_spanned = list(range(iterators_range[0], min(iterators_range[-1] + 1, len(self._dcis))))
 
+        # Store the original channel selection
+        original_channel_selection = selection[1]
+        
         # If only one iterator is spanned, we can just return the data from that iterator
         if len(iterators_spanned) == 1:
             relative_start = start - self._start_frames[iterators_spanned[0]]
             relative_stop = stop - self._start_frames[iterators_spanned[0]]
-            selection = (slice(relative_start, relative_stop), selection[1])
-            return self._dcis[iterators_spanned[0]]._get_data(selection=selection)
+            # Fetch all channels
+            selection_all_channels = (slice(relative_start, relative_stop), slice(None, None))
+            data = self._dcis[iterators_spanned[0]]._get_data(selection=selection_all_channels)
+            # Apply channel remapping
+            data = data[:, self._chan_order]
+            # Apply original channel selection
+            data = data[:, original_channel_selection]
+            return data
 
         # If multiple iterators are spanned, we need to concatenate the data from each iterator
-        channel_start = selection[1].start
-        channel_start = channel_start if channel_start is not None else 0
-        channel_stop = selection[1].stop
-        channel_stop = channel_stop if channel_stop is not None else self._dcis[0]._get_maxshape()[1]
-        data = np.empty(shape=(stop - start, channel_stop - channel_start), dtype=self._get_dtype())
+        num_channels = self._dcis[0]._get_maxshape()[1]
+        data = np.empty(shape=(stop - start, num_channels), dtype=self._get_dtype())
         current_frame = 0
 
         # Left endpoint (first iterator)
         relative_start = start - self._start_frames[iterators_spanned[0]]
         num_frames = self._end_frames[iterators_spanned[0]] - start
-        selection = (slice(relative_start, None), selection[1])
+        selection_all_channels = (slice(relative_start, None), slice(None, None))
         frame_slice = slice(current_frame, current_frame + num_frames)
-        data[frame_slice, :] = self._dcis[iterators_spanned[0]]._get_data(selection=selection)
+        data[frame_slice, :] = self._dcis[iterators_spanned[0]]._get_data(selection=selection_all_channels)
         current_frame += num_frames
 
         # Inner iterators
-        selection = (slice(None, None), selection[1])
+        selection_all_channels = (slice(None, None), slice(None, None))
         for i in iterators_spanned[1:-1]:
             num_frames = self._end_frames[i] - self._start_frames[i]
             frame_slice = slice(current_frame, current_frame + num_frames)
-            data[frame_slice, :] = self._dcis[i]._get_data(selection=selection)
+            data[frame_slice, :] = self._dcis[i]._get_data(selection=selection_all_channels)
             current_frame += num_frames
 
         # Right endpoint (last iterator)
         relative_stop = num_frames = stop - self._start_frames[iterators_spanned[-1]]
-        selection = (slice(None, relative_stop), selection[1])
+        selection_all_channels = (slice(None, relative_stop), slice(None, None))
         frame_slice = slice(current_frame, current_frame + num_frames)
-        data[frame_slice, :] = self._dcis[iterators_spanned[-1]]._get_data(selection=selection)
+        data[frame_slice, :] = self._dcis[iterators_spanned[-1]]._get_data(selection=selection_all_channels)
+
+        # Apply channel remapping
+        data = data[:, self._chan_order]
+        # Apply original channel selection
+        data = data[:, original_channel_selection]
 
         return data
 

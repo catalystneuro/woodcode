@@ -45,9 +45,9 @@ H7115-250618_. 3         wake_cue_rot   None           03             cylindrica
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
-H7115-250618_. 1         0              Video Camera   d1eb532f-f85b-
-H7115-250618_. 2         0              Video Camera   6b29e8f8-7d4f-
-H7115-250618_. 3         0              Video Camera   c3a1f3d9-b1a8-
+H7115-250618_. 1         0              Video Camera   23ad3ff8-07a8-
+H7115-250618_. 2         0              Video Camera   5aad4615-7b55-
+H7115-250618_. 3         0              Video Camera   03f490e4-be0b-
  (Total: 3)
 
 === Camera Device ===
@@ -122,12 +122,12 @@ Cambridge Neur 1              11             1.0            0.0       500.0     
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H7115-250618_. raw data valid ecfcf16b-371e- 30000.0        no comments    Acquisition tr
+H7115-250618_. raw data valid 143ff94b-92e7- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H7115-250618_. imported_lfp_0 imported lfp 0 1250.0         e089d25f-bfb7-
+H7115-250618_. imported_lfp_0 imported lfp 0 1250.0         3e518ba1-6dac-
  (Total: 1)
 
