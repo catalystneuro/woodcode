@@ -16,6 +16,7 @@ def session_to_nwb(
     video_file_paths: list[Path],
     timestamps_file_paths: list[Path],
     lfp_file_path: Path,
+    raw_ephys_folder_path: Path,
     save_path: Path,
     stub_test: bool = False,
 ):
@@ -43,6 +44,8 @@ def session_to_nwb(
         List of paths to timestamp CSV files
     lfp_file_path : Path
         Path to the LFP file
+    raw_ephys_folder_path : Path
+        Path to the raw ephys OpenEphys record node folder
     save_path : Path
         Path to save the NWB file
     stub_test : bool, optional
@@ -115,6 +118,7 @@ def session_to_nwb(
     }
     nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, timestamp_file_paths=timestamps_file_paths, metadata=metadata)
     nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=xml_data, stub_test=stub_test)
+    nwbfile = nwb.convert.add_raw_ephys(nwbfile=nwbfile, folder_path=raw_ephys_folder_path, stub_test=stub_test)
 
     behavior_module = nwbfile.create_processing_module(name="behavior", description="behavior module")
 
@@ -148,6 +152,7 @@ def main():
         dataset_path / folder_name / "Raw" / "2025-06-18_15-23-44" / "Record Node 101" / "experiment1" / "recording3" / "BonsaiTracking2025-06-18T17_10_02.csv",
     ]
     lfp_file_path = dataset_path / folder_name / "Processed" / (folder_name + '.lfp')
+    raw_ephys_folder_path = dataset_path / folder_name / "Raw" / "2025-06-18_15-23-44" / "Record Node 101"
     save_path = output_folder_path
 
     session_to_nwb(
@@ -161,6 +166,7 @@ def main():
         video_file_paths=video_file_paths,
         timestamps_file_paths=timestamps_file_paths,
         lfp_file_path=lfp_file_path,
+        raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
         stub_test=stub_test,
     )

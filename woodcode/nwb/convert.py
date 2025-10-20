@@ -268,14 +268,6 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
             )
             electrode_counter += 1
 
-    # Define table region RAW DAT FILE and LFP will refer to (all electrodes)
-    all_table_region = nwbfile.create_electrode_table_region(
-        region=list(range(len(nwbfile.electrodes))),
-        description='all electrodes',
-    )
-    from pynwb.testing.mock.ecephys import mock_ElectricalSeries
-    mock_ElectricalSeries(electrodes=all_table_region, nwbfile=nwbfile, data=np.ones((10, len(nwbfile.electrodes))))
-
     return nwbfile
 
 
@@ -676,3 +668,116 @@ def add_video(
         nwbfile.add_acquisition(image_series)
 
     return nwbfile
+
+from spikeinterface.extractors import OpenEphysBinaryRecordingExtractor
+from neuroconv.tools.spikeinterface.spikeinterface import _recording_traces_to_hdmf_iterator, _stub_recording
+from neuroconv.utils import calculate_regular_series_rate
+import pynwb
+def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, stub_test: bool = False) -> NWBFile:
+    print("Adding raw ephys to NWB file...")
+    segment_index = 0 # Using first segment for now... TODO: handle multiple segments
+
+    stream_name = "Record Node 101#Acquisition_Board-100.Rhythm Data"
+    recording = OpenEphysBinaryRecordingExtractor(folder_path=folder_path, stream_name=stream_name)
+    if stub_test:
+        recording = _stub_recording(recording)
+
+    eseries_kwargs = dict(name="ElectricalSeries", description="Acquisition traces for the ElectricalSeries.")
+
+    channel_ids = recording.get_channel_ids()
+    region = list(range(len(channel_ids)))
+    electrode_table_region = nwbfile.create_electrode_table_region(
+        region=region,
+        description="electrode_table_region",
+    )
+    eseries_kwargs.update(electrodes=electrode_table_region)
+
+    if recording.has_scaleable_traces():
+        # Spikeinterface gains and offsets are gains and offsets to micro volts.
+        # The units of the ElectricalSeries should be volts so we scale correspondingly.
+        micro_to_volts_conversion_factor = 1e-6
+        channel_gains_to_volts = recording.get_channel_gains() * micro_to_volts_conversion_factor
+        channel_offsets_to_volts = recording.get_channel_offsets() * micro_to_volts_conversion_factor
+
+        unique_gains = set(channel_gains_to_volts)
+        if len(unique_gains) == 1:
+            conversion_to_volts = channel_gains_to_volts[0]
+            eseries_kwargs.update(conversion=conversion_to_volts)
+        else:
+            eseries_kwargs.update(channel_conversion=channel_gains_to_volts)
+
+        unique_offset = set(channel_offsets_to_volts)
+        if len(unique_offset) > 1:
+            channel_ids = recording.get_channel_ids()
+            # This prints a user friendly error where the user is provided with a map from offset to channels
+            _report_variable_offset(recording=recording)
+
+        unique_offset = channel_offsets_to_volts[0]
+        eseries_kwargs.update(offset=unique_offset)
+    else:
+        warning_message = (
+            "The recording extractor does not have gains and offsets to convert to volts. "
+            "That means that correct units are not guaranteed.  \n"
+            "Set the correct gains and offsets to the recording extractor before writing to NWB."
+        )
+        warnings.warn(warning_message, UserWarning, stacklevel=2)
+
+    # Iterator
+    ephys_data_iterator = _recording_traces_to_hdmf_iterator(
+        recording=recording,
+        segment_index=0,
+        iterator_type="v2",
+        iterator_opts=None,
+    )
+    eseries_kwargs.update(data=ephys_data_iterator)
+
+    # By default we write the rate if the timestamps are regular
+    recording_has_timestamps = recording.has_time_vector(segment_index=segment_index)
+    if recording_has_timestamps:
+        timestamps = recording.get_times(segment_index=segment_index)
+        rate = calculate_regular_series_rate(series=timestamps)  # Returns None if it is not regular
+        recording_t_start = timestamps[0]
+    else:
+        rate = recording.get_sampling_frequency()
+        recording_t_start = recording._recording_segments[segment_index].t_start or 0
+
+    if rate:
+        starting_time = float(recording_t_start)
+        # Note that we call the sampling frequency again because the estimated rate might be different from the
+        # sampling frequency of the recording extractor by some epsilon.
+        eseries_kwargs.update(starting_time=starting_time, rate=recording.get_sampling_frequency())
+    else:
+        eseries_kwargs.update(timestamps=timestamps)
+
+    # Create ElectricalSeries object and add it to nwbfile
+    es = pynwb.ecephys.ElectricalSeries(**eseries_kwargs)
+    nwbfile.add_acquisition(es)
+
+    return nwbfile
+
+
+def _report_variable_offset(recording) -> None:
+    """
+    Helper function to report variable offsets per channel IDs.
+    Groups the different available offsets per channel IDs and raises a ValueError.
+    """
+    channel_offsets = recording.get_channel_offsets()
+    channel_ids = recording.get_channel_ids()
+
+    # Group the different offsets per channel IDs
+    offset_to_channel_ids = {}
+    for offset, channel_id in zip(channel_offsets, channel_ids):
+        offset = offset.item() if isinstance(offset, np.generic) else offset
+        channel_id = channel_id.item() if isinstance(channel_id, np.generic) else channel_id
+        if offset not in offset_to_channel_ids:
+            offset_to_channel_ids[offset] = []
+        offset_to_channel_ids[offset].append(channel_id)
+
+    # Create a user-friendly message
+    message_lines = ["Recording extractors with heterogeneous offsets are not supported."]
+    message_lines.append("Multiple offsets were found per channel IDs:")
+    for offset, ids in offset_to_channel_ids.items():
+        message_lines.append(f"  Offset {offset}: Channel IDs {ids}")
+    message = "\n".join(message_lines)
+
+    raise ValueError(message)
