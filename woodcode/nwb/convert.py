@@ -669,13 +669,16 @@ def add_video(
 
     return nwbfile
 
+import xml.etree.ElementTree as ET
 from spikeinterface.extractors import OpenEphysBinaryRecordingExtractor
 from neuroconv.tools.spikeinterface.spikeinterface import _recording_traces_to_hdmf_iterator, _stub_recording
 from neuroconv.utils import calculate_regular_series_rate
 import pynwb
-def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, stub_test: bool = False) -> NWBFile:
+from .multi_segment_recording_data_chunk_iterator import MultiSegmentRecordingDataChunkIterator
+def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, epochs: pd.DataFrame, stub_test: bool = False) -> NWBFile:
     print("Adding raw ephys to NWB file...")
-    segment_index = 0 # Using first segment for now... TODO: handle multiple segments
+
+    segment_starting_times = epochs.Start.values
 
     stream_name = "Record Node 101#Acquisition_Board-100.Rhythm Data"
     recording = OpenEphysBinaryRecordingExtractor(folder_path=folder_path, stream_name=stream_name)
@@ -723,26 +726,24 @@ def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, stub_test: bool = False) 
         warnings.warn(warning_message, UserWarning, stacklevel=2)
 
     # Iterator
-    ephys_data_iterator = _recording_traces_to_hdmf_iterator(
+    segment_indices = list(range(recording.get_num_segments()))
+    ephys_data_iterator = MultiSegmentRecordingDataChunkIterator(
         recording=recording,
-        segment_index=0,
-        iterator_type="v2",
-        iterator_opts=None,
+        segment_indices=segment_indices,
     )
     eseries_kwargs.update(data=ephys_data_iterator)
 
-    # By default we write the rate if the timestamps are regular
-    recording_has_timestamps = recording.has_time_vector(segment_index=segment_index)
-    if recording_has_timestamps:
-        timestamps = recording.get_times(segment_index=segment_index)
-        rate = calculate_regular_series_rate(series=timestamps)  # Returns None if it is not regular
-        recording_t_start = timestamps[0]
-    else:
-        rate = recording.get_sampling_frequency()
-        recording_t_start = recording._recording_segments[segment_index].t_start or 0
+    timestamps = []
+    for i in segment_indices:
+        segment_timestamps = recording.get_times(segment_index=i)
+        segment_starting_time = segment_starting_times[i]
+        segment_timestamps = segment_timestamps + segment_starting_time
+        timestamps.append(segment_timestamps)
+    timestamps = np.concatenate(timestamps)
 
+    rate = calculate_regular_series_rate(series=timestamps)  # Returns None if it is not regular
     if rate:
-        starting_time = float(recording_t_start)
+        starting_time = float(timestamps[0])
         # Note that we call the sampling frequency again because the estimated rate might be different from the
         # sampling frequency of the recording extractor by some epsilon.
         eseries_kwargs.update(starting_time=starting_time, rate=recording.get_sampling_frequency())
