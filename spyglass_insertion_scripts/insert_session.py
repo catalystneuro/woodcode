@@ -31,10 +31,9 @@ from tqdm import tqdm
 def insert_sorting(nwbfile_path: Path):
     """Insert spike sorting data and unit annotations into SpyGlass database.
 
-    Creates a sorted spikes group containing all units and adds detailed unit
-    annotations including tetrode information, waveform statistics, and unit
-    identifiers. Annotations are categorized as either labels (categorical)
-    or quantifications (numerical) based on their data type.
+    Creates a sorted spikes group containing all units from the imported spike
+    sorting data and adds annotations for each unit. The annotations include
+    sampling rate and mean waveform data extracted from the NWB file.
 
     Parameters
     ----------
@@ -43,9 +42,10 @@ def insert_sorting(nwbfile_path: Path):
 
     Notes
     -----
-    The function creates the following annotations:
-    - Labels: None
-    - Quantifications: sampling_rate, waveform_mean
+    The function creates a group named "all_units" and adds the following
+    annotations for each unit:
+    - sampling_rate: The sampling rate for the unit
+    - waveform_mean: The mean waveform for the unit
     """
     io = NWBHDF5IO(nwbfile_path, "r")
     nwbfile = io.read()
