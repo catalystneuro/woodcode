@@ -15,7 +15,10 @@ def session_to_nwb(
     sleep_path: Path,
     video_file_paths: list[Path],
     timestamps_file_paths: list[Path],
-    save_path: Path
+    lfp_file_path: Path,
+    raw_ephys_folder_path: Path,
+    save_path: Path,
+    stub_test: bool = False,
 ):
     """Convert a session to NWB format.
     
@@ -35,8 +38,18 @@ def session_to_nwb(
         Path to the Matlab analysis directory
     sleep_path : Path
         Path to the sleep directory
+    video_file_paths : list[Path]
+        List of paths to video files
+    timestamps_file_paths : list[Path]
+        List of paths to timestamp CSV files
+    lfp_file_path : Path
+        Path to the LFP file
+    raw_ephys_folder_path : Path
+        Path to the raw ephys OpenEphys record node folder
     save_path : Path
         Path to save the NWB file
+    stub_test : bool, optional
+        Whether to stub data for testing, by default False
     """
     save_path.mkdir(parents=True, exist_ok=True)
 
@@ -56,7 +69,7 @@ def session_to_nwb(
 
     # CONSTRUCT NWB FILE
     nwbfile = nwb.convert.create_nwb_file(metadata, start_time)    
-    # nwbfile = nwb.convert.add_probes(nwbfile, metadata, xml_data, nrs_data)
+    nwbfile = nwb.convert.add_probes(nwbfile, metadata, xml_data, nrs_data)
     # nwbfile = nwb.convert.add_tracking(nwbfile, pos, hd)
     # nwbfile = nwb.convert.add_units(nwbfile, xml_data, spikes, waveforms, shank_id)  # get shank names from NWB file
     # nwbfile = nwb.convert.add_events(nwbfile, events)
@@ -104,6 +117,8 @@ def session_to_nwb(
         }
     }
     nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, timestamp_file_paths=timestamps_file_paths, metadata=metadata)
+    nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=xml_data, stub_test=stub_test)
+    nwbfile = nwb.convert.add_raw_ephys(nwbfile=nwbfile, folder_path=raw_ephys_folder_path, epochs=epochs, xml_data=xml_data, stub_test=stub_test)
 
     behavior_module = nwbfile.create_processing_module(name="behavior", description="behavior module")
 
@@ -113,6 +128,7 @@ def session_to_nwb(
 
 def main():
     """Define paths and convert example sessions to NWB."""
+    stub_test = True
     dataset_path = Path('/Volumes/T7/CatalystNeuro/Dudchenko')
     output_folder_path = Path('/Volumes/T7/CatalystNeuro/Spyglass/raw')
     if output_folder_path.exists():
@@ -135,6 +151,8 @@ def main():
         dataset_path / folder_name / "Raw" / "2025-06-18_15-23-44" / "Record Node 101" / "experiment1" / "recording2" / "BonsaiTracking2025-06-18T15_36_51.csv",
         dataset_path / folder_name / "Raw" / "2025-06-18_15-23-44" / "Record Node 101" / "experiment1" / "recording3" / "BonsaiTracking2025-06-18T17_10_02.csv",
     ]
+    lfp_file_path = dataset_path / folder_name / "Processed" / (folder_name + '.lfp')
+    raw_ephys_folder_path = dataset_path / folder_name / "Raw" / "2025-06-18_15-23-44" / "Record Node 101"
     save_path = output_folder_path
 
     session_to_nwb(
@@ -147,7 +165,10 @@ def main():
         sleep_path=sleep_path,
         video_file_paths=video_file_paths,
         timestamps_file_paths=timestamps_file_paths,
-        save_path=save_path
+        lfp_file_path=lfp_file_path,
+        raw_ephys_folder_path=raw_ephys_folder_path,
+        save_path=save_path,
+        stub_test=stub_test,
     )
 
 
