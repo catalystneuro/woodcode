@@ -59,10 +59,6 @@ def insert_sorting(nwbfile_path: Path):
         nwb_file_name=nwb_copy_file_name,
         keys=[{"spikesorting_merge_id": merge_id}],
     )
-    annotation_to_type = {
-        "sampling_rate": "quantification",
-        # "waveform_mean": "quantification",
-    }
     group_key = {
         "nwb_file_name": nwb_copy_file_name,
         "sorted_spikes_group_name": group_name,
@@ -72,14 +68,13 @@ def insert_sorting(nwbfile_path: Path):
 
     for unit_key in tqdm(unit_ids, desc="Inserting Unit Annotations"):
         unit_id = unit_key["unit_id"]
-        for annotation, annotation_type in annotation_to_type.items():
-            annotation_value = nwbfile.units.get((unit_id, annotation))
-            annotation_key = {
-                **unit_key,
-                "annotation": annotation,
-                annotation_type: annotation_value,
-            }
-            UnitAnnotation().add_annotation(annotation_key, skip_duplicates=True)
+        sampling_rate = nwbfile.units.get((unit_id, "sampling_rate"))
+        waveform_mean = nwbfile.units.get((unit_id, "waveform_mean"))
+        annotations = {
+            "sampling_rate": sampling_rate,
+            "waveform_mean": waveform_mean,
+        }
+        sgs.ImportedSpikeSorting().add_annotation(key={"nwb_file_name": nwb_copy_file_name}, id=unit_id, annotations=annotations)
     io.close()
 
 def insert_session(nwbfile_path: Path, rollback_on_fail: bool = True, raise_err: bool = False):
@@ -151,8 +146,10 @@ def print_tables(nwbfile_path: Path):
         print("=== ImportedSpikeSorting ===", file=f)
         print(sgs.ImportedSpikeSorting & {"nwb_file_name": nwb_copy_file_name}, file=f)
         merge_id = str((SpikeSortingOutput.ImportedSpikeSorting & {"nwb_file_name": nwb_copy_file_name}).fetch1("merge_id"))
-        print("=== Unit Annotation ===", file=f)
-        print(UnitAnnotation().Annotation & {"spike_sorting_merge_id": merge_id}, file=f)
+        print("=== Annotation ===", file=f)
+        print(sgs.ImportedSpikeSorting.Annotations & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== Example Annotation (Unit 0) ===", file=f)
+        print((sgs.ImportedSpikeSorting.Annotations & {"nwb_file_name": nwb_copy_file_name, "id": 0}).fetch1("annotations"), file=f)
 
 
 def main():

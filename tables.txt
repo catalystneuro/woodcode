@@ -137,21 +137,35 @@ H7115-250618_. imported_lfp_0 imported lfp 0 1250.0         15ec7688-2101-
 H7115-250618_. 3e23f72c-e980-
  (Total: 1)
 
-=== Unit Annotation ===
-*spikesorting_ *unit_id    *annotation    label     quantification
-+------------+ +---------+ +------------+ +-------+ +------------+
-14e5bcc6-9332- 0           sampling_rate  None      30000.0       
-14e5bcc6-9332- 1           sampling_rate  None      30000.0       
-14e5bcc6-9332- 2           sampling_rate  None      30000.0       
-14e5bcc6-9332- 3           sampling_rate  None      30000.0       
-14e5bcc6-9332- 4           sampling_rate  None      30000.0       
-14e5bcc6-9332- 5           sampling_rate  None      30000.0       
-14e5bcc6-9332- 6           sampling_rate  None      30000.0       
-14e5bcc6-9332- 7           sampling_rate  None      30000.0       
-14e5bcc6-9332- 8           sampling_rate  None      30000.0       
-14e5bcc6-9332- 9           sampling_rate  None      30000.0       
-14e5bcc6-9332- 10          sampling_rate  None      30000.0       
-14e5bcc6-9332- 11          sampling_rate  None      30000.0       
+=== Annotation ===
+*nwb_file_name *id    label      annotation
++------------+ +----+ +--------+ +--------+
+H7115-250618_. 0      =BLOB=     =BLOB=    
+H7115-250618_. 1      =BLOB=     =BLOB=    
+H7115-250618_. 2      =BLOB=     =BLOB=    
+H7115-250618_. 3      =BLOB=     =BLOB=    
+H7115-250618_. 4      =BLOB=     =BLOB=    
+H7115-250618_. 5      =BLOB=     =BLOB=    
+H7115-250618_. 6      =BLOB=     =BLOB=    
+H7115-250618_. 7      =BLOB=     =BLOB=    
+H7115-250618_. 8      =BLOB=     =BLOB=    
+H7115-250618_. 9      =BLOB=     =BLOB=    
+H7115-250618_. 10     =BLOB=     =BLOB=    
+H7115-250618_. 11     =BLOB=     =BLOB=    
    ...
  (Total: 160)
 
+=== Example Annotation (Unit 0) ===
+{'sampling_rate': 30000, 'waveform_mean': array([[ 6.34307766,  5.13430929,  3.45913649, ...,  2.4161489 ,
+        -1.20863974, -0.35912797],
+       [ 9.08244419,  3.15048695,  4.63822079, ...,  0.37520635,
+        -3.95358086, -4.77135754],
+       [ 8.37880993,  5.135674  ,  8.17830753, ..., -2.14873528,
+        -5.50952148, -5.83360195],
+       ...,
+       [ 8.12689114,  6.13766241,  5.8638649 , ...,  2.635535  ,
+        -2.56024933,  4.99939346],
+       [ 7.82126427,  9.05883598,  5.52494812, ...,  2.19659376,
+        -4.69618893,  1.08915639],
+       [ 6.40062189,  8.41902447,  4.88502502, ...,  1.60865331,
+        -6.21712542, -3.83007574]])}
