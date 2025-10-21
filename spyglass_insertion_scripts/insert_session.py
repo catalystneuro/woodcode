@@ -19,6 +19,68 @@ import spyglass.data_import as sgi
 from spyglass.utils.nwb_helper_fn import get_nwb_copy_filename
 import spyglass.lfp as sglfp
 
+# Spike Sorting Imports
+from spyglass.spikesorting.spikesorting_merge import SpikeSortingOutput
+import spyglass.spikesorting.v1 as sgs
+from spyglass.spikesorting.analysis.v1.group import SortedSpikesGroup
+from spyglass.spikesorting.analysis.v1.group import UnitSelectionParams
+from spyglass.spikesorting.analysis.v1.unit_annotation import UnitAnnotation
+from tqdm import tqdm
+
+
+def insert_sorting(nwbfile_path: Path):
+    """Insert spike sorting data and unit annotations into SpyGlass database.
+
+    Creates a sorted spikes group containing all units and adds detailed unit
+    annotations including tetrode information, waveform statistics, and unit
+    identifiers. Annotations are categorized as either labels (categorical)
+    or quantifications (numerical) based on their data type.
+
+    Parameters
+    ----------
+    nwbfile_path : Path
+        Path to the NWB file containing spike sorting results and unit metadata.
+
+    Notes
+    -----
+    The function creates the following annotations:
+    - Labels: None
+    - Quantifications: sampling_rate, waveform_mean
+    """
+    io = NWBHDF5IO(nwbfile_path, "r")
+    nwbfile = io.read()
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    merge_id = str((SpikeSortingOutput.ImportedSpikeSorting & {"nwb_file_name": nwb_copy_file_name}).fetch1("merge_id"))
+
+    UnitSelectionParams().insert_default()
+    group_name = "all_units"
+    SortedSpikesGroup().create_group(
+        group_name=group_name,
+        nwb_file_name=nwb_copy_file_name,
+        keys=[{"spikesorting_merge_id": merge_id}],
+    )
+    annotation_to_type = {
+        "sampling_rate": "quantification",
+        # "waveform_mean": "quantification",
+    }
+    group_key = {
+        "nwb_file_name": nwb_copy_file_name,
+        "sorted_spikes_group_name": group_name,
+    }
+    group_key = (SortedSpikesGroup & group_key).fetch1("KEY")
+    _, unit_ids = SortedSpikesGroup().fetch_spike_data(group_key, return_unit_ids=True)
+
+    for unit_key in tqdm(unit_ids, desc="Inserting Unit Annotations"):
+        unit_id = unit_key["unit_id"]
+        for annotation, annotation_type in annotation_to_type.items():
+            annotation_value = nwbfile.units.get((unit_id, annotation))
+            annotation_key = {
+                **unit_key,
+                "annotation": annotation,
+                annotation_type: annotation_value,
+            }
+            UnitAnnotation().add_annotation(annotation_key, skip_duplicates=True)
+    io.close()
 
 def insert_session(nwbfile_path: Path, rollback_on_fail: bool = True, raise_err: bool = False):
     """Insert complete session data from NWB file into SpyGlass database.
@@ -37,6 +99,7 @@ def insert_session(nwbfile_path: Path, rollback_on_fail: bool = True, raise_err:
         Whether to raise exceptions on insertion errors, by default False.
     """
     sgi.insert_sessions(str(nwbfile_path), rollback_on_fail=rollback_on_fail, raise_err=raise_err)
+    insert_sorting(nwbfile_path)
 
 
 def print_tables(nwbfile_path: Path):
@@ -83,6 +146,13 @@ def print_tables(nwbfile_path: Path):
         # LFP tables
         print("=== ImportedLFP ===", file=f)
         print(sglfp.ImportedLFP & {"nwb_file_name": nwb_copy_file_name}, file=f)
+
+        # Spike Sorting tables
+        print("=== ImportedSpikeSorting ===", file=f)
+        print(sgs.ImportedSpikeSorting & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        merge_id = str((SpikeSortingOutput.ImportedSpikeSorting & {"nwb_file_name": nwb_copy_file_name}).fetch1("merge_id"))
+        print("=== Unit Annotation ===", file=f)
+        print(UnitAnnotation().Annotation & {"spike_sorting_merge_id": merge_id}, file=f)
 
 
 def main():
