@@ -70,7 +70,7 @@ def session_to_nwb(
     # CONSTRUCT NWB FILE
     nwbfile = nwb.convert.create_nwb_file(metadata, start_time)    
     nwbfile = nwb.convert.add_probes(nwbfile, metadata, xml_data, nrs_data)
-    # nwbfile = nwb.convert.add_tracking(nwbfile, pos, hd)
+    nwbfile = nwb.convert.add_tracking(nwbfile, pos, hd)
     # nwbfile = nwb.convert.add_units(nwbfile, xml_data, spikes, waveforms, shank_id)  # get shank names from NWB file
     # nwbfile = nwb.convert.add_events(nwbfile, events)
     metadata["task"] = {
@@ -119,8 +119,6 @@ def session_to_nwb(
     nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, timestamp_file_paths=timestamps_file_paths, metadata=metadata)
     nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=xml_data, stub_test=stub_test)
     nwbfile = nwb.convert.add_raw_ephys(nwbfile=nwbfile, folder_path=raw_ephys_folder_path, epochs=epochs, xml_data=xml_data, stub_test=stub_test)
-
-    behavior_module = nwbfile.create_processing_module(name="behavior", description="behavior module")
 
     # save NWB file
     nwb.convert.save_nwb_file(nwbfile, save_path, folder_name)
