@@ -84,6 +84,16 @@ def print_tables(nwbfile_path: Path):
         print("=== ImportedLFP ===", file=f)
         print(sglfp.ImportedLFP & {"nwb_file_name": nwb_copy_file_name}, file=f)
 
+        # Tracking tables
+        print("=== PositionSource ===", file=f)
+        print(sgc.PositionSource & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== PositionSource.SpatialSeries ===", file=f)
+        print(sgc.PositionSource.SpatialSeries & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== RawPosition.PosObject ===", file=f)
+        print(sgc.RawPosition.PosObject & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== RawPosition ===", file=f)
+        print((sgc.RawPosition & {"nwb_file_name": nwb_copy_file_name}).fetch1_dataframe(), file=f)
+
 
 def main():
     nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H7115-250618.nwb")

@@ -132,3 +132,39 @@ H7115-250618_. raw data valid 4960ee17-1971- 30000.0        no comments    Acqui
 H7115-250618_. imported_lfp_0 imported lfp 0 1250.0         23e49f47-9305-
  (Total: 1)
 
+=== PositionSource ===
+*nwb_file_name *interval_list source       import_file_na
++------------+ +------------+ +----------+ +------------+
+H7115-250618_. pos 0 valid ti imported                   
+ (Total: 1)
+
+=== PositionSource.SpatialSeries ===
+*nwb_file_name *interval_list *id    name          
++------------+ +------------+ +----+ +------------+
+H7115-250618_. pos 0 valid ti 0      head-direction
+H7115-250618_. pos 0 valid ti 1      position      
+ (Total: 2)
+
+=== RawPosition.PosObject ===
+*nwb_file_name *interval_list *id    raw_position_o
++------------+ +------------+ +----+ +------------+
+H7115-250618_. pos 0 valid ti 0      0fde528a-2140-
+H7115-250618_. pos 0 valid ti 1      83796f9a-84ba-
+ (Total: 2)
+
+=== RawPosition ===
+              Horizontal angle of the head (yaw)1          x          y
+time                                                                   
+5.855467                                 0.734463  77.552873  37.483203
+5.880467                                 0.733860  77.559722  37.479753
+5.905467                                 0.731943  77.558791  37.476127
+5.930467                                 0.739363  77.519323  37.510633
+5.955467                                 0.734298  77.505247  37.546348
+...                                           ...        ...        ...
+10317.299800                            -2.121394  58.622316  23.538703
+10317.324800                            -2.145793  58.751171  23.618785
+10317.349800                            -2.142109  58.532297  23.520063
+10317.374800                            -2.157710  58.542241  23.588006
+10317.399800                            -2.075986  58.389690  23.438468
+
+[411860 rows x 3 columns]
