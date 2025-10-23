@@ -50,8 +50,6 @@ def insert_sleep(nwbfile_path: Path):
         start_times = stage_intervals["start_time"].to_numpy()
         stop_times = stage_intervals["stop_time"].to_numpy()
         valid_times = np.column_stack((start_times, stop_times))
-        print(f"{valid_times.shape = }")
-
         key = {"nwb_file_name": nwb_copy_filename, "interval_list_name": f"sleep_{tag}", "valid_times": valid_times}
         sgc.IntervalList().insert1(key)
 
@@ -66,13 +64,15 @@ def print_tables(nwbfile_path: Path):
         print("=== Subject ===", file=f)
         print(sgc.Subject(), file=f)
 
-        # Task/Epoch tables
+        # Task/Epoch/Sleep tables
         print("=== IntervalList ===", file=f)
         print(sgc.IntervalList & {"nwb_file_name": nwb_copy_file_name}, file=f)
         print("=== Task ===", file=f)
         print(sgc.Task(), file=f)
         print("=== Task Epoch ===", file=f)
         print(sgc.TaskEpoch & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== Sleep NREM Valid Times ===", file=f)
+        print((sgc.IntervalList & {"nwb_file_name": nwb_copy_file_name, "interval_list_name": "sleep_nrem"}).fetch1("valid_times"), file=f)
 
         # Video and Camera tables
         print("=== Video File ===", file=f)
