@@ -24,7 +24,10 @@ H7115-250618_. 02             =BLOB=
 H7115-250618_. 03             =BLOB=                   
 H7115-250618_. imported lfp 0 =BLOB=     imported_lfp  
 H7115-250618_. raw data valid =BLOB=                   
- (Total: 5)
+H7115-250618_. sleep_nrem     =BLOB=                   
+H7115-250618_. sleep_rem      =BLOB=                   
+H7115-250618_. sleep_wake     =BLOB=                   
+ (Total: 8)
 
 === Task ===
 *task_name     task_descripti task_type     task_subtype  
