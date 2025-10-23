@@ -219,7 +219,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
             units="um",
             probe_description=probe_metadata["description"],
             contact_side_numbering=False,  # TODO: Replace placeholder - actual numbering scheme needed
-            contact_size=1.0,  # TODO: Replace placeholder - actual contact size needed
+            contact_size=165.0, # 11x15 um = 165 um^2
             shanks=probe_id_to_shanks[probe_id],
         )
         nwbfile.add_device(probe)
