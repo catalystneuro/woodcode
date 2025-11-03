@@ -87,7 +87,7 @@ def session_to_nwb(
         },
     }
     nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
-    # nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name)
+    nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name)
 
     metadata = {
         'Video': {

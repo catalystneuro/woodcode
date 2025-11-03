@@ -25,7 +25,10 @@ H7115-250618_. 03             =BLOB=
 H7115-250618_. imported lfp 0 =BLOB=     imported_lfp  
 H7115-250618_. pos 0 valid ti =BLOB=     position      
 H7115-250618_. raw data valid =BLOB=                   
- (Total: 6)
+H7115-250618_. sleep_nrem     =BLOB=                   
+H7115-250618_. sleep_rem      =BLOB=                   
+H7115-250618_. sleep_wake     =BLOB=                   
+ (Total: 8)
 
 === Task ===
 *task_name     task_descripti task_type     task_subtype  
@@ -43,12 +46,48 @@ H7115-250618_. 2         sleep          None           02             sleep_cont
 H7115-250618_. 3         wake_cue_rot   None           03             cylindrical_op =BLOB=    
  (Total: 3)
 
+=== Sleep NREM Valid Times ===
+[[ 658.  707.]
+ [ 719.  747.]
+ [ 959.  970.]
+ [1018. 1397.]
+ [1408. 1423.]
+ [1446. 1505.]
+ [1533. 1545.]
+ [1564. 1855.]
+ [1866. 2079.]
+ [2103. 2243.]
+ [2611. 2657.]
+ [2919. 2927.]
+ [2983. 3055.]
+ [3064. 3535.]
+ [3544. 3799.]
+ [3813. 3867.]
+ [3988. 4258.]
+ [4275. 4489.]
+ [4528. 4843.]
+ [4987. 5088.]
+ [5192. 5799.]
+ [5986. 5993.]
+ [6047. 6060.]
+ [7793. 7815.]
+ [8050. 8068.]
+ [8097. 8130.]
+ [8756. 8788.]
+ [8806. 8836.]
+ [9140. 9172.]
+ [9276. 9290.]
+ [9327. 9344.]
+ [9649. 9675.]
+ [9722. 9759.]
+ [9902. 9913.]
+ [9939. 9965.]]
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
-H7115-250618_. 1         0              Video Camera   d751f528-1770-
-H7115-250618_. 2         0              Video Camera   3bd6b115-a232-
-H7115-250618_. 3         0              Video Camera   cac832ef-2393-
+H7115-250618_. 1         0              Video Camera   3554089c-a66d-
+H7115-250618_. 2         0              Video Camera   16598d4a-c57e-
+H7115-250618_. 3         0              Video Camera   1bf762b4-118b-
  (Total: 3)
 
 === Camera Device ===
@@ -123,13 +162,13 @@ Cambridge Neur 1              11             1.0            0.0       500.0     
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H7115-250618_. raw data valid b3422883-ed0e- 30000.0        no comments    Acquisition tr
+H7115-250618_. raw data valid f0b18cdf-9a2b- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H7115-250618_. imported_lfp_0 imported lfp 0 1250.0         23e49f47-9305-
+H7115-250618_. imported_lfp_0 imported lfp 0 1250.0         3e334bb3-9f76-
  (Total: 1)
 
 === PositionSource ===
