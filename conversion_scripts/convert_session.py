@@ -71,7 +71,7 @@ def session_to_nwb(
     nwbfile = nwb.convert.create_nwb_file(metadata, start_time)    
     nwbfile = nwb.convert.add_probes(nwbfile, metadata, xml_data, nrs_data)
     # nwbfile = nwb.convert.add_tracking(nwbfile, pos, hd)
-    # nwbfile = nwb.convert.add_units(nwbfile, xml_data, spikes, waveforms, shank_id)  # get shank names from NWB file
+    nwbfile = nwb.convert.add_units(nwbfile, xml_data, spikes, waveforms, shank_id)  # get shank names from NWB file
     # nwbfile = nwb.convert.add_events(nwbfile, events)
     metadata["task"] = {
         'wake': {
