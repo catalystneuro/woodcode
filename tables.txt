@@ -46,9 +46,9 @@ H7115-250618_. 3         wake_cue_rot   None           03             cylindrica
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
-H7115-250618_. 1         0              Video Camera   44d5a073-5456-
-H7115-250618_. 2         0              Video Camera   8acf52d6-e87b-
-H7115-250618_. 3         0              Video Camera   7ce4cf90-d217-
+H7115-250618_. 1         0              Video Camera   d751f528-1770-
+H7115-250618_. 2         0              Video Camera   3bd6b115-a232-
+H7115-250618_. 3         0              Video Camera   cac832ef-2393-
  (Total: 3)
 
 === Camera Device ===
@@ -123,7 +123,7 @@ Cambridge Neur 1              11             1.0            0.0       500.0     
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H7115-250618_. raw data valid 4960ee17-1971- 30000.0        no comments    Acquisition tr
+H7115-250618_. raw data valid b3422883-ed0e- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
@@ -168,3 +168,44 @@ time
 10317.399800                            -2.075986  58.389690  23.438468
 
 [411860 rows x 3 columns]
+H7115-250618_. imported_lfp_0 imported lfp 0 1250.0         15ec7688-2101-
+ (Total: 1)
+
+=== ImportedSpikeSorting ===
+*nwb_file_name object_id     
++------------+ +------------+
+H7115-250618_. 3e23f72c-e980-
+ (Total: 1)
+
+=== Annotation ===
+*nwb_file_name *id    label      annotation
++------------+ +----+ +--------+ +--------+
+H7115-250618_. 0      =BLOB=     =BLOB=    
+H7115-250618_. 1      =BLOB=     =BLOB=    
+H7115-250618_. 2      =BLOB=     =BLOB=    
+H7115-250618_. 3      =BLOB=     =BLOB=    
+H7115-250618_. 4      =BLOB=     =BLOB=    
+H7115-250618_. 5      =BLOB=     =BLOB=    
+H7115-250618_. 6      =BLOB=     =BLOB=    
+H7115-250618_. 7      =BLOB=     =BLOB=    
+H7115-250618_. 8      =BLOB=     =BLOB=    
+H7115-250618_. 9      =BLOB=     =BLOB=    
+H7115-250618_. 10     =BLOB=     =BLOB=    
+H7115-250618_. 11     =BLOB=     =BLOB=    
+   ...
+ (Total: 160)
+
+=== Example Annotation (Unit 0) ===
+{'sampling_rate': 30000, 'waveform_mean': array([[ 6.34307766,  5.13430929,  3.45913649, ...,  2.4161489 ,
+        -1.20863974, -0.35912797],
+       [ 9.08244419,  3.15048695,  4.63822079, ...,  0.37520635,
+        -3.95358086, -4.77135754],
+       [ 8.37880993,  5.135674  ,  8.17830753, ..., -2.14873528,
+        -5.50952148, -5.83360195],
+       ...,
+       [ 8.12689114,  6.13766241,  5.8638649 , ...,  2.635535  ,
+        -2.56024933,  4.99939346],
+       [ 7.82126427,  9.05883598,  5.52494812, ...,  2.19659376,
+        -4.69618893,  1.08915639],
+       [ 6.40062189,  8.41902447,  4.88502502, ...,  1.60865331,
+        -6.21712542, -3.83007574]])}
