@@ -19,6 +19,63 @@ import spyglass.data_import as sgi
 from spyglass.utils.nwb_helper_fn import get_nwb_copy_filename
 import spyglass.lfp as sglfp
 
+# Spike Sorting Imports
+from spyglass.spikesorting.spikesorting_merge import SpikeSortingOutput
+import spyglass.spikesorting.v1 as sgs
+from spyglass.spikesorting.analysis.v1.group import SortedSpikesGroup
+from spyglass.spikesorting.analysis.v1.group import UnitSelectionParams
+from spyglass.spikesorting.analysis.v1.unit_annotation import UnitAnnotation
+from tqdm import tqdm
+
+
+def insert_sorting(nwbfile_path: Path):
+    """Insert spike sorting data and unit annotations into SpyGlass database.
+
+    Creates a sorted spikes group containing all units from the imported spike
+    sorting data and adds annotations for each unit. The annotations include
+    sampling rate and mean waveform data extracted from the NWB file.
+
+    Parameters
+    ----------
+    nwbfile_path : Path
+        Path to the NWB file containing spike sorting results and unit metadata.
+
+    Notes
+    -----
+    The function creates a group named "all_units" and adds the following
+    annotations for each unit:
+    - sampling_rate: The sampling rate for the unit
+    - waveform_mean: The mean waveform for the unit
+    """
+    io = NWBHDF5IO(nwbfile_path, "r")
+    nwbfile = io.read()
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    merge_id = str((SpikeSortingOutput.ImportedSpikeSorting & {"nwb_file_name": nwb_copy_file_name}).fetch1("merge_id"))
+
+    UnitSelectionParams().insert_default()
+    group_name = "all_units"
+    SortedSpikesGroup().create_group(
+        group_name=group_name,
+        nwb_file_name=nwb_copy_file_name,
+        keys=[{"spikesorting_merge_id": merge_id}],
+    )
+    group_key = {
+        "nwb_file_name": nwb_copy_file_name,
+        "sorted_spikes_group_name": group_name,
+    }
+    group_key = (SortedSpikesGroup & group_key).fetch1("KEY")
+    _, unit_ids = SortedSpikesGroup().fetch_spike_data(group_key, return_unit_ids=True)
+
+    for unit_key in tqdm(unit_ids, desc="Inserting Unit Annotations"):
+        unit_id = unit_key["unit_id"]
+        sampling_rate = nwbfile.units.get((unit_id, "sampling_rate"))
+        waveform_mean = nwbfile.units.get((unit_id, "waveform_mean"))
+        annotations = {
+            "sampling_rate": sampling_rate,
+            "waveform_mean": waveform_mean,
+        }
+        sgs.ImportedSpikeSorting().add_annotation(key={"nwb_file_name": nwb_copy_file_name}, id=unit_id, annotations=annotations)
+    io.close()
 
 def insert_session(nwbfile_path: Path, rollback_on_fail: bool = True, raise_err: bool = False):
     """Insert complete session data from NWB file into SpyGlass database.
@@ -38,6 +95,7 @@ def insert_session(nwbfile_path: Path, rollback_on_fail: bool = True, raise_err:
     """
     sgi.insert_sessions(str(nwbfile_path), rollback_on_fail=rollback_on_fail, raise_err=raise_err)
     insert_sleep(nwbfile_path)
+    insert_sorting(nwbfile_path)
 
 def insert_sleep(nwbfile_path: Path):
     nwb_copy_filename = get_nwb_copy_filename(nwbfile_path.name)
@@ -52,6 +110,7 @@ def insert_sleep(nwbfile_path: Path):
         valid_times = np.column_stack((start_times, stop_times))
         key = {"nwb_file_name": nwb_copy_filename, "interval_list_name": f"sleep_{tag}", "valid_times": valid_times}
         sgc.IntervalList().insert1(key)
+
 
 def print_tables(nwbfile_path: Path):
     nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
@@ -99,6 +158,25 @@ def print_tables(nwbfile_path: Path):
         # LFP tables
         print("=== ImportedLFP ===", file=f)
         print(sglfp.ImportedLFP & {"nwb_file_name": nwb_copy_file_name}, file=f)
+
+        # Tracking tables
+        print("=== PositionSource ===", file=f)
+        print(sgc.PositionSource & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== PositionSource.SpatialSeries ===", file=f)
+        print(sgc.PositionSource.SpatialSeries & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== RawPosition.PosObject ===", file=f)
+        print(sgc.RawPosition.PosObject & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== RawPosition ===", file=f)
+        print((sgc.RawPosition & {"nwb_file_name": nwb_copy_file_name}).fetch1_dataframe(), file=f)
+        
+        # Spike Sorting tables
+        print("=== ImportedSpikeSorting ===", file=f)
+        print(sgs.ImportedSpikeSorting & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        merge_id = str((SpikeSortingOutput.ImportedSpikeSorting & {"nwb_file_name": nwb_copy_file_name}).fetch1("merge_id"))
+        print("=== Annotation ===", file=f)
+        print(sgs.ImportedSpikeSorting.Annotations & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== Example Annotation (Unit 0) ===", file=f)
+        print((sgs.ImportedSpikeSorting.Annotations & {"nwb_file_name": nwb_copy_file_name, "id": 0}).fetch1("annotations"), file=f)
 
 
 def main():

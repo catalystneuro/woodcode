@@ -65,13 +65,12 @@ def session_to_nwb(
     hd = nwb.io.get_matlab_hd(mat_path / 'TrackingProcessed.mat', vbl_name='ang')
     epochs = pd.read_csv(mat_path / 'Epoch_TS.csv', header=None, names=['Start', 'End'])
     spikes, waveforms, shank_id = nwb.io.get_matlab_spikes(mat_path)
-    events = nwb.io.get_openephys_events(mat_path / 'states.npy', mat_path / 'timestamps.npy', time_offset=epochs.at[len(epochs)-1, 'Start'], skip_first=16)  # load LED events
 
     # CONSTRUCT NWB FILE
     nwbfile = nwb.convert.create_nwb_file(metadata, start_time)    
     nwbfile = nwb.convert.add_probes(nwbfile, metadata, xml_data, nrs_data)
-    # nwbfile = nwb.convert.add_tracking(nwbfile, pos, hd)
-    # nwbfile = nwb.convert.add_units(nwbfile, xml_data, spikes, waveforms, shank_id)  # get shank names from NWB file
+    nwbfile = nwb.convert.add_tracking(nwbfile, pos, hd)
+    nwbfile = nwb.convert.add_units(nwbfile, xml_data, spikes, waveforms, shank_id)  # get shank names from NWB file
     # nwbfile = nwb.convert.add_events(nwbfile, events)
     metadata["task"] = {
         'wake': {
@@ -120,7 +119,9 @@ def session_to_nwb(
     nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=xml_data, stub_test=stub_test)
     nwbfile = nwb.convert.add_raw_ephys(nwbfile=nwbfile, folder_path=raw_ephys_folder_path, epochs=epochs, xml_data=xml_data, stub_test=stub_test)
 
-    behavior_module = nwbfile.create_processing_module(name="behavior", description="behavior module")
+    # TODO: figure out what these events are
+    # events = nwb.io.get_openephys_events(mat_path / 'states.npy', mat_path / 'timestamps.npy', time_offset=epochs.at[len(epochs)-1, 'Start'], skip_first=16)  # load LED events
+    # nwbfile = nwb.convert.add_events(nwbfile, events)
 
     # save NWB file
     nwb.convert.save_nwb_file(nwbfile, save_path, folder_name)
