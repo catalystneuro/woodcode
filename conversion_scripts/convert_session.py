@@ -19,6 +19,7 @@ def session_to_nwb(
     raw_ephys_folder_path: Path,
     save_path: Path,
     stub_test: bool = False,
+    is_adult: bool = True,
 ):
     """Convert a session to NWB format.
     
@@ -50,6 +51,8 @@ def session_to_nwb(
         Path to save the NWB file
     stub_test : bool, optional
         Whether to stub data for testing, by default False
+    is_adult : bool, optional
+        Whether the subject is an adult or a juvenile, by default True
     """
     save_path.mkdir(parents=True, exist_ok=True)
 
@@ -67,7 +70,11 @@ def session_to_nwb(
     spikes, waveforms, shank_id = nwb.io.get_matlab_spikes(mat_path)
 
     # CONSTRUCT NWB FILE
-    nwbfile = nwb.convert.create_nwb_file(metadata, start_time)    
+    nwbfile = nwb.convert.create_nwb_file(metadata, start_time)
+    if is_adult:
+        metadata["probe"][0]["coordinates"] = [-7.64, 3.3, -1.7]
+    else:
+        metadata["probe"][0]["coordinates"] = [-6.3, 3.1, -1.6]
     nwbfile = nwb.convert.add_probes(nwbfile, metadata, xml_data, nrs_data)
     nwbfile = nwb.convert.add_tracking(nwbfile, pos, hd)
     nwbfile = nwb.convert.add_units(nwbfile, xml_data, spikes, waveforms, shank_id)  # get shank names from NWB file

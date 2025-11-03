@@ -144,14 +144,14 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
     # get a list of dead channels from the nrs file
     good_channels = nrsdata['channels_shown']
 
-    # Build shank assignments list: each tuple is (probe_id, global_shank_id, probe_location, probe_step)
+    # Build shank assignments list: each tuple is (probe_id, global_shank_id, probe_location, probe_step, probe_coordinates)
     shank_assignments = []
     global_shank_id = 1 # Global shank ID across all probes
     for probe_metadata in metadata["probe"]:
         probe_id = probe_metadata["id"]
         nshanks = probe_metadata["nshanks"]
         for _ in range(nshanks):
-            shank_assignments.append((probe_id, global_shank_id, probe_metadata["location"], probe_metadata["step"]))
+            shank_assignments.append((probe_id, global_shank_id, probe_metadata["location"], probe_metadata["step"], probe_metadata["coordinates"]))
             global_shank_id += 1
 
     # Ensure number of shanks in metadata matches xmldata
@@ -159,7 +159,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
         raise ValueError("Mismatch between shank count in metadata and xmldata['spike_groups']")
 
     shank_id_to_num_electrodes = {}
-    for (_, shank_id, _, _), electrodes in zip(shank_assignments, xmldata["spike_groups"]):
+    for (_, shank_id, _, _, _), electrodes in zip(shank_assignments, xmldata["spike_groups"]):
         shank_id_to_num_electrodes[shank_id] = len(electrodes)
 
     # Add DataAcqDevice (Spyglass requirement)
@@ -180,7 +180,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
     # Build Shank objects with ShanksElectrode objects, organized by probe
     probe_id_to_shanks = {}  # Maps probe_id -> list of Shank objects
     electrode_counter = 0  # Global electrode counter across all shanks and probes
-    for probe_id, shank_id, probe_location, probe_step in shank_assignments:
+    for probe_id, shank_id, probe_location, probe_step, probe_coordinates in shank_assignments:
         num_electrodes = shank_id_to_num_electrodes[shank_id]
         # Initialize probe entry if needed
         if probe_id not in probe_id_to_shanks:
@@ -219,33 +219,32 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
             units="um",
             probe_description=probe_metadata["description"],
             contact_side_numbering=False,  # TODO: Replace placeholder - actual numbering scheme needed
-            contact_size=1.0,  # TODO: Replace placeholder - actual contact size needed
+            contact_size=165.0, # 11x15 um = 165 um^2
             shanks=probe_id_to_shanks[probe_id],
         )
         nwbfile.add_device(probe)
 
     # Add NwbElectrodeGroup objects for each shank
-    for probe_id, shank_id, probe_location, probe_step in shank_assignments:
+    for probe_id, shank_id, probe_location, probe_step, probe_coordinates in shank_assignments:
         probe_name = f"Probe {probe_id}"
         probe = nwbfile.devices[probe_name]
         group_name = f"probe{probe_id}_shank{shank_id}"
-        probe_location = probe_metadata["location"]
         electrode_group = NwbElectrodeGroup(
             name=group_name,
             description=f"Electrodes from {group_name}, step: {probe_step}",
             location=probe_location,
             device=probe,
             targeted_location=probe_location,
-            targeted_x=0.0,  # TODO: Replace placeholder - actual targeted X coordinate needed
-            targeted_y=0.0,  # TODO: Replace placeholder - actual targeted Y coordinate needed
-            targeted_z=0.0,  # TODO: Replace placeholder - actual targeted Z coordinate needed
-            units="um",  # TODO: Replace placeholder - actual units for targeted coordinates needed
+            targeted_x=probe_coordinates[0],
+            targeted_y=probe_coordinates[1],
+            targeted_z=probe_coordinates[2],
+            units="mm",
         )
         nwbfile.add_electrode_group(electrode_group)
 
     # Add Electrodes to the NWBFile
     electrode_counter = 0
-    for (probe_id, shank_id, probe_location, probe_step), (shank_idx, electrodes) in zip(
+    for (probe_id, shank_id, probe_location, probe_step, probe_coordinates), (shank_idx, electrodes) in zip(
         shank_assignments, enumerate(xmldata["spike_groups"])
     ):
         group_name = f"probe{probe_id}_shank{shank_id}"
