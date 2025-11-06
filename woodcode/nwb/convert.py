@@ -250,9 +250,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
 
     # Add Electrodes to the NWBFile
     electrode_counter = 0
-    for (probe_id, shank_id, probe_location, probe_step, probe_coordinates), (shank_idx, electrodes) in zip(
-        shank_assignments, enumerate(xmldata["spike_groups"])
-    ):
+    for probe_id, shank_id, probe_location, probe_step, probe_coordinates in shank_assignments:
         group_name = f"probe{probe_id}_shank{shank_id}"
         electrode_group = nwbfile.electrode_groups[group_name]
         num_electrodes = shank_id_to_num_electrodes[shank_id]

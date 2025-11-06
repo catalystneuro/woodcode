@@ -179,6 +179,40 @@ def main():
         stub_test=stub_test,
     )
 
+    # Example Juvenile KO session
+    jv_ko_folder_path = juvenile_folder_path / "KO"
+    folder_name = 'H3016-210423'
+    xml_path = jv_ko_folder_path / folder_name / "Processed" / (folder_name + '.xml')  # path to xml file
+    nrs_path = jv_ko_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
+    meta_path = dataset_path / 'MooreDataset_Metadata.xlsx'  # path to metadata file
+    mat_path = jv_ko_folder_path / folder_name / "Processed" / 'Analysis'
+    sleep_path = jv_ko_folder_path / folder_name / "Processed" / 'Sleep'
+    video_file_paths = [
+        jv_ko_folder_path / folder_name / "Raw" / "BonsaiCaptureALL2021-04-23T14_14_05.avi",
+    ]
+    timestamps_file_paths = [
+        jv_ko_folder_path / folder_name / "Raw" / "Bonsai testing2021-04-23T14_13_55.csv",
+    ]
+    # lfp_file_path = jv_ko_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
+    raw_ephys_folder_path = jv_ko_folder_path / folder_name / "Raw"
+    save_path = output_folder_path
+
+    session_to_nwb(
+        dataset_path=dataset_path,
+        folder_name=folder_name,
+        xml_path=xml_path,
+        nrs_path=nrs_path,
+        meta_path=meta_path,
+        mat_path=mat_path,
+        sleep_path=sleep_path,
+        video_file_paths=video_file_paths,
+        timestamps_file_paths=timestamps_file_paths,
+        # lfp_file_path=lfp_file_path,
+        raw_ephys_folder_path=raw_ephys_folder_path,
+        save_path=save_path,
+        stub_test=stub_test,
+    )
+
 
 if __name__ == "__main__":
     main()
