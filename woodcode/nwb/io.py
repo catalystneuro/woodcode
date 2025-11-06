@@ -381,8 +381,7 @@ def read_xml(file_path):
             if chan_group:
                 spike_groups.append(np.array(chan_group))
 
-    # data["spike_groups"] = spike_groups
-    data["spike_groups"] = anatomical_groups[:1] # TODO: figure out the difference between anatomical_groups and spike_groups
+    data["spike_groups"] = spike_groups
 
     #data["spike_groups"] = np.array(spike_groups, dtype="object")
 

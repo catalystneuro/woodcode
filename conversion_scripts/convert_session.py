@@ -182,7 +182,8 @@ def main():
     # Example Juvenile KO session
     jv_ko_folder_path = juvenile_folder_path / "KO"
     folder_name = 'H3016-210423'
-    xml_path = jv_ko_folder_path / folder_name / "Processed" / (folder_name + '.xml')  # path to xml file
+    # Note: H3016-210423 uses H3022-210805's XML because the original had faulty channels removed from spikeDetection (26 vs 32 channels). Both sessions share the same probe mapping.
+    xml_path = jv_wt_folder_path / 'H3022-210805' / "Processed" / ( 'H3022-210805' + '.xml')
     nrs_path = jv_ko_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
     meta_path = dataset_path / 'MooreDataset_Metadata.xlsx'  # path to metadata file
     mat_path = jv_ko_folder_path / folder_name / "Processed" / 'Analysis'
