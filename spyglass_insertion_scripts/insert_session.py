@@ -180,7 +180,7 @@ def print_tables(nwbfile_path: Path):
 
 
 def main():
-    nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H7115-250618.nwb")
+    nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3022-210805.nwb")
     nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
 
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
