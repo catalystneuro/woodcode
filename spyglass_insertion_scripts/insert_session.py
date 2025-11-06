@@ -112,9 +112,9 @@ def insert_sleep(nwbfile_path: Path):
         sgc.IntervalList().insert1(key)
 
 
-def print_tables(nwbfile_path: Path):
+def print_tables(nwbfile_path: Path, table_path: Path = Path("tables.txt")):
     nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    with open("tables.txt", "w") as f:
+    with open(table_path, "w") as f:
         # NWB file and Subject info
         print("=== NWB File ===", file=f)
         print(sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}, file=f)
@@ -180,16 +180,26 @@ def print_tables(nwbfile_path: Path):
 
 
 def main():
-    nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3022-210805.nwb")
-    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-
-    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    # Clear existing data for a clean insertion
     (sgc.ProbeType & {"probe_type": "Cambridge Neurotech H7 probe"}).delete()
     (sgc.DataAcquisitionDevice & {"name": "data_acquisition_device"}).delete()
-    sgc.Task.delete()
+    sgc.Task().delete()
 
+    # Example Juvenile WT Session
+    nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3022-210805.nwb")
+    table_path = Path("tables_jv_wt.txt")
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    print_tables(nwbfile_path=nwbfile_path)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+
+    # Example Juvenile KO Session
+    nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3016-210423.nwb")
+    table_path = Path("tables_jv_ko.txt")
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
 
 if __name__ == "__main__":

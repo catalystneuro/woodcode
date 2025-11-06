@@ -13,9 +13,10 @@ H3022-210805_. H3022          University of  Wood/Dudchenko 210805         Explo
 === Subject ===
 *subject_id    age      description    genotype     sex     species       
 +------------+ +------+ +------------+ +----------+ +-----+ +------------+
+H3016          P0D      Fmr1 -1        KO           M       Rattus norvegi
 H3022          P0D      Fmr1 -1        WT           M       Rattus norvegi
 H7115          P79D     Fmr1 1915968   KO           M       Rattus norvegi
- (Total: 2)
+ (Total: 3)
 
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline    
@@ -140,7 +141,7 @@ H3022-210805_. probe1_shank1  1             Cambridge Neur Electrodes fro Left
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210805_. raw data valid 5254d9cb-6972- 30000.0        no comments    Acquisition tr
+H3022-210805_. raw data valid c9de3984-a103- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
@@ -165,8 +166,8 @@ H3022-210805_. pos 0 valid ti 1      position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H3022-210805_. pos 0 valid ti 0      a93566a2-e30d-
-H3022-210805_. pos 0 valid ti 1      b26e5012-58b1-
+H3022-210805_. pos 0 valid ti 0      3ae276a1-d2c4-
+H3022-210805_. pos 0 valid ti 1      74e5b4d0-3c19-
  (Total: 2)
 
 === RawPosition ===
@@ -188,7 +189,7 @@ time
 === ImportedSpikeSorting ===
 *nwb_file_name object_id     
 +------------+ +------------+
-H3022-210805_. 3eaf13e1-9315-
+H3022-210805_. 089cdb22-8003-
  (Total: 1)
 
 === Annotation ===
