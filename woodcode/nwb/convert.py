@@ -259,15 +259,15 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
             is_bad_channel = electrode_counter not in good_channels
             
             nwbfile.add_electrode(
-                x=0.,
-                y=float(elec_depth),
+                x=0., # TODO: Add x coordinate from datasheet
+                y=float(elec_depth), # TODO: replace with absolute y coordinate
                 z=0.,
                 group=electrode_group,
                 location=electrode_group.location,
                 probe_shank=shank_id,
                 probe_electrode=electrode_counter,
                 bad_channel=is_bad_channel,
-                ref_elect_id=-1,  # TODO: Replace placeholder - actual reference electrode ID needed
+                ref_elect_id=-1, # Spyglass requires this field to be specified as an integer even when none of the probe electrodes served as the original reference.
             )
             electrode_counter += 1
 
