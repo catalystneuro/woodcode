@@ -23,9 +23,15 @@ def create_nwb_file(metadata, start_time):
     print('Creating NWB file and adding metadata...')
 
     # calculate animal age
-    dob_str = str(metadata['subject']['dob'])
-    dob = datetime(2000 + int(dob_str[:2]), int(dob_str[2:4]), int(dob_str[4:6]))
-    age_days = (start_time.date() - dob.date()).days
+    if metadata['subject']['dob'] is None:
+        age_days = 0
+    else:
+        dob_str = str(metadata['subject']['dob'])
+        dob = datetime(2000 + int(dob_str[:2]), int(dob_str[2:4]), int(dob_str[4:6]))
+        age_days = (start_time.date() - dob.date()).days
+
+    if metadata['subject']['stock_id'] is None:
+        metadata['subject']['stock_id'] = -1
 
     # create an nwb file
     nwbfile = NWBFile(
@@ -244,9 +250,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
 
     # Add Electrodes to the NWBFile
     electrode_counter = 0
-    for (probe_id, shank_id, probe_location, probe_step, probe_coordinates), (shank_idx, electrodes) in zip(
-        shank_assignments, enumerate(xmldata["spike_groups"])
-    ):
+    for probe_id, shank_id, probe_location, probe_step, probe_coordinates in shank_assignments:
         group_name = f"probe{probe_id}_shank{shank_id}"
         electrode_group = nwbfile.electrode_groups[group_name]
         num_electrodes = shank_id_to_num_electrodes[shank_id]
@@ -627,22 +631,22 @@ def add_video(
     all_timestamps = []
 
     # load timestamps from the first file to get starting datetime
-    timstamp_file_path = timestamp_file_paths[0]
-    timestamps_df = pd.read_csv(timstamp_file_path, parse_dates=["Item3.Timestamp"])
-    starting_datetime = timestamps_df["Item3.Timestamp"].iloc[0]
-    timestamps_df["timestamps"] = (timestamps_df["Item3.Timestamp"] - starting_datetime).dt.total_seconds()
+    timestamp_file_path = timestamp_file_paths[0]
+    timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=["Item4.Timestamp"])
+    starting_datetime = timestamps_df["Item4.Timestamp"].iloc[0]
+    timestamps_df["timestamps"] = (timestamps_df["Item4.Timestamp"] - starting_datetime).dt.total_seconds()
     timestamps = timestamps_df["timestamps"].to_numpy()
-    dt = np.mean(np.diff(timestamps))
-    timestamps = np.concatenate((timestamps, [timestamps[-1] + dt])) # Last frame is missing from the csv file TODO: double check with the Dudchenko lab
+    # dt = np.mean(np.diff(timestamps))
+    # timestamps = np.concatenate((timestamps, [timestamps[-1] + dt])) # Last frame is missing from the csv file TODO: double check with the Dudchenko lab
     all_timestamps.append(timestamps)
 
     # load timestamps from the rest of the files normalized to the starting datetime
     for timestamp_file_path in timestamp_file_paths[1:]:
-        timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=["Item3.Timestamp"])
-        timestamps_df["timestamps"] = (timestamps_df["Item3.Timestamp"] - starting_datetime).dt.total_seconds()
+        timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=["Item4.Timestamp"])
+        timestamps_df["timestamps"] = (timestamps_df["Item4.Timestamp"] - starting_datetime).dt.total_seconds()
         timestamps = timestamps_df["timestamps"].to_numpy()
-        dt = np.mean(np.diff(timestamps))
-        timestamps = np.concatenate((timestamps, [timestamps[-1] + dt])) # Last frame is missing from the csv file TODO: double check with the Dudchenko lab
+        # dt = np.mean(np.diff(timestamps))
+        # timestamps = np.concatenate((timestamps, [timestamps[-1] + dt])) # Last frame is missing from the csv file TODO: double check with the Dudchenko lab
         all_timestamps.append(timestamps)
 
     # Add camera device
@@ -682,7 +686,7 @@ def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, epochs: pd.DataFrame, xml
     segment_starting_times = epochs.Start.values
     chan_order = np.concatenate(xml_data['spike_groups'])
 
-    stream_name = "Record Node 101#Acquisition_Board-100.Rhythm Data"
+    stream_name = "Rhythm_FPGA-100.0" # TODO: expose this as a parameter
     recording = OpenEphysBinaryRecordingExtractor(folder_path=folder_path, stream_name=stream_name)
     if stub_test:
         recording = _stub_recording(recording)

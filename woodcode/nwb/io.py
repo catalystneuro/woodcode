@@ -284,7 +284,6 @@ def get_matlab_spikes(path):
     # file names for spikes, angle, and epoch files
     spike_file = path / 'SpikeData.mat'
     waveform_file = path / 'Waveforms.mat'
-    wfeatures_file = path / 'WaveformFeatures.mat'
 
     # Next lines load the spike data from the .mat file
     spikedata = spio.loadmat(spike_file, simplify_cells=True)
@@ -297,10 +296,8 @@ def get_matlab_spikes(path):
     # get spike metadata
     waveforms = spio.loadmat(waveform_file, simplify_cells=True)
     waveforms = waveforms['meanWaveforms']
-    wfeatures = spio.loadmat(wfeatures_file, simplify_cells=True)
     shank_id = spikedata['shank']-1,
     shank_id = shank_id[0]
-    maxIx = wfeatures['maxIx']
 
     spikes = nap.TsGroup(spikes)  # Convert dictionary to TsGroup
 
@@ -385,6 +382,7 @@ def read_xml(file_path):
                 spike_groups.append(np.array(chan_group))
 
     data["spike_groups"] = spike_groups
+
     #data["spike_groups"] = np.array(spike_groups, dtype="object")
 
     return data

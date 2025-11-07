@@ -15,7 +15,7 @@ def session_to_nwb(
     sleep_path: Path,
     video_file_paths: list[Path],
     timestamps_file_paths: list[Path],
-    lfp_file_path: Path,
+    # lfp_file_path: Path,
     raw_ephys_folder_path: Path,
     save_path: Path,
     stub_test: bool = False,
@@ -61,11 +61,11 @@ def session_to_nwb(
     xml_data = nwb.io.read_xml(xml_path)  # load all ephys info from the xml file
     nrs_data = nwb.io.read_nrs(nrs_path)  # load faulty channel info from the nrs file (i.e. channels not shown in Neuroscope)
     metadata = nwb.io.read_metadata(meta_path, folder_name, print_output=True)  # Load all metadata from the xlsx file
-    start_time = nwb.io.get_start_time(folder_name, dataset_path / folder_name / 'Analysis' / 'Metadata.txt')  # load start time from Metadata.txt file
+    start_time = nwb.io.get_start_time(folder_name, Path(""))  # load start time from Metadata.txt file # TODO: Fix this fn to generate a full start datetime
 
     # Load tracking, epochs and spikes from Matlab files (mostly loaded as pynapple objects)
-    pos = nwb.io.get_matlab_position(mat_path / 'TrackingProcessed.mat', vbl_name='pos')
-    hd = nwb.io.get_matlab_hd(mat_path / 'TrackingProcessed.mat', vbl_name='ang')
+    pos = nwb.io.get_matlab_position(mat_path / 'TrackingProcessed_Final.mat', vbl_name='pos')
+    hd = nwb.io.get_matlab_hd(mat_path / 'TrackingProcessed_Final.mat', vbl_name='ang')
     epochs = pd.read_csv(mat_path / 'Epoch_TS.csv', header=None, names=['Start', 'End'])
     spikes, waveforms, shank_id = nwb.io.get_matlab_spikes(mat_path)
 
@@ -123,7 +123,7 @@ def session_to_nwb(
         }
     }
     nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, timestamp_file_paths=timestamps_file_paths, metadata=metadata)
-    nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=xml_data, stub_test=stub_test)
+    # nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=xml_data, stub_test=stub_test) # TODO: add LFP back in once it has been shared
     nwbfile = nwb.convert.add_raw_ephys(nwbfile=nwbfile, folder_path=raw_ephys_folder_path, epochs=epochs, xml_data=xml_data, stub_test=stub_test)
 
     # TODO: figure out what these events are
@@ -137,30 +137,30 @@ def session_to_nwb(
 def main():
     """Define paths and convert example sessions to NWB."""
     stub_test = True
-    dataset_path = Path('/Volumes/T7/CatalystNeuro/Dudchenko')
+    dataset_path = Path('/Volumes/T7/CatalystNeuro/Dudchenko/251104_MooreDataset')
     output_folder_path = Path('/Volumes/T7/CatalystNeuro/Spyglass/raw')
     if output_folder_path.exists():
         shutil.rmtree(output_folder_path)
 
-    # Example session
-    folder_name = 'H7115-250618'
-    xml_path = dataset_path / folder_name / "Processed" / (folder_name + '.xml')  # path to xml file
-    nrs_path = dataset_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
-    meta_path = dataset_path / 'CatalystNeuro_metadata.xlsx'  # path to metadata file
-    mat_path = dataset_path / folder_name / "Processed" / 'Analysis'
-    sleep_path = dataset_path / folder_name / "Processed" / 'Sleep'
+    # Example Juvenile Sessions
+    juvenile_folder_path = dataset_path / "H3000_Juveniles"
+
+    # Example Juvenile WT session
+    jv_wt_folder_path = juvenile_folder_path / "WT"
+    folder_name = 'H3022-210805'
+    xml_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.xml')  # path to xml file
+    nrs_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
+    meta_path = dataset_path / 'MooreDataset_Metadata.xlsx'  # path to metadata file
+    mat_path = jv_wt_folder_path / folder_name / "Processed" / 'Analysis'
+    sleep_path = jv_wt_folder_path / folder_name / "Processed" / 'Sleep'
     video_file_paths = [
-        dataset_path / folder_name / "Raw" / "2025-06-18_15-23-44" / "Record Node 101" / "experiment1" / "recording1" / "BonsaiVideo2025-06-18T15_23_50.avi",
-        dataset_path / folder_name / "Raw" / "2025-06-18_15-23-44" / "Record Node 101" / "experiment1" / "recording2" / "BonsaiVideo2025-06-18T15_36_52.avi",
-        dataset_path / folder_name / "Raw" / "2025-06-18_15-23-44" / "Record Node 101" / "experiment1" / "recording3" / "BonsaiVideo2025-06-18T17_10_04.avi",
+        jv_wt_folder_path / folder_name / "Raw" / "BonsaiCaptureALL2021-08-05T17_06_24.avi",
     ]
     timestamps_file_paths = [
-        dataset_path / folder_name / "Raw" / "2025-06-18_15-23-44" / "Record Node 101" / "experiment1" / "recording1" / "BonsaiTracking2025-06-18T15_23_48.csv",
-        dataset_path / folder_name / "Raw" / "2025-06-18_15-23-44" / "Record Node 101" / "experiment1" / "recording2" / "BonsaiTracking2025-06-18T15_36_51.csv",
-        dataset_path / folder_name / "Raw" / "2025-06-18_15-23-44" / "Record Node 101" / "experiment1" / "recording3" / "BonsaiTracking2025-06-18T17_10_02.csv",
+        jv_wt_folder_path / folder_name / "Raw" / "Bonsai testing2021-08-05T17_06_23.csv",
     ]
-    lfp_file_path = dataset_path / folder_name / "Processed" / (folder_name + '.lfp')
-    raw_ephys_folder_path = dataset_path / folder_name / "Raw" / "2025-06-18_15-23-44" / "Record Node 101"
+    # lfp_file_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
+    raw_ephys_folder_path = jv_wt_folder_path / folder_name / "Raw"
     save_path = output_folder_path
 
     session_to_nwb(
@@ -173,7 +173,42 @@ def main():
         sleep_path=sleep_path,
         video_file_paths=video_file_paths,
         timestamps_file_paths=timestamps_file_paths,
-        lfp_file_path=lfp_file_path,
+        # lfp_file_path=lfp_file_path,
+        raw_ephys_folder_path=raw_ephys_folder_path,
+        save_path=save_path,
+        stub_test=stub_test,
+    )
+
+    # Example Juvenile KO session
+    jv_ko_folder_path = juvenile_folder_path / "KO"
+    folder_name = 'H3016-210423'
+    # Note: H3016-210423 uses H3022-210805's XML because the original had faulty channels removed from spikeDetection (26 vs 32 channels). Both sessions share the same probe mapping.
+    xml_path = jv_wt_folder_path / 'H3022-210805' / "Processed" / ( 'H3022-210805' + '.xml')
+    nrs_path = jv_ko_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
+    meta_path = dataset_path / 'MooreDataset_Metadata.xlsx'  # path to metadata file
+    mat_path = jv_ko_folder_path / folder_name / "Processed" / 'Analysis'
+    sleep_path = jv_ko_folder_path / folder_name / "Processed" / 'Sleep'
+    video_file_paths = [
+        jv_ko_folder_path / folder_name / "Raw" / "BonsaiCaptureALL2021-04-23T14_14_05.avi",
+    ]
+    timestamps_file_paths = [
+        jv_ko_folder_path / folder_name / "Raw" / "Bonsai testing2021-04-23T14_13_55.csv",
+    ]
+    # lfp_file_path = jv_ko_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
+    raw_ephys_folder_path = jv_ko_folder_path / folder_name / "Raw"
+    save_path = output_folder_path
+
+    session_to_nwb(
+        dataset_path=dataset_path,
+        folder_name=folder_name,
+        xml_path=xml_path,
+        nrs_path=nrs_path,
+        meta_path=meta_path,
+        mat_path=mat_path,
+        sleep_path=sleep_path,
+        video_file_paths=video_file_paths,
+        timestamps_file_paths=timestamps_file_paths,
+        # lfp_file_path=lfp_file_path,
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
         stub_test=stub_test,
