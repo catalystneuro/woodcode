@@ -172,8 +172,8 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
     data_acq_device = DataAcqDevice(
         name="data_acquisition_device",
         system="OpenEphys",
-        amplifier="Unknown",  # TODO: Replace placeholder - actual amplifier name needed
-        adc_circuit="Unknown",  # TODO: Replace placeholder - actual ADC circuit name needed
+        amplifier="Intan RHD amplifier chip",
+        adc_circuit="Intan RHD adc circuit",
     )
     nwbfile.add_device(data_acq_device)
 

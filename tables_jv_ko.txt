@@ -13,10 +13,11 @@ H3016-210423_. H3016          University of  Wood/Dudchenko 210423         Explo
 === Subject ===
 *subject_id    age      description    genotype     sex     species       
 +------------+ +------+ +------------+ +----------+ +-----+ +------------+
+001            P90D     mouse 5        None         U       Mus musculus  
 H3016          P0D      Fmr1 -1        KO           M       Rattus norvegi
-H3022          P0D      Fmr1 -1        WT           M       Rattus norvegi
-H7115          P79D     Fmr1 1915968   KO           M       Rattus norvegi
- (Total: 3)
+H3022          P0D      Fmr1 -1        WT           U       Rattus norvegi
+subject        P50D     this is a mock None         U       None          
+ (Total: 4)
 
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline    
@@ -121,25 +122,25 @@ data_acquisiti OpenEphys      Unknown        Unknown
 === Electrode ===
 *nwb_file_name *electrode_gro *electrode_id  probe_id       probe_shank    probe_electrod region_id     name     original_refer x       y         z       filtering      impedance     bad_channel    x_warped     y_warped     z_warped     contacts    
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +-----------+ +------+ +------------+ +-----+ +-------+ +-----+ +------------+ +-----------+ +------------+ +----------+ +----------+ +----------+ +----------+
-H3016-210423_. probe1_shank1  0              Cambridge Neur 1              0              1             0        -1             0.0     387.5     0.0     unfiltered     nan           False          0.0          0.0          0.0                      
-H3016-210423_. probe1_shank1  1              Cambridge Neur 1              1              1             1        -1             0.0     375.0     0.0     unfiltered     nan           True           0.0          0.0          0.0                      
-H3016-210423_. probe1_shank1  2              Cambridge Neur 1              2              1             2        -1             0.0     362.5     0.0     unfiltered     nan           False          0.0          0.0          0.0                      
-H3016-210423_. probe1_shank1  3              Cambridge Neur 1              3              1             3        -1             0.0     350.0     0.0     unfiltered     nan           False          0.0          0.0          0.0                      
-H3016-210423_. probe1_shank1  4              Cambridge Neur 1              4              1             4        -1             0.0     337.5     0.0     unfiltered     nan           False          0.0          0.0          0.0                      
-H3016-210423_. probe1_shank1  5              Cambridge Neur 1              5              1             5        -1             0.0     325.0     0.0     unfiltered     nan           False          0.0          0.0          0.0                      
-H3016-210423_. probe1_shank1  6              Cambridge Neur 1              6              1             6        -1             0.0     312.5     0.0     unfiltered     nan           False          0.0          0.0          0.0                      
-H3016-210423_. probe1_shank1  7              Cambridge Neur 1              7              1             7        -1             0.0     300.0     0.0     unfiltered     nan           False          0.0          0.0          0.0                      
-H3016-210423_. probe1_shank1  8              Cambridge Neur 1              8              1             8        -1             0.0     287.5     0.0     unfiltered     nan           False          0.0          0.0          0.0                      
-H3016-210423_. probe1_shank1  9              Cambridge Neur 1              9              1             9        -1             0.0     275.0     0.0     unfiltered     nan           True           0.0          0.0          0.0                      
-H3016-210423_. probe1_shank1  10             Cambridge Neur 1              10             1             10       -1             0.0     262.5     0.0     unfiltered     nan           False          0.0          0.0          0.0                      
-H3016-210423_. probe1_shank1  11             Cambridge Neur 1              11             1             11       -1             0.0     250.0     0.0     unfiltered     nan           False          0.0          0.0          0.0                      
+H3016-210423_. probe1_shank1  0              Cambridge Neur 1              0              2             0        -1             0.0     387.5     0.0     unfiltered     nan           False          0.0          0.0          0.0                      
+H3016-210423_. probe1_shank1  1              Cambridge Neur 1              1              2             1        -1             0.0     375.0     0.0     unfiltered     nan           True           0.0          0.0          0.0                      
+H3016-210423_. probe1_shank1  2              Cambridge Neur 1              2              2             2        -1             0.0     362.5     0.0     unfiltered     nan           False          0.0          0.0          0.0                      
+H3016-210423_. probe1_shank1  3              Cambridge Neur 1              3              2             3        -1             0.0     350.0     0.0     unfiltered     nan           False          0.0          0.0          0.0                      
+H3016-210423_. probe1_shank1  4              Cambridge Neur 1              4              2             4        -1             0.0     337.5     0.0     unfiltered     nan           False          0.0          0.0          0.0                      
+H3016-210423_. probe1_shank1  5              Cambridge Neur 1              5              2             5        -1             0.0     325.0     0.0     unfiltered     nan           False          0.0          0.0          0.0                      
+H3016-210423_. probe1_shank1  6              Cambridge Neur 1              6              2             6        -1             0.0     312.5     0.0     unfiltered     nan           False          0.0          0.0          0.0                      
+H3016-210423_. probe1_shank1  7              Cambridge Neur 1              7              2             7        -1             0.0     300.0     0.0     unfiltered     nan           False          0.0          0.0          0.0                      
+H3016-210423_. probe1_shank1  8              Cambridge Neur 1              8              2             8        -1             0.0     287.5     0.0     unfiltered     nan           False          0.0          0.0          0.0                      
+H3016-210423_. probe1_shank1  9              Cambridge Neur 1              9              2             9        -1             0.0     275.0     0.0     unfiltered     nan           True           0.0          0.0          0.0                      
+H3016-210423_. probe1_shank1  10             Cambridge Neur 1              10             2             10       -1             0.0     262.5     0.0     unfiltered     nan           False          0.0          0.0          0.0                      
+H3016-210423_. probe1_shank1  11             Cambridge Neur 1              11             2             11       -1             0.0     250.0     0.0     unfiltered     nan           False          0.0          0.0          0.0                      
    ...
  (Total: 32)
 
 === Electrode Group ===
 *nwb_file_name *electrode_gro region_id     probe_id       description    target_hemisph
 +------------+ +------------+ +-----------+ +------------+ +------------+ +------------+
-H3016-210423_. probe1_shank1  1             Cambridge Neur Electrodes fro Left          
+H3016-210423_. probe1_shank1  2             Cambridge Neur Electrodes fro Left          
  (Total: 1)
 
 === Probe ===
@@ -163,7 +164,7 @@ H3016-210423_. probe1_shank1  1             Cambridge Neur Electrodes fro Left
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3016-210423_. raw data valid de44c0bb-b0c2- 30000.0        no comments    Acquisition tr
+H3016-210423_. raw data valid ceec1f85-58b6- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
@@ -188,8 +189,8 @@ H3016-210423_. pos 0 valid ti 1      position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H3016-210423_. pos 0 valid ti 0      e10f9fc2-d78a-
-H3016-210423_. pos 0 valid ti 1      c3caf6dc-f83a-
+H3016-210423_. pos 0 valid ti 0      5db77e10-f591-
+H3016-210423_. pos 0 valid ti 1      2e5bd02b-4496-
  (Total: 2)
 
 === RawPosition ===
@@ -211,7 +212,7 @@ time
 === ImportedSpikeSorting ===
 *nwb_file_name object_id     
 +------------+ +------------+
-H3016-210423_. de40e999-4613-
+H3016-210423_. f7d16f5c-76a7-
  (Total: 1)
 
 === Annotation ===

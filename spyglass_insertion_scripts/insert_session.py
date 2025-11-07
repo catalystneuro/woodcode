@@ -181,7 +181,7 @@ def print_tables(nwbfile_path: Path, table_path: Path = Path("tables.txt")):
 
 def main():
     # Clear existing data for a clean insertion
-    (sgc.ProbeType & {"probe_type": "Cambridge Neurotech H7 probe"}).delete()
+    (sgc.ProbeType & {"probe_type": "Cambridge Neurotech H6b probe"}).delete()
     (sgc.DataAcquisitionDevice & {"name": "data_acquisition_device"}).delete()
     sgc.Task().delete()
 
