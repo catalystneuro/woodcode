@@ -20,3 +20,7 @@ Video:
     model: C930e
     lens: built-in
     camera_name: Logitech Camera
+
+probe:
+  - name: probe_1
+    coordinates: [-6.3, 3.1, -1.6] # mm AP, ML, DV from Bregma

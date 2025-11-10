@@ -77,10 +77,6 @@ def session_to_nwb(
 
     # CONSTRUCT NWB FILE
     nwbfile = nwb.convert.create_nwb_file(metadata, start_time)
-    if is_adult:
-        metadata["probe"][0]["coordinates"] = [-7.64, 3.3, -1.7]
-    else:
-        metadata["probe"][0]["coordinates"] = [-6.3, 3.1, -1.6]
     nwbfile = nwb.convert.add_probes(nwbfile, metadata, xml_data, nrs_data)
     nwbfile = nwb.convert.add_tracking(nwbfile, pos, hd)
     nwbfile = nwb.convert.add_units(nwbfile, xml_data, spikes, waveforms, shank_id)  # get shank names from NWB file

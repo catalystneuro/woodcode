@@ -26,3 +26,7 @@ Video:
     model: acA1300-75gc
     lens: LMVZ4411 Kowa Lens
     camera_name: Basler Camera
+
+probe:
+  - name: probe_1
+    coordinates: [-7.64, 3.3, -1.7] # mm AP, ML, DV from Bregma

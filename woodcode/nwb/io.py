@@ -502,7 +502,7 @@ def read_metadata(file_path, file_name, print_output=False):
             probe_num, probe_key = match.groups()
             probe_num = int(probe_num)  # Convert to integer
             if probe_num not in probe_data:
-                probe_data[probe_num] = {"id": probe_num}
+                probe_data[probe_num] = {"id": probe_num, "name": f"probe_{probe_num}"}
 
             value = df[col].iloc[0]
             if pd.isna(value):
