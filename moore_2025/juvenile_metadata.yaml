@@ -23,4 +23,5 @@ Video:
 
 probe:
   - name: probe_1
-    coordinates: [-6.3, 3.1, -1.6] # mm AP, ML, DV from Bregma
+    coordinates: [-6.3, 1.6, 3.1] # mm AP, DV, ML from Bregma, BUT Ventral aka down is positive
+    horizontal_spacing_in_um: 22.5
