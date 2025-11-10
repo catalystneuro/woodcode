@@ -410,7 +410,7 @@ def add_epochs(nwbfile, epochs, metadata):
     # Add tasks to NWB file
     unique_tasks = set(epoch_tags.values())
     tasks_module = nwbfile.create_processing_module(name="tasks", description="tasks module")
-    tasks_metadata = metadata["task"]
+    tasks_metadata = metadata["Task"]
     for task in unique_tasks:
         task_metadata = tasks_metadata[task]
         description = task_metadata["description"]

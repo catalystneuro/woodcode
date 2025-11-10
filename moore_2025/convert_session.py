@@ -2,6 +2,7 @@
 from pathlib import Path
 import pandas as pd
 import shutil
+from neuroconv.utils.dict import load_dict_from_file, dict_deep_update
 import woodcode.nwb as nwb
 
 def session_to_nwb(
@@ -18,6 +19,7 @@ def session_to_nwb(
     # lfp_file_path: Path,
     raw_ephys_folder_path: Path,
     save_path: Path,
+    metadata_file_path: Path,
     stub_test: bool = False,
     is_adult: bool = True,
 ):
@@ -69,6 +71,10 @@ def session_to_nwb(
     epochs = pd.read_csv(mat_path / 'Epoch_TS.csv', header=None, names=['Start', 'End'])
     spikes, waveforms, shank_id = nwb.io.get_matlab_spikes(mat_path)
 
+    # Update metadata with info from metadata.yaml
+    metadata_from_yaml = load_dict_from_file(metadata_file_path)
+    metadata = dict_deep_update(metadata, metadata_from_yaml)
+
     # CONSTRUCT NWB FILE
     nwbfile = nwb.convert.create_nwb_file(metadata, start_time)
     if is_adult:
@@ -79,50 +85,8 @@ def session_to_nwb(
     nwbfile = nwb.convert.add_tracking(nwbfile, pos, hd)
     nwbfile = nwb.convert.add_units(nwbfile, xml_data, spikes, waveforms, shank_id)  # get shank names from NWB file
     # nwbfile = nwb.convert.add_events(nwbfile, events)
-    # TODO: figure out a more ergonomic metadata specification structure. 
-    metadata["task"] = {
-        'wake': {
-            'description': 'The rat was awake and foraging for scattered cereal in a cylindrical open field. The recording environment consisted of a cylindrical arena of 73 cm diameter, with 54 cm tall walls, painted light blue. A prominent visual cue was positioned at the top of the wall on the north side; this was 31.5 cm wide and 26 cm tall and consisted of two black horizontal stripes with a white stripe between them.',
-            'environment': 'cylindrical_open_field',
-        },
-        'sleep': {
-            'description': 'The rat was given a 90-minute sleep opportunity in a container placed inside the recording arena, during which recordings continued.',
-            'environment': 'sleep_container',
-        },
-        'wake_cue_rot': {
-            'description': 'The rat was awake and foraging for scattered cereal in a cylindrical open field. The recording environment consisted of a cylindrical arena of 73 cm diameter, with 54 cm tall walls, painted light blue. A prominent visual cue was positioned at the top of the wall on the north side; this was 31.5 cm wide and 26 cm tall and consisted of two black horizontal stripes with a white stripe between them.',
-            'environment': 'cylindrical_open_field',
-        },
-    }
     nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
     nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name)
-
-    metadata = {
-        'Video': {
-            'ImageSeries': [
-                {
-                    'name': 'Video1',
-                    'description': 'Video during epoch 1. Video capturing and marker tracking were performed using Bonsai software 51 at 40 Hz. For the juvenile recordings, images were acquired through a Logitech C930e camera. To synchronise the images with the electrophysiology data, an Arduino microcontroller was programmed to send a random sequence of pulses to both the OpenEphys system and a LED light within the frame of the camera. The times when the LED light shone were detected by Bonsai and synchronisation of the pulses in the light and the electrophysiology data was done offline. For the adult recordings, images were acquired through an acA1300-75gc Basler camera with a LMVZ4411 Kowa lens, positioned at the ceiling of the rig. This camera was connected to the OpenEphys board, sending a pulse for each frame taken, allowing the synchronisation of the two streams of information.',
-                },
-                {
-                    'name': 'Video2',
-                    'description': 'Video during epoch 2. Video capturing and marker tracking were performed using Bonsai software 51 at 40 Hz. For the juvenile recordings, images were acquired through a Logitech C930e camera. To synchronise the images with the electrophysiology data, an Arduino microcontroller was programmed to send a random sequence of pulses to both the OpenEphys system and a LED light within the frame of the camera. The times when the LED light shone were detected by Bonsai and synchronisation of the pulses in the light and the electrophysiology data was done offline. For the adult recordings, images were acquired through an acA1300-75gc Basler camera with a LMVZ4411 Kowa lens, positioned at the ceiling of the rig. This camera was connected to the OpenEphys board, sending a pulse for each frame taken, allowing the synchronisation of the two streams of information.',
-                },
-                {
-                    'name': 'Video3',
-                    'description': 'Video during epoch 3. Video capturing and marker tracking were performed using Bonsai software 51 at 40 Hz. For the juvenile recordings, images were acquired through a Logitech C930e camera. To synchronise the images with the electrophysiology data, an Arduino microcontroller was programmed to send a random sequence of pulses to both the OpenEphys system and a LED light within the frame of the camera. The times when the LED light shone were detected by Bonsai and synchronisation of the pulses in the light and the electrophysiology data was done offline. For the adult recordings, images were acquired through an acA1300-75gc Basler camera with a LMVZ4411 Kowa lens, positioned at the ceiling of the rig. This camera was connected to the OpenEphys board, sending a pulse for each frame taken, allowing the synchronisation of the two streams of information.',
-                },
-            ],
-            'CameraDevice': {
-                'name': 'camera_device 0', # This MUST be formatted exactly "camera_device {camera_id}" to be compatible with spyglass
-                'meters_per_pixel': 0.0016, # TODO: update this value
-                'manufacturer': 'Logitech',
-                'model': 'C930e',
-                'lens': 'built-in',
-                'camera_name': 'Video Camera',
-            },
-        }
-    }
     nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, timestamp_file_paths=timestamps_file_paths, metadata=metadata)
     # nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=xml_data, stub_test=stub_test) # TODO: add LFP back in once it has been shared
     nwbfile = nwb.convert.add_raw_ephys(nwbfile=nwbfile, folder_path=raw_ephys_folder_path, epochs=epochs, xml_data=xml_data, stub_test=stub_test)
@@ -142,6 +106,7 @@ def main():
     output_folder_path = Path('/Volumes/T7/CatalystNeuro/Spyglass/raw')
     if output_folder_path.exists():
         shutil.rmtree(output_folder_path)
+    metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/metadata.yaml")
 
     # Example Juvenile Sessions
     juvenile_folder_path = dataset_path / "H3000_Juveniles"
@@ -177,6 +142,7 @@ def main():
         # lfp_file_path=lfp_file_path,
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
+        metadata_file_path=metadata_file_path,
         stub_test=stub_test,
     )
 
@@ -212,6 +178,7 @@ def main():
         # lfp_file_path=lfp_file_path,
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
+        metadata_file_path=metadata_file_path,
         stub_test=stub_test,
     )
 
