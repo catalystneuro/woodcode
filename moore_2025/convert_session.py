@@ -106,10 +106,10 @@ def main():
     output_folder_path = Path('/Volumes/T7/CatalystNeuro/Spyglass/raw')
     if output_folder_path.exists():
         shutil.rmtree(output_folder_path)
-    metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/metadata.yaml")
 
     # Example Juvenile Sessions
     juvenile_folder_path = dataset_path / "H3000_Juveniles"
+    metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/juvenile_metadata.yaml")
 
     # Example Juvenile WT session
     jv_wt_folder_path = juvenile_folder_path / "WT"
