@@ -20,18 +20,19 @@ subject        P50D     this is a mock None         U       None
  (Total: 4)
 
 === IntervalList ===
-*nwb_file_name *interval_list valid_time pipeline    
-+------------+ +------------+ +--------+ +----------+
-H3022-210805_. 01             =BLOB=                 
-H3022-210805_. 02             =BLOB=                 
-H3022-210805_. 03             =BLOB=                 
-H3022-210805_. 04             =BLOB=                 
-H3022-210805_. pos 0 valid ti =BLOB=     position    
-H3022-210805_. raw data valid =BLOB=                 
-H3022-210805_. sleep_nrem     =BLOB=                 
-H3022-210805_. sleep_rem      =BLOB=                 
-H3022-210805_. sleep_wake     =BLOB=                 
- (Total: 9)
+*nwb_file_name *interval_list valid_time pipeline      
++------------+ +------------+ +--------+ +------------+
+H3022-210805_. 01             =BLOB=                   
+H3022-210805_. 02             =BLOB=                   
+H3022-210805_. 03             =BLOB=                   
+H3022-210805_. 04             =BLOB=                   
+H3022-210805_. imported lfp 0 =BLOB=     imported_lfp  
+H3022-210805_. pos 0 valid ti =BLOB=     position      
+H3022-210805_. raw data valid =BLOB=                   
+H3022-210805_. sleep_nrem     =BLOB=                   
+H3022-210805_. sleep_rem      =BLOB=                   
+H3022-210805_. sleep_wake     =BLOB=                   
+ (Total: 10)
 
 === Task ===
 *task_name     task_descripti task_type     task_subtype  
@@ -143,14 +144,14 @@ H3022-210805_. probe1_shank1  2             Cambridge Neur Electrodes fro Left
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210805_. raw data valid 4f8aa811-7b49- 30000.0        no comments    Acquisition tr
+H3022-210805_. raw data valid 2ce66cc2-5f14- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-
- (Total: 0)
+H3022-210805_. imported_lfp_0 imported lfp 0 1250.0         bdf91485-2bb7-
+ (Total: 1)
 
 === PositionSource ===
 *nwb_file_name *interval_list source       import_file_na
@@ -168,8 +169,8 @@ H3022-210805_. pos 0 valid ti 1      position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H3022-210805_. pos 0 valid ti 0      2a367b89-7a4c-
-H3022-210805_. pos 0 valid ti 1      28315f38-e65f-
+H3022-210805_. pos 0 valid ti 0      5046fbff-8c39-
+H3022-210805_. pos 0 valid ti 1      ef11693e-ed83-
  (Total: 2)
 
 === RawPosition ===
@@ -191,7 +192,7 @@ time
 === ImportedSpikeSorting ===
 *nwb_file_name object_id     
 +------------+ +------------+
-H3022-210805_. 92cdf65d-29cd-
+H3022-210805_. ed37ec52-08b6-
  (Total: 1)
 
 === Annotation ===

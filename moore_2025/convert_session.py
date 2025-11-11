@@ -16,7 +16,7 @@ def session_to_nwb(
     sleep_path: Path,
     video_file_paths: list[Path],
     timestamps_file_paths: list[Path],
-    # lfp_file_path: Path,
+    lfp_file_path: Path,
     raw_ephys_folder_path: Path,
     save_path: Path,
     metadata_file_path: Path,
@@ -89,7 +89,7 @@ def session_to_nwb(
     nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
     nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name)
     nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, timestamp_file_paths=timestamps_file_paths, metadata=metadata)
-    # nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=xml_data, stub_test=stub_test) # TODO: add LFP back in once it has been shared
+    nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=xml_data, stub_test=stub_test)
     nwbfile = nwb.convert.add_raw_ephys(nwbfile=nwbfile, folder_path=raw_ephys_folder_path, epochs=epochs, xml_data=xml_data, stream_name=stream_name, stub_test=stub_test)
 
     # TODO: figure out what these events are
@@ -127,7 +127,7 @@ def main():
     timestamps_file_paths = [
         jv_wt_folder_path / folder_name / "Raw" / "Bonsai testing2021-08-05T17_06_23.csv",
     ]
-    # lfp_file_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
+    lfp_file_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
     raw_ephys_folder_path = jv_wt_folder_path / folder_name / "Raw"
     save_path = output_folder_path
 
@@ -141,7 +141,7 @@ def main():
         sleep_path=sleep_path,
         video_file_paths=video_file_paths,
         timestamps_file_paths=timestamps_file_paths,
-        # lfp_file_path=lfp_file_path,
+        lfp_file_path=lfp_file_path,
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
         metadata_file_path=metadata_file_path,
@@ -164,7 +164,7 @@ def main():
     timestamps_file_paths = [
         jv_ko_folder_path / folder_name / "Raw" / "Bonsai testing2021-04-23T14_13_55.csv",
     ]
-    # lfp_file_path = jv_ko_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
+    lfp_file_path = jv_ko_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
     raw_ephys_folder_path = jv_ko_folder_path / folder_name / "Raw"
     save_path = output_folder_path
 
@@ -178,7 +178,7 @@ def main():
         sleep_path=sleep_path,
         video_file_paths=video_file_paths,
         timestamps_file_paths=timestamps_file_paths,
-        # lfp_file_path=lfp_file_path,
+        lfp_file_path=lfp_file_path,
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
         metadata_file_path=metadata_file_path,
