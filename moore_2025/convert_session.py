@@ -88,9 +88,6 @@ def session_to_nwb(
     nwbfile = nwb.convert.create_nwb_file(metadata, start_time)
     nwbfile = nwb.convert.add_probes(nwbfile, metadata, xml_data, nrs_data)
     nwbfile = nwb.convert.add_tracking(nwbfile, pos, hd)
-    # TODO: debug units
-    # nwbfile = nwb.convert.add_units(nwbfile, xml_data, spikes, waveforms, shank_id)  # get shank names from NWB file
-    # nwbfile = nwb.convert.add_events(nwbfile, events)
     nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
     nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name)
     nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, timestamp_file_paths=timestamps_file_paths, metadata=metadata, timestamp_column_name=timestamp_column_name)
@@ -100,6 +97,9 @@ def session_to_nwb(
     # TODO: figure out what these events are
     # events = nwb.io.get_openephys_events(mat_path / 'states.npy', mat_path / 'timestamps.npy', time_offset=epochs.at[len(epochs)-1, 'Start'], skip_first=16)  # load LED events
     # nwbfile = nwb.convert.add_events(nwbfile, events)
+
+    # TODO: Figure out how to accommodate waveform_means with different numbers of channels for each shank
+    # nwbfile = nwb.convert.add_units(nwbfile, xml_data, spikes, waveforms, shank_id)  # get shank names from NWB file
 
     # save NWB file
     nwb.convert.save_nwb_file(nwbfile, save_path, folder_name)
@@ -150,6 +150,7 @@ def main():
     #     save_path=save_path,
     #     metadata_file_path=metadata_file_path,
     #     stub_test=stub_test,
+    #     is_adult=False,
     # )
 
     # # Example Juvenile KO session
@@ -186,6 +187,7 @@ def main():
     #     save_path=save_path,
     #     metadata_file_path=metadata_file_path,
     #     stub_test=stub_test,
+    #     is_adult=False,
     # )
 
     # Example Adult Sessions
@@ -231,6 +233,7 @@ def main():
         save_path=save_path,
         metadata_file_path=metadata_file_path,
         stub_test=stub_test,
+        is_adult=True,
     )
 
     # TODO: Add Adult KO session

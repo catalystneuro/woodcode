@@ -252,11 +252,9 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
     # Add Electrodes to the NWBFile
     electrode_counter = 0
     for probe_id, shank_id, probe_location, probe_step, probe_coordinates, probe_horizontal_spacing_in_um, probe_reference in shank_assignments:
-        print(f"Adding electrodes for probe {probe_id}, shank {shank_id}...")
         group_name = f"probe{probe_id}_shank{shank_id}"
         electrode_group = nwbfile.electrode_groups[group_name]
         num_electrodes = shank_id_to_num_electrodes[shank_id]
-        print(f"Number of electrodes: {num_electrodes}")
         for ielec in range(num_electrodes):
             elec_x_in_um = probe_horizontal_spacing_in_um * (ielec % 2) # Electrodes alternate x positions for even/odd electrodes
             elec_x_in_mm = elec_x_in_um / 1000.0
