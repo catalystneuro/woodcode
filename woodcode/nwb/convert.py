@@ -252,9 +252,11 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
     # Add Electrodes to the NWBFile
     electrode_counter = 0
     for probe_id, shank_id, probe_location, probe_step, probe_coordinates, probe_horizontal_spacing_in_um, probe_reference in shank_assignments:
+        print(f"Adding electrodes for probe {probe_id}, shank {shank_id}...")
         group_name = f"probe{probe_id}_shank{shank_id}"
         electrode_group = nwbfile.electrode_groups[group_name]
         num_electrodes = shank_id_to_num_electrodes[shank_id]
+        print(f"Number of electrodes: {num_electrodes}")
         for ielec in range(num_electrodes):
             elec_x_in_um = probe_horizontal_spacing_in_um * (ielec % 2) # Electrodes alternate x positions for even/odd electrodes
             elec_x_in_mm = elec_x_in_um / 1000.0
@@ -634,6 +636,7 @@ def add_video(
         nwbfile: NWBFile,
         video_file_paths: list[Path],
         timestamp_file_paths: list[Path],
+        timestamp_column_name: str,
         metadata: dict,
 ) -> NWBFile:
     print("Adding video to NWB file...")
@@ -643,9 +646,9 @@ def add_video(
 
     # load timestamps from the first file to get starting datetime
     timestamp_file_path = timestamp_file_paths[0]
-    timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=["Item4.Timestamp"])
-    starting_datetime = timestamps_df["Item4.Timestamp"].iloc[0]
-    timestamps_df["timestamps"] = (timestamps_df["Item4.Timestamp"] - starting_datetime).dt.total_seconds()
+    timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
+    starting_datetime = timestamps_df[timestamp_column_name].iloc[0]
+    timestamps_df["timestamps"] = (timestamps_df[timestamp_column_name] - starting_datetime).dt.total_seconds()
     timestamps = timestamps_df["timestamps"].to_numpy()
     # dt = np.mean(np.diff(timestamps))
     # timestamps = np.concatenate((timestamps, [timestamps[-1] + dt])) # Last frame is missing from the csv file TODO: double check with the Dudchenko lab
@@ -653,8 +656,8 @@ def add_video(
 
     # load timestamps from the rest of the files normalized to the starting datetime
     for timestamp_file_path in timestamp_file_paths[1:]:
-        timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=["Item4.Timestamp"])
-        timestamps_df["timestamps"] = (timestamps_df["Item4.Timestamp"] - starting_datetime).dt.total_seconds()
+        timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
+        timestamps_df["timestamps"] = (timestamps_df[timestamp_column_name] - starting_datetime).dt.total_seconds()
         timestamps = timestamps_df["timestamps"].to_numpy()
         # dt = np.mean(np.diff(timestamps))
         # timestamps = np.concatenate((timestamps, [timestamps[-1] + dt])) # Last frame is missing from the csv file TODO: double check with the Dudchenko lab
@@ -704,6 +707,7 @@ def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, epochs: pd.DataFrame, xml
     eseries_kwargs = dict(name="ElectricalSeries", description="Acquisition traces for the ElectricalSeries.")
 
     channel_ids = recording.get_channel_ids()
+    print(f"{len(channel_ids)} channels found in the recording extractor.")
     region = list(range(len(channel_ids)))
     electrode_table_region = nwbfile.create_electrode_table_region(
         region=region,

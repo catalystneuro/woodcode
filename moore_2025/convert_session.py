@@ -20,7 +20,6 @@ def session_to_nwb(
     raw_ephys_folder_path: Path,
     save_path: Path,
     metadata_file_path: Path,
-    stream_name: str,
     stub_test: bool = False,
     is_adult: bool = True,
 ):
@@ -54,13 +53,18 @@ def session_to_nwb(
         Path to save the NWB file
     metadata_file_path : Path
         Path to the metadata YAML file
-    stream_name : str
-        Name of the OpenEphys stream to load raw ephys from
     stub_test : bool, optional
         Whether to stub data for testing, by default False
     is_adult : bool, optional
         Whether the subject is an adult or a juvenile, by default True
     """
+    if is_adult:
+        timestamp_column_name = "Item3.Timestamp"
+        stream_name = "Rhythm_FPGA-103.0"
+    else: # juvenile
+        timestamp_column_name = "Item4.Timestamp"
+        stream_name = "Rhythm_FPGA-100.0"
+
     save_path.mkdir(parents=True, exist_ok=True)
 
     # LOAD DATA
@@ -84,11 +88,12 @@ def session_to_nwb(
     nwbfile = nwb.convert.create_nwb_file(metadata, start_time)
     nwbfile = nwb.convert.add_probes(nwbfile, metadata, xml_data, nrs_data)
     nwbfile = nwb.convert.add_tracking(nwbfile, pos, hd)
-    nwbfile = nwb.convert.add_units(nwbfile, xml_data, spikes, waveforms, shank_id)  # get shank names from NWB file
+    # TODO: debug units
+    # nwbfile = nwb.convert.add_units(nwbfile, xml_data, spikes, waveforms, shank_id)  # get shank names from NWB file
     # nwbfile = nwb.convert.add_events(nwbfile, events)
     nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
     nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name)
-    nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, timestamp_file_paths=timestamps_file_paths, metadata=metadata)
+    nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, timestamp_file_paths=timestamps_file_paths, metadata=metadata, timestamp_column_name=timestamp_column_name)
     nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=xml_data, stub_test=stub_test)
     nwbfile = nwb.convert.add_raw_ephys(nwbfile=nwbfile, folder_path=raw_ephys_folder_path, epochs=epochs, xml_data=xml_data, stream_name=stream_name, stub_test=stub_test)
 
@@ -107,7 +112,6 @@ def main():
     output_folder_path = Path('/Volumes/T7/CatalystNeuro/Spyglass/raw')
     if output_folder_path.exists():
         shutil.rmtree(output_folder_path)
-    stream_name = "Rhythm_FPGA-100.0"
 
     # # Example Juvenile Sessions
     # juvenile_folder_path = dataset_path / "H3000_Juveniles"
@@ -145,7 +149,6 @@ def main():
     #     raw_ephys_folder_path=raw_ephys_folder_path,
     #     save_path=save_path,
     #     metadata_file_path=metadata_file_path,
-    #     stream_name=stream_name,
     #     stub_test=stub_test,
     # )
 
@@ -182,7 +185,6 @@ def main():
     #     raw_ephys_folder_path=raw_ephys_folder_path,
     #     save_path=save_path,
     #     metadata_file_path=metadata_file_path,
-    #     stream_name=stream_name,
     #     stub_test=stub_test,
     # )
 
@@ -193,7 +195,8 @@ def main():
     # Example Adult WT session
     adult_wt_folder_path = adult_folder_path / "WT"
     folder_name = 'H4813-220728'
-    xml_path = adult_wt_folder_path / folder_name / "Processed" / (folder_name + '.xml')  # path to xml file
+    # Note: using the XML from the Raw folder here since the one in Processed is missing one of the channels for shank 2
+    xml_path = adult_wt_folder_path / folder_name / "Raw" / "experiment1" / "recording1" / "continuous" / "Rhythm_FPGA-103.0" / "continuous.xml"
     nrs_path = adult_wt_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
     meta_path = dataset_path / 'MooreDataset_Metadata.xlsx'  # path to metadata file
     mat_path = adult_wt_folder_path / folder_name / "Processed" / 'Analysis'
@@ -227,7 +230,6 @@ def main():
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
         metadata_file_path=metadata_file_path,
-        stream_name=stream_name,
         stub_test=stub_test,
     )
 
