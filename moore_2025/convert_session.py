@@ -20,6 +20,7 @@ def session_to_nwb(
     raw_ephys_folder_path: Path,
     save_path: Path,
     metadata_file_path: Path,
+    stream_name: str,
     stub_test: bool = False,
     is_adult: bool = True,
 ):
@@ -51,6 +52,10 @@ def session_to_nwb(
         Path to the raw ephys OpenEphys record node folder
     save_path : Path
         Path to save the NWB file
+    metadata_file_path : Path
+        Path to the metadata YAML file
+    stream_name : str
+        Name of the OpenEphys stream to load raw ephys from
     stub_test : bool, optional
         Whether to stub data for testing, by default False
     is_adult : bool, optional
@@ -85,7 +90,7 @@ def session_to_nwb(
     nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name)
     nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, timestamp_file_paths=timestamps_file_paths, metadata=metadata)
     # nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=xml_data, stub_test=stub_test) # TODO: add LFP back in once it has been shared
-    nwbfile = nwb.convert.add_raw_ephys(nwbfile=nwbfile, folder_path=raw_ephys_folder_path, epochs=epochs, xml_data=xml_data, stub_test=stub_test)
+    nwbfile = nwb.convert.add_raw_ephys(nwbfile=nwbfile, folder_path=raw_ephys_folder_path, epochs=epochs, xml_data=xml_data, stream_name=stream_name, stub_test=stub_test)
 
     # TODO: figure out what these events are
     # events = nwb.io.get_openephys_events(mat_path / 'states.npy', mat_path / 'timestamps.npy', time_offset=epochs.at[len(epochs)-1, 'Start'], skip_first=16)  # load LED events
@@ -102,6 +107,7 @@ def main():
     output_folder_path = Path('/Volumes/T7/CatalystNeuro/Spyglass/raw')
     if output_folder_path.exists():
         shutil.rmtree(output_folder_path)
+    stream_name = "Rhythm_FPGA-100.0"
 
     # Example Juvenile Sessions
     juvenile_folder_path = dataset_path / "H3000_Juveniles"
@@ -139,6 +145,7 @@ def main():
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
         metadata_file_path=metadata_file_path,
+        stream_name=stream_name,
         stub_test=stub_test,
     )
 
@@ -175,6 +182,7 @@ def main():
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
         metadata_file_path=metadata_file_path,
+        stream_name=stream_name,
         stub_test=stub_test,
     )
 

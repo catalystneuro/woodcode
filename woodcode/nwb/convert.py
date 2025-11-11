@@ -691,13 +691,12 @@ from neuroconv.tools.spikeinterface.spikeinterface import _stub_recording
 from neuroconv.utils import calculate_regular_series_rate
 import pynwb
 from .multi_segment_recording_data_chunk_iterator import MultiSegmentRecordingDataChunkIterator
-def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, epochs: pd.DataFrame, xml_data: dict, stub_test: bool = False) -> NWBFile:
+def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, epochs: pd.DataFrame, xml_data: dict, stream_name: str, stub_test: bool = False) -> NWBFile:
     print("Adding raw ephys to NWB file...")
 
     segment_starting_times = epochs.Start.values
     chan_order = np.concatenate(xml_data['spike_groups'])
 
-    stream_name = "Rhythm_FPGA-100.0" # TODO: expose this as a parameter
     recording = OpenEphysBinaryRecordingExtractor(folder_path=folder_path, stream_name=stream_name)
     if stub_test:
         recording = _stub_recording(recording)
