@@ -25,3 +25,4 @@ probe:
   - name: probe_1
     coordinates: [-6.3, 1.6, 3.1] # mm AP, DV, ML from Bregma, BUT Ventral aka down is positive
     horizontal_spacing_in_um: 22.5
+    reference: A silver ground wire was placed directly above the cerebellum as the reference.

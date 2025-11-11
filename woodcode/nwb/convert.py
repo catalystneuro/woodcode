@@ -150,14 +150,14 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
     # get a list of dead channels from the nrs file
     good_channels = nrsdata['channels_shown']
 
-    # Build shank assignments list: each tuple is (probe_id, global_shank_id, probe_location, probe_step, probe_coordinates, probe_horizontal_spacing_in_um)
+    # Build shank assignments list: each tuple is (probe_id, global_shank_id, probe_location, probe_step, probe_coordinates, probe_horizontal_spacing_in_um, probe_reference)
     shank_assignments = []
     global_shank_id = 1 # Global shank ID across all probes
     for probe_metadata in metadata["probe"]:
         probe_id = probe_metadata["id"]
         nshanks = probe_metadata["nshanks"]
         for _ in range(nshanks):
-            shank_assignments.append((probe_id, global_shank_id, probe_metadata["location"], probe_metadata["step"], probe_metadata["coordinates"], probe_metadata["horizontal_spacing_in_um"]))
+            shank_assignments.append((probe_id, global_shank_id, probe_metadata["location"], probe_metadata["step"], probe_metadata["coordinates"], probe_metadata["horizontal_spacing_in_um"], probe_metadata["reference"]))
             global_shank_id += 1
 
     # Ensure number of shanks in metadata matches xmldata
@@ -165,7 +165,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
         raise ValueError("Mismatch between shank count in metadata and xmldata['spike_groups']")
 
     shank_id_to_num_electrodes = {}
-    for (_, shank_id, _, _, _, _), electrodes in zip(shank_assignments, xmldata["spike_groups"]):
+    for (_, shank_id, _, _, _, _, _), electrodes in zip(shank_assignments, xmldata["spike_groups"]):
         shank_id_to_num_electrodes[shank_id] = len(electrodes)
 
     # Add DataAcqDevice (Spyglass requirement)
@@ -186,7 +186,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
     # Build Shank objects with ShanksElectrode objects, organized by probe
     probe_id_to_shanks = {}  # Maps probe_id -> list of Shank objects
     electrode_counter = 0  # Global electrode counter across all shanks and probes
-    for probe_id, shank_id, probe_location, probe_step, probe_coordinates, probe_horizontal_spacing_in_um in shank_assignments:
+    for probe_id, shank_id, probe_location, probe_step, probe_coordinates, probe_horizontal_spacing_in_um, probe_reference in shank_assignments:
         num_electrodes = shank_id_to_num_electrodes[shank_id]
         # Initialize probe entry if needed
         if probe_id not in probe_id_to_shanks:
@@ -232,7 +232,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
         nwbfile.add_device(probe)
 
     # Add NwbElectrodeGroup objects for each shank
-    for probe_id, shank_id, probe_location, probe_step, probe_coordinates, probe_horizontal_spacing_in_um in shank_assignments:
+    for probe_id, shank_id, probe_location, probe_step, probe_coordinates, probe_horizontal_spacing_in_um, probe_reference in shank_assignments:
         probe_name = f"Probe {probe_id}"
         probe = nwbfile.devices[probe_name]
         group_name = f"probe{probe_id}_shank{shank_id}"
@@ -251,7 +251,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
 
     # Add Electrodes to the NWBFile
     electrode_counter = 0
-    for probe_id, shank_id, probe_location, probe_step, probe_coordinates, probe_horizontal_spacing_in_um in shank_assignments:
+    for probe_id, shank_id, probe_location, probe_step, probe_coordinates, probe_horizontal_spacing_in_um, probe_reference in shank_assignments:
         group_name = f"probe{probe_id}_shank{shank_id}"
         electrode_group = nwbfile.electrode_groups[group_name]
         num_electrodes = shank_id_to_num_electrodes[shank_id]
@@ -278,7 +278,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
                 probe_electrode=electrode_counter,
                 bad_channel=is_bad_channel,
                 ref_elect_id=-1, # Spyglass requires this field to be specified as an integer even when none of the probe electrodes served as the original reference.
-                reference="TODO: add reference info",
+                reference=probe_reference,
             )
             electrode_counter += 1
 

@@ -29,4 +29,5 @@ Video:
 
 probe:
   - name: probe_1
-    coordinates: [-7.64, 3.3, -1.7] # mm AP, ML, DV from Bregma
+    coordinates: [-7.64, 1.7, 3.3] # mm AP, DV, ML from Bregma, BUT Ventral aka down is positive
+    reference: A silver ground wire was attached to one of the skull screws placed above the cerebellum as the reference.
