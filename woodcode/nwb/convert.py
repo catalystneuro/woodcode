@@ -169,11 +169,11 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
         shank_id_to_num_electrodes[shank_id] = len(electrodes)
 
     # Add DataAcqDevice (Spyglass requirement)
-    data_acq_device = DataAcqDevice( # TODO: make metadata driven
+    data_acq_device = DataAcqDevice(
         name="data_acquisition_device",
-        system="OpenEphys",
-        amplifier="Intan RHD amplifier chip",
-        adc_circuit="Intan RHD adc circuit",
+        system=metadata["probe"][0]["data_acquisition_system"],
+        amplifier=metadata["probe"][0]["data_acuisition_amplifier"],
+        adc_circuit=metadata["probe"][0]["data_acquisition_adc_circuit"],
     )
     nwbfile.add_device(data_acq_device)
 

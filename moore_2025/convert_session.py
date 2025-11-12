@@ -132,9 +132,11 @@ def session_to_nwb(
     if is_adult:
         timestamp_column_name = "Item3.Timestamp"
         stream_name = "Rhythm_FPGA-103.0"
+        probe_info = get_probe_info_adults()
     else: # juvenile
         timestamp_column_name = "Item4.Timestamp"
         stream_name = "Rhythm_FPGA-100.0"
+        probe_info = get_probe_info_juveniles()
 
     save_path.mkdir(parents=True, exist_ok=True)
 
@@ -154,12 +156,6 @@ def session_to_nwb(
     # Update metadata with info from metadata.yaml
     metadata_from_yaml = load_dict_from_file(metadata_file_path)
     metadata = dict_deep_update(metadata, metadata_from_yaml)
-
-    # Get probe info
-    if is_adult:
-        probe_info = get_probe_info_adults()
-    else:
-        probe_info = get_probe_info_juveniles()
 
     # CONSTRUCT NWB FILE
     nwbfile = nwb.convert.create_nwb_file(metadata, start_time)
