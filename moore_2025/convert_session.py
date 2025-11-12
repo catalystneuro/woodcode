@@ -4,6 +4,47 @@ import pandas as pd
 import shutil
 from neuroconv.utils.dict import load_dict_from_file, dict_deep_update
 import woodcode.nwb as nwb
+import probeinterface as pbi
+import numpy as np
+
+def get_probe_info_adults() -> dict:
+    manufacturer = 'cambridgeneurotech'
+    model = 'ASSY-77-H7'
+    probe = pbi.get_probe(manufacturer=manufacturer, probe_name=model)
+
+    contact_size = float(probe.contact_shape_params[0]["width"] * probe.contact_shape_params[0]["height"])  # in um^2
+
+    # Split contacts by shank
+    shank1_contact_positions = probe.contact_positions[probe.contact_positions[:, 0] < 100, :]
+    shank2_contact_positions = probe.contact_positions[probe.contact_positions[:, 0] >= 100, :]
+
+    # Sort by Y coordinate (second column) in descending order for top to bottom
+    shank1_contact_positions = shank1_contact_positions[np.argsort(shank1_contact_positions[:, 1])[::-1], :]
+    shank2_contact_positions = shank2_contact_positions[np.argsort(shank2_contact_positions[:, 1])[::-1], :]
+
+    # Flip Y-axis so that down is positive and shift y-axis to start at zero
+    shank1_contact_positions[:, 1] = -shank1_contact_positions[:, 1] + np.max(shank1_contact_positions[:, 1])
+    shank2_contact_positions[:, 1] = -shank2_contact_positions[:, 1] + np.max(shank2_contact_positions[:, 1])
+
+    # Add empty z-axis (third column)
+    shank1_contact_positions = np.hstack((shank1_contact_positions, np.zeros((shank1_contact_positions.shape[0], 1))))
+    shank2_contact_positions = np.hstack((shank2_contact_positions, np.zeros((shank2_contact_positions.shape[0], 1))))
+
+    probe_id = 1
+    shank1_id = 1
+    shank2_id = 2
+    probe_info = {
+        probe_id: {
+            'contact_size': contact_size,
+            shank1_id: {
+                'electrode_coordinates': shank1_contact_positions,
+            },
+            shank2_id: {
+                'electrode_coordinates': shank2_contact_positions,
+            },
+        },
+    }
+    return probe_info
 
 def session_to_nwb(
     *,
@@ -84,9 +125,15 @@ def session_to_nwb(
     metadata_from_yaml = load_dict_from_file(metadata_file_path)
     metadata = dict_deep_update(metadata, metadata_from_yaml)
 
+    # Get probe info
+    if is_adult:
+        probe_info = get_probe_info_adults()
+    else:
+        probe_info = None
+
     # CONSTRUCT NWB FILE
     nwbfile = nwb.convert.create_nwb_file(metadata, start_time)
-    nwbfile = nwb.convert.add_probes(nwbfile, metadata, xml_data, nrs_data)
+    nwbfile = nwb.convert.add_probes(nwbfile, metadata, xml_data, nrs_data, probe_info)
     nwbfile = nwb.convert.add_tracking(nwbfile, pos, hd)
     nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
     nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name)
@@ -113,82 +160,82 @@ def main():
     if output_folder_path.exists():
         shutil.rmtree(output_folder_path)
 
-    # Example Juvenile Sessions
-    juvenile_folder_path = dataset_path / "H3000_Juveniles"
-    metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/juvenile_metadata.yaml")
+    # # Example Juvenile Sessions
+    # juvenile_folder_path = dataset_path / "H3000_Juveniles"
+    # metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/juvenile_metadata.yaml")
 
-    # Example Juvenile WT session
-    jv_wt_folder_path = juvenile_folder_path / "WT"
-    folder_name = 'H3022-210805'
-    xml_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.xml')  # path to xml file
-    nrs_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
-    meta_path = dataset_path / 'MooreDataset_Metadata.xlsx'  # path to metadata file
-    mat_path = jv_wt_folder_path / folder_name / "Processed" / 'Analysis'
-    sleep_path = jv_wt_folder_path / folder_name / "Processed" / 'Sleep'
-    video_file_paths = [
-        jv_wt_folder_path / folder_name / "Raw" / "BonsaiCaptureALL2021-08-05T17_06_24.avi",
-    ]
-    timestamps_file_paths = [
-        jv_wt_folder_path / folder_name / "Raw" / "Bonsai testing2021-08-05T17_06_23.csv",
-    ]
-    lfp_file_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
-    raw_ephys_folder_path = jv_wt_folder_path / folder_name / "Raw"
-    save_path = output_folder_path
+    # # Example Juvenile WT session
+    # jv_wt_folder_path = juvenile_folder_path / "WT"
+    # folder_name = 'H3022-210805'
+    # xml_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.xml')  # path to xml file
+    # nrs_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
+    # meta_path = dataset_path / 'MooreDataset_Metadata.xlsx'  # path to metadata file
+    # mat_path = jv_wt_folder_path / folder_name / "Processed" / 'Analysis'
+    # sleep_path = jv_wt_folder_path / folder_name / "Processed" / 'Sleep'
+    # video_file_paths = [
+    #     jv_wt_folder_path / folder_name / "Raw" / "BonsaiCaptureALL2021-08-05T17_06_24.avi",
+    # ]
+    # timestamps_file_paths = [
+    #     jv_wt_folder_path / folder_name / "Raw" / "Bonsai testing2021-08-05T17_06_23.csv",
+    # ]
+    # lfp_file_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
+    # raw_ephys_folder_path = jv_wt_folder_path / folder_name / "Raw"
+    # save_path = output_folder_path
 
-    session_to_nwb(
-        dataset_path=dataset_path,
-        folder_name=folder_name,
-        xml_path=xml_path,
-        nrs_path=nrs_path,
-        meta_path=meta_path,
-        mat_path=mat_path,
-        sleep_path=sleep_path,
-        video_file_paths=video_file_paths,
-        timestamps_file_paths=timestamps_file_paths,
-        lfp_file_path=lfp_file_path,
-        raw_ephys_folder_path=raw_ephys_folder_path,
-        save_path=save_path,
-        metadata_file_path=metadata_file_path,
-        stub_test=stub_test,
-        is_adult=False,
-    )
+    # session_to_nwb(
+    #     dataset_path=dataset_path,
+    #     folder_name=folder_name,
+    #     xml_path=xml_path,
+    #     nrs_path=nrs_path,
+    #     meta_path=meta_path,
+    #     mat_path=mat_path,
+    #     sleep_path=sleep_path,
+    #     video_file_paths=video_file_paths,
+    #     timestamps_file_paths=timestamps_file_paths,
+    #     lfp_file_path=lfp_file_path,
+    #     raw_ephys_folder_path=raw_ephys_folder_path,
+    #     save_path=save_path,
+    #     metadata_file_path=metadata_file_path,
+    #     stub_test=stub_test,
+    #     is_adult=False,
+    # )
 
-    # Example Juvenile KO session
-    jv_ko_folder_path = juvenile_folder_path / "KO"
-    folder_name = 'H3016-210423'
-    # Note: H3016-210423 uses H3022-210805's XML because the original had faulty channels removed from spikeDetection (26 vs 32 channels). Both sessions share the same probe mapping.
-    xml_path = jv_wt_folder_path / 'H3022-210805' / "Processed" / ( 'H3022-210805' + '.xml')
-    nrs_path = jv_ko_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
-    meta_path = dataset_path / 'MooreDataset_Metadata.xlsx'  # path to metadata file
-    mat_path = jv_ko_folder_path / folder_name / "Processed" / 'Analysis'
-    sleep_path = jv_ko_folder_path / folder_name / "Processed" / 'Sleep'
-    video_file_paths = [
-        jv_ko_folder_path / folder_name / "Raw" / "BonsaiCaptureALL2021-04-23T14_14_05.avi",
-    ]
-    timestamps_file_paths = [
-        jv_ko_folder_path / folder_name / "Raw" / "Bonsai testing2021-04-23T14_13_55.csv",
-    ]
-    lfp_file_path = jv_ko_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
-    raw_ephys_folder_path = jv_ko_folder_path / folder_name / "Raw"
-    save_path = output_folder_path
+    # # Example Juvenile KO session
+    # jv_ko_folder_path = juvenile_folder_path / "KO"
+    # folder_name = 'H3016-210423'
+    # # Note: H3016-210423 uses H3022-210805's XML because the original had faulty channels removed from spikeDetection (26 vs 32 channels). Both sessions share the same probe mapping.
+    # xml_path = jv_wt_folder_path / 'H3022-210805' / "Processed" / ( 'H3022-210805' + '.xml')
+    # nrs_path = jv_ko_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
+    # meta_path = dataset_path / 'MooreDataset_Metadata.xlsx'  # path to metadata file
+    # mat_path = jv_ko_folder_path / folder_name / "Processed" / 'Analysis'
+    # sleep_path = jv_ko_folder_path / folder_name / "Processed" / 'Sleep'
+    # video_file_paths = [
+    #     jv_ko_folder_path / folder_name / "Raw" / "BonsaiCaptureALL2021-04-23T14_14_05.avi",
+    # ]
+    # timestamps_file_paths = [
+    #     jv_ko_folder_path / folder_name / "Raw" / "Bonsai testing2021-04-23T14_13_55.csv",
+    # ]
+    # lfp_file_path = jv_ko_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
+    # raw_ephys_folder_path = jv_ko_folder_path / folder_name / "Raw"
+    # save_path = output_folder_path
 
-    session_to_nwb(
-        dataset_path=dataset_path,
-        folder_name=folder_name,
-        xml_path=xml_path,
-        nrs_path=nrs_path,
-        meta_path=meta_path,
-        mat_path=mat_path,
-        sleep_path=sleep_path,
-        video_file_paths=video_file_paths,
-        timestamps_file_paths=timestamps_file_paths,
-        lfp_file_path=lfp_file_path,
-        raw_ephys_folder_path=raw_ephys_folder_path,
-        save_path=save_path,
-        metadata_file_path=metadata_file_path,
-        stub_test=stub_test,
-        is_adult=False,
-    )
+    # session_to_nwb(
+    #     dataset_path=dataset_path,
+    #     folder_name=folder_name,
+    #     xml_path=xml_path,
+    #     nrs_path=nrs_path,
+    #     meta_path=meta_path,
+    #     mat_path=mat_path,
+    #     sleep_path=sleep_path,
+    #     video_file_paths=video_file_paths,
+    #     timestamps_file_paths=timestamps_file_paths,
+    #     lfp_file_path=lfp_file_path,
+    #     raw_ephys_folder_path=raw_ephys_folder_path,
+    #     save_path=save_path,
+    #     metadata_file_path=metadata_file_path,
+    #     stub_test=stub_test,
+    #     is_adult=False,
+    # )
 
     # Example Adult Sessions
     adult_folder_path = dataset_path / "H4800_Adults"
