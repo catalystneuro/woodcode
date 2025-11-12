@@ -705,7 +705,6 @@ def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, epochs: pd.DataFrame, xml
     eseries_kwargs = dict(name="ElectricalSeries", description="Acquisition traces for the ElectricalSeries.")
 
     channel_ids = recording.get_channel_ids()
-    print(f"{len(channel_ids)} channels found in the recording extractor.")
     region = list(range(len(channel_ids)))
     electrode_table_region = nwbfile.create_electrode_table_region(
         region=region,

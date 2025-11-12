@@ -236,7 +236,46 @@ def main():
         is_adult=True,
     )
 
-    # TODO: Add Adult KO session
+    # Example Adult KO session
+    adult_ko_folder_path = adult_folder_path / "KO"
+    folder_name = 'H4817-220828'
+    xml_path = adult_ko_folder_path / folder_name / "Processed" / (folder_name + '.xml')  # path to xml file
+    nrs_path = adult_ko_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
+    meta_path = dataset_path / 'MooreDataset_Metadata.xlsx'  # path to metadata file
+    mat_path = adult_ko_folder_path / folder_name / "Processed" / 'Analysis'
+    sleep_path = adult_ko_folder_path / folder_name / "Processed" / 'Sleep'
+    video_file_paths = [
+        adult_ko_folder_path / folder_name / "Raw" / "experiment1" / "recording1" / "BonsaiVideo2022-08-28T16_18_06.avi",
+        adult_ko_folder_path / folder_name / "Raw" / "experiment1" / "recording2" / "BonsaiVideo2022-08-28T16_40_58.avi",
+        adult_ko_folder_path / folder_name / "Raw" / "experiment1" / "recording3" / "BonsaiVideo2022-08-28T18_13_23.avi",
+        adult_ko_folder_path / folder_name / "Raw" / "experiment1" / "recording4" / "BonsaiVideo2022-08-28T18_36_14.avi",
+    ]
+    timestamps_file_paths = [
+        adult_ko_folder_path / folder_name / "Raw" / "experiment1" / "recording1" / "BonsaiTracking2022-08-28T16_18_05.csv",
+        adult_ko_folder_path / folder_name / "Raw" / "experiment1" / "recording2" / "BonsaiTracking2022-08-28T16_40_56.csv",
+        adult_ko_folder_path / folder_name / "Raw" / "experiment1" / "recording3" / "BonsaiTracking2022-08-28T18_13_20.csv",
+        adult_ko_folder_path / folder_name / "Raw" / "experiment1" / "recording4" / "BonsaiTracking2022-08-28T18_36_12.csv",
+    ]
+    lfp_file_path = adult_ko_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
+    raw_ephys_folder_path = adult_ko_folder_path / folder_name / "Raw"
+    save_path = output_folder_path
+    session_to_nwb(
+        dataset_path=dataset_path,
+        folder_name=folder_name,
+        xml_path=xml_path,
+        nrs_path=nrs_path,
+        meta_path=meta_path,
+        mat_path=mat_path,
+        sleep_path=sleep_path,
+        video_file_paths=video_file_paths,
+        timestamps_file_paths=timestamps_file_paths,
+        lfp_file_path=lfp_file_path,
+        raw_ephys_folder_path=raw_ephys_folder_path,
+        save_path=save_path,
+        metadata_file_path=metadata_file_path,
+        stub_test=stub_test,
+        is_adult=True,
+    )
 
 
 if __name__ == "__main__":
