@@ -51,11 +51,11 @@ def create_nwb_file(metadata, start_time):
     nwbfile.subject = Subject(
         age=f"P{age_days}D",
         description=metadata['subject']['description'],
-                              species='Rattus norvegicus',
-                              subject_id=rec_id[0],
-                              genotype=metadata['subject']['genotype'],
-                              sex=metadata['subject']['sex'],
-                              strain=metadata['subject']['strain'],
+        species='Rattus norvegicus',
+        subject_id=rec_id[0],
+        genotype=metadata['subject']['genotype'],
+        sex=metadata['subject']['sex'],
+        strain=metadata['subject']['strain'],
     )
 
     return nwbfile
