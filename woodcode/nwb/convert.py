@@ -15,6 +15,7 @@ import warnings
 import pynapple as nap
 from ndx_franklab_novela import CameraDevice, DataAcqDevice, Probe, Shank, ShanksElectrode, NwbElectrodeGroup
 from pynwb.image import ImageSeries
+from neuroconv.utils import calculate_regular_series_rate
 
 def create_nwb_file(metadata, start_time):
     # get info from folder name
@@ -376,12 +377,24 @@ def add_sleep(nwbfile, sleep_path, folder_name):
     print('Adding pseudoEMG to the NWB file...')
 
     emg = spio.loadmat(emg_file, simplify_cells=True)
+
+
+    rate = calculate_regular_series_rate(emg['EMGFromLFP']['timestamps'])
+    if rate is not None: # If the pseudo-EMG timestamps are perfectly regular, use the more efficient starting time and rate. 
+        timestamps = None
+        starting_time = float(emg['EMGFromLFP']['timestamps'][0])
+    else: # Otherwise, use the timestamps directly.
+        timestamps = emg['EMGFromLFP']['timestamps']
+        starting_time = None
+
     emg = TimeSeries(
         name="pseudoEMG",
         description="Pseudo EMG from correlated high-frequency LFP",
         data=emg['EMGFromLFP']['data'],
         unit="a.u.",
-        timestamps=emg['EMGFromLFP']['timestamps']
+        timestamps=timestamps,
+        rate=rate,
+        starting_time=starting_time,
     )
 
     # Create an extracellular ephys module or add to the existing one
