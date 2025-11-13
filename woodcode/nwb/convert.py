@@ -174,6 +174,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
     # Add DataAcqDevice (Spyglass requirement)
     data_acq_device = DataAcqDevice(
         name="data_acquisition_device",
+        description=metadata["probe"][0]["data_acquisition_description"],
         system=metadata["probe"][0]["data_acquisition_system"],
         amplifier=metadata["probe"][0]["data_acuisition_amplifier"],
         adc_circuit=metadata["probe"][0]["data_acquisition_adc_circuit"],
@@ -667,6 +668,7 @@ def add_video(
     camera_device_metadata = metadata["Video"]["CameraDevice"]
     camera_device = CameraDevice(
         name=camera_device_metadata["name"],
+        description=camera_device_metadata["description"],
         meters_per_pixel=camera_device_metadata["meters_per_pixel"],
         model=camera_device_metadata["model"],
         lens=camera_device_metadata["lens"],

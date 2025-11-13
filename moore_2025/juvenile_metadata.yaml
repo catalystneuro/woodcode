@@ -15,6 +15,7 @@ Video:
       description: Video capturing and marker tracking were performed using Bonsai software 51 at 40 Hz. For the juvenile recordings, images were acquired through a Logitech C930e camera. To synchronise the images with the electrophysiology data, an Arduino microcontroller was programmed to send a random sequence of pulses to both the OpenEphys system and a LED light within the frame of the camera. The times when the LED light shone were detected by Bonsai and synchronisation of the pulses in the light and the electrophysiology data was done offline.
   CameraDevice:
     name: camera_device 0
+    description: For the juvenile recordings, images were acquired through a Logitech C930e camera.
     meters_per_pixel: 0.0016 # TODO: update this value
     manufacturer: Logitech
     model: C930e
@@ -25,6 +26,7 @@ probe:
   - name: probe_1
     coordinates: [-6.3, 1.6, -3.1] # mm AP, DV, ML from Bregma, BUT Ventral aka down is positive (also note ML is negative here for left hemisphere)
     reference: A silver ground wire was placed directly above the cerebellum as the reference.
+    data_acquisition_description: For recording, the implanted silicon probe was connected to an Intan RHD headstage (Intan technologies). The headstage was connected to an Intan RHD standard SPI cable, which was connected to a 3D-printed commutator in the ceiling (custom-made in house). Signals were acquired at 30kHz with an OpenEphys data acquisition system.
     data_acquisition_system: OpenEphys
     data_acuisition_amplifier: Intan RHD amplifier chip
     data_acquisition_adc_circuit: Intan RHD adc circuit
