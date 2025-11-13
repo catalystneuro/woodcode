@@ -225,6 +225,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
         
         probe = Probe(
             name=probe_name,
+            description=probe_metadata["description"],
             id=probe_id,
             probe_type=probe_metadata["type"],
             units="um",
@@ -304,11 +305,10 @@ def add_tracking(nwbfile, pos, ang=None):
         description='(x,y) position',
         data=pos.values,
         timestamps=pos.index.to_numpy(),
-        reference_frame='',
+        reference_frame='', # TODO: add reference frame info once shared
         unit='centimeters'
     )
     position_obj = Position(spatial_series=spatial_series_obj)
-    # behavior_module.add(position_obj)
 
     # Add head-direction data only if ang is provided
     if ang is not None:
@@ -321,8 +321,6 @@ def add_tracking(nwbfile, pos, ang=None):
             reference_frame='',
             unit='radians'
         )
-        # direction_obj = CompassDirection(spatial_series=spatial_series_obj)
-        # behavior_module.add(direction_obj)
         position_obj.add_spatial_series(spatial_series_obj)
         behavior_module.add(position_obj)
 
