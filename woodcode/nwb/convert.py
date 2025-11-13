@@ -339,28 +339,37 @@ def add_sleep(nwbfile, sleep_path, folder_name):
     epNREM = np.float32(sleepEpochs['SleepState']['ints']['NREMstate'])
     epREM = np.float32(sleepEpochs['SleepState']['ints']['REMstate'])
 
-    sleep_stages = TimeIntervals(name='sleep_stages')
-
+    # Build a list of dictionaries with row data
+    sleep_stage_rows = []
+    
     if epREM.size > 0:
         if epREM.ndim == 1:  # in case there is only one interval
-            sleep_stages.add_row(start_time=epREM[0], stop_time=epREM[1], tags=['rem'])  # tags need to go as list
+            sleep_stage_rows.append({'start_time': epREM[0], 'stop_time': epREM[1], 'tags': ['rem']})
         elif epREM.ndim == 2:
             for nrow in range(len(epREM)):
-                sleep_stages.add_row(start_time=epREM[nrow, 0], stop_time=epREM[nrow, 1], tags=['rem'])
+                sleep_stage_rows.append({'start_time': epREM[nrow, 0], 'stop_time': epREM[nrow, 1], 'tags': ['rem']})
 
     if epNREM.size > 0:
         if epNREM.ndim == 1:  # in case there is only one interval
-            sleep_stages.add_row(start_time=epNREM[0], stop_time=epNREM[1], tags=['nrem'])
+            sleep_stage_rows.append({'start_time': epNREM[0], 'stop_time': epNREM[1], 'tags': ['nrem']})
         elif epNREM.ndim == 2:
             for nrow in range(len(epNREM)):
-                sleep_stages.add_row(start_time=epNREM[nrow, 0], stop_time=epNREM[nrow, 1], tags=['nrem'])
+                sleep_stage_rows.append({'start_time': epNREM[nrow, 0], 'stop_time': epNREM[nrow, 1], 'tags': ['nrem']})
 
     if epWake.size > 0:
         if epWake.ndim == 1:  # in case there is only one interval
-            sleep_stages.add_row(start_time=epWake[0], stop_time=epWake[1], tags=['wake'])
+            sleep_stage_rows.append({'start_time': epWake[0], 'stop_time': epWake[1], 'tags': ['wake']})
         elif epWake.ndim == 2:
             for nrow in range(len(epWake)):
-                sleep_stages.add_row(start_time=epWake[nrow, 0], stop_time=epWake[nrow, 1], tags=['wake'])
+                sleep_stage_rows.append({'start_time': epWake[nrow, 0], 'stop_time': epWake[nrow, 1], 'tags': ['wake']})
+
+    # Sort rows by start time
+    sleep_stage_rows.sort(key=lambda x: x['start_time'])
+
+    # Iterate through the list and add each row to sleep_stages
+    sleep_stages = TimeIntervals(name='sleep_stages')
+    for row_data in sleep_stage_rows:
+        sleep_stages.add_row(**row_data)
 
     nwbfile.add_time_intervals(sleep_stages)
 
