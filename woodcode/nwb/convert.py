@@ -449,7 +449,7 @@ def add_epochs(nwbfile, epochs, metadata):
         task_metadata = tasks_metadata[task]
         description = task_metadata["description"]
         environment = task_metadata["environment"]
-        camera_id = [0]
+        camera_id = [task_metadata["camera_id"]]
         task_epochs = [epoch for epoch, tag in epoch_tags.items() if tag == task]
         task_table = DynamicTable(name=task, description=description)
         task_table.add_column(name="task_name", description="Name of the task.")

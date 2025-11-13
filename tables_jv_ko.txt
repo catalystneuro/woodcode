@@ -166,13 +166,13 @@ H3016-210423_. probe1_shank1  2             Cambridge Neur Electrodes fro Left
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3016-210423_. raw data valid e5dec30c-328d- 30000.0        no comments    Acquisition tr
+H3016-210423_. raw data valid 342680df-a54c- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H3016-210423_. imported_lfp_0 imported lfp 0 1250.0         684cc2b8-25ab-
+H3016-210423_. imported_lfp_0 imported lfp 0 1250.0         32466ce7-19c7-
  (Total: 1)
 
 === PositionSource ===
@@ -191,8 +191,8 @@ H3016-210423_. pos 0 valid ti 1      position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H3016-210423_. pos 0 valid ti 0      1f5bef5a-dc73-
-H3016-210423_. pos 0 valid ti 1      9fe3618e-2d6c-
+H3016-210423_. pos 0 valid ti 0      0af8ba6e-83bd-
+H3016-210423_. pos 0 valid ti 1      cfa1cb87-357c-
  (Total: 2)
 
 === RawPosition ===
