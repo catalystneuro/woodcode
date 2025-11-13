@@ -30,9 +30,6 @@ def create_nwb_file(metadata, start_time):
         dob = datetime(2000 + int(dob_str[:2]), int(dob_str[2:4]), int(dob_str[4:6]))
         age_days = (start_time.date() - dob.date()).days
 
-    if metadata['subject']['stock_id'] is None:
-        metadata['subject']['stock_id'] = -1 # TODO: remove this placeholder once stock_id metadata has been shared
-
     # create an nwb file
     nwbfile = NWBFile(
         session_description=metadata['file']['session_description'],
@@ -51,12 +48,15 @@ def create_nwb_file(metadata, start_time):
     )
 
     # add subject
-    nwbfile.subject = Subject(age=f"P{age_days}D",
-                              description=f"{metadata['subject']['line']} {int(metadata['subject']['stock_id'])}",
+    nwbfile.subject = Subject(
+        age=f"P{age_days}D",
+        description=metadata['subject']['description'],
                               species='Rattus norvegicus',
                               subject_id=rec_id[0],
                               genotype=metadata['subject']['genotype'],
-                              sex=metadata['subject']['sex'])
+                              sex=metadata['subject']['sex'],
+                              strain=metadata['subject']['strain'],
+    )
 
     return nwbfile
 
