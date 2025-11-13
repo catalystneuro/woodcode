@@ -295,7 +295,7 @@ def get_matlab_spikes(path):
 
     # get spike metadata
     waveforms = spio.loadmat(waveform_file, simplify_cells=True)
-    waveforms = waveforms['meanWaveforms']
+    waveforms = waveforms['meanWaveforms'] # TODO: figure out if these waveforms have been renumbered in channels to match electrodes table and raw data
     shank_id = spikedata['shank']-1,
     shank_id = shank_id[0]
 
@@ -502,7 +502,7 @@ def read_metadata(file_path, file_name, print_output=False):
             probe_num, probe_key = match.groups()
             probe_num = int(probe_num)  # Convert to integer
             if probe_num not in probe_data:
-                probe_data[probe_num] = {"id": probe_num}
+                probe_data[probe_num] = {"id": probe_num, "name": f"probe_{probe_num}"}
 
             value = df[col].iloc[0]
             if pd.isna(value):
