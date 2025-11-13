@@ -192,6 +192,7 @@ def main():
     table_path = Path("tables_jv_wt.txt")
     nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    (sgc.Subject & {"subject_id": "H3022"}).delete()
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
     print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
@@ -200,6 +201,7 @@ def main():
     table_path = Path("tables_jv_ko.txt")
     nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    (sgc.Subject & {"subject_id": "H3016"}).delete()
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
     print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
@@ -208,6 +210,7 @@ def main():
     table_path = Path("tables_ad_wt.txt")
     nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    (sgc.Subject & {"subject_id": "H4813"}).delete()
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
     print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
@@ -216,6 +219,7 @@ def main():
     table_path = Path("tables_ad_ko.txt")
     nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    (sgc.Subject & {"subject_id": "H4817"}).delete()
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
     print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 

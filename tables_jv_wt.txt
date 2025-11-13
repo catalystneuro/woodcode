@@ -11,13 +11,10 @@ H3022-210805_. H3022          University of  Wood/Dudchenko 210805         Explo
  (Total: 1)
 
 === Subject ===
-*subject_id    age      description    genotype     sex     species       
-+------------+ +------+ +------------+ +----------+ +-----+ +------------+
-001            P90D     mouse 5        None         U       Mus musculus  
-H3016          P0D      Fmr1 -1        KO           M       Rattus norvegi
-H3022          P0D      Fmr1 -1        WT           U       Rattus norvegi
-subject        P50D     this is a mock None         U       None          
- (Total: 4)
+*subject_id    age     description    genotype     sex     species       
++------------+ +-----+ +------------+ +----------+ +-----+ +------------+
+H3022          P0D     All experiment WT           M       Rattus norvegi
+ (Total: 1)
 
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline      
@@ -90,8 +87,7 @@ H3022-210805_. 4         wake_cue_rot   None           04             cylindrica
 *camera_name   meters_per_pix manufacturer   model     lens         camera_id    
 +------------+ +------------+ +------------+ +-------+ +----------+ +-----------+
 Logitech Camer 0.0016                        C930e     built-in     0            
-Video Camera   0.0016                        C930e     built-in     0            
- (Total: 2)
+ (Total: 1)
 
 === Data Acquisition Device ===
 *data_acquisit data_acquisiti data_acquisiti adc_circuit   
@@ -102,25 +98,25 @@ data_acquisiti OpenEphys      Intan RHD ampl Intan RHD adc
 === Electrode ===
 *nwb_file_name *electrode_gro *electrode_id  probe_id       probe_shank    probe_electrod region_id     name     original_refer x           y          z        filtering      impedance     bad_channel    x_warped     y_warped     z_warped     contacts    
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +-----------+ +------+ +------------+ +---------+ +--------+ +------+ +------------+ +-----------+ +------------+ +----------+ +----------+ +----------+ +----------+
-H3022-210805_. probe1_shank1  0              Cambridge Neur 1              0              2             0        -1             -6.2775     1.6        -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
-H3022-210805_. probe1_shank1  1              Cambridge Neur 1              1              2             1        -1             -6.3        1.6125     -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
-H3022-210805_. probe1_shank1  2              Cambridge Neur 1              2              2             2        -1             -6.2775     1.625      -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
-H3022-210805_. probe1_shank1  3              Cambridge Neur 1              3              2             3        -1             -6.3        1.6375     -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
-H3022-210805_. probe1_shank1  4              Cambridge Neur 1              4              2             4        -1             -6.2775     1.65       -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
-H3022-210805_. probe1_shank1  5              Cambridge Neur 1              5              2             5        -1             -6.3        1.6625     -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
-H3022-210805_. probe1_shank1  6              Cambridge Neur 1              6              2             6        -1             -6.2775     1.675      -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
-H3022-210805_. probe1_shank1  7              Cambridge Neur 1              7              2             7        -1             -6.3        1.6875     -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
-H3022-210805_. probe1_shank1  8              Cambridge Neur 1              8              2             8        -1             -6.2775     1.7        -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
-H3022-210805_. probe1_shank1  9              Cambridge Neur 1              9              2             9        -1             -6.3        1.7125     -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
-H3022-210805_. probe1_shank1  10             Cambridge Neur 1              10             2             10       -1             -6.2775     1.725      -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
-H3022-210805_. probe1_shank1  11             Cambridge Neur 1              11             2             11       -1             -6.3        1.7375     -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
+H3022-210805_. probe1_shank1  0              Cambridge Neur 1              0              1             0        -1             -6.2775     1.6        -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
+H3022-210805_. probe1_shank1  1              Cambridge Neur 1              1              1             1        -1             -6.3        1.6125     -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
+H3022-210805_. probe1_shank1  2              Cambridge Neur 1              2              1             2        -1             -6.2775     1.625      -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
+H3022-210805_. probe1_shank1  3              Cambridge Neur 1              3              1             3        -1             -6.3        1.6375     -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
+H3022-210805_. probe1_shank1  4              Cambridge Neur 1              4              1             4        -1             -6.2775     1.65       -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
+H3022-210805_. probe1_shank1  5              Cambridge Neur 1              5              1             5        -1             -6.3        1.6625     -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
+H3022-210805_. probe1_shank1  6              Cambridge Neur 1              6              1             6        -1             -6.2775     1.675      -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
+H3022-210805_. probe1_shank1  7              Cambridge Neur 1              7              1             7        -1             -6.3        1.6875     -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
+H3022-210805_. probe1_shank1  8              Cambridge Neur 1              8              1             8        -1             -6.2775     1.7        -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
+H3022-210805_. probe1_shank1  9              Cambridge Neur 1              9              1             9        -1             -6.3        1.7125     -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
+H3022-210805_. probe1_shank1  10             Cambridge Neur 1              10             1             10       -1             -6.2775     1.725      -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
+H3022-210805_. probe1_shank1  11             Cambridge Neur 1              11             1             11       -1             -6.3        1.7375     -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
    ...
  (Total: 32)
 
 === Electrode Group ===
 *nwb_file_name *electrode_gro region_id     probe_id       description    target_hemisph
 +------------+ +------------+ +-----------+ +------------+ +------------+ +------------+
-H3022-210805_. probe1_shank1  2             Cambridge Neur Electrodes fro Left          
+H3022-210805_. probe1_shank1  1             Cambridge Neur Electrodes fro Left          
  (Total: 1)
 
 === Probe ===
