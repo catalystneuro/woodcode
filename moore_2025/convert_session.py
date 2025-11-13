@@ -8,6 +8,7 @@ import probeinterface as pbi
 import numpy as np
 
 def get_probe_info_juveniles() -> dict:
+    # TODO: add logic for daily probe advancement after multi-day example data gets shared. 
     manufacturer = 'cambridgeneurotech'
     model = 'ASSY-37-H6b'
     probe = pbi.get_probe(manufacturer=manufacturer, probe_name=model)

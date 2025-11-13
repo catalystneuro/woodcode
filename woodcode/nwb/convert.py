@@ -24,14 +24,14 @@ def create_nwb_file(metadata, start_time):
 
     # calculate animal age
     if metadata['subject']['dob'] is None:
-        age_days = 0
+        age_days = 0 # TODO: remove this placeholder once age_metadata has been shared
     else:
         dob_str = str(metadata['subject']['dob'])
         dob = datetime(2000 + int(dob_str[:2]), int(dob_str[2:4]), int(dob_str[4:6]))
         age_days = (start_time.date() - dob.date()).days
 
     if metadata['subject']['stock_id'] is None:
-        metadata['subject']['stock_id'] = -1
+        metadata['subject']['stock_id'] = -1 # TODO: remove this placeholder once stock_id metadata has been shared
 
     # create an nwb file
     nwbfile = NWBFile(
