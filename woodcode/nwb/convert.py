@@ -36,16 +36,19 @@ def create_nwb_file(metadata, start_time):
     # create an nwb file
     nwbfile = NWBFile(
         session_description=metadata['file']['session_description'],
-        experiment_description=metadata['file']['experiment_description'],
         identifier=metadata['file']['name'],
         session_start_time=start_time,
-        session_id=rec_id[1],
-        protocol=metadata['file']['protocol'],
-        notes=metadata['file']['notes'],
         experimenter=metadata['file']['experimenter'],
-        lab=metadata['file']['lab'],
+        experiment_description=metadata['file']['experiment_description'],
+        session_id=rec_id[1],
         institution=metadata['file']['institution'],
-        virus='')
+        keywords=metadata['file']['keywords'].split(', '),
+        notes=metadata['file']['notes'],
+        protocol=metadata['file']['protocol'],
+        related_publications=metadata['file']['related_publications'],
+        surgery=metadata['file']['surgery'],
+        lab=metadata['file']['lab'],
+    )
 
     # add subject
     nwbfile.subject = Subject(age=f"P{age_days}D",
