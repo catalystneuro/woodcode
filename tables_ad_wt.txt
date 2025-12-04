@@ -13,9 +13,9 @@ H4813-220728_. H4813          University of  Wood/Dudchenko 220728         Explo
 === Subject ===
 *subject_id    age     description    genotype     sex     species       
 +------------+ +-----+ +------------+ +----------+ +-----+ +------------+
-H3016          P0D     All experiment Fmr1-/y      M       Rattus norvegi
-H3022          P0D     All experiment WT           M       Rattus norvegi
-H4813          P0D     All experiment WT           M       Rattus norvegi
+H3016          P0D     All experiment Fmr1-/y      U       Rattus norvegi
+H3022          P0D     All experiment WT           U       Rattus norvegi
+H4813          P0D     All experiment WT           U       Rattus norvegi
  (Total: 3)
 
 === IntervalList ===
@@ -27,11 +27,10 @@ H4813-220728_. 03             =BLOB=
 H4813-220728_. 04             =BLOB=                   
 H4813-220728_. imported lfp 0 =BLOB=     imported_lfp  
 H4813-220728_. pos 0 valid ti =BLOB=     position      
-H4813-220728_. raw data valid =BLOB=                   
 H4813-220728_. sleep_nrem     =BLOB=                   
 H4813-220728_. sleep_rem      =BLOB=                   
 H4813-220728_. sleep_wake     =BLOB=                   
- (Total: 10)
+ (Total: 9)
 
 === Task ===
 *task_name     task_descripti task_type     task_subtype  
@@ -84,8 +83,8 @@ H4813-220728_. 4         wake_cue_rot   None           04             cylindrica
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
-H4813-220728_. 1         1              Basler Camera  e885532f-5b03-
-H4813-220728_. 2         1              Basler Camera  2828fe47-e88f-
+H4813-220728_. 1         1              Basler Camera  b6542b79-8e62-
+H4813-220728_. 2         1              Basler Camera  91d2bc2c-29dd-
  (Total: 2)
 
 === Camera Device ===
@@ -102,28 +101,28 @@ data_acquisiti OpenEphys      Intan RHD ampl Intan RHD adc
  (Total: 1)
 
 === Electrode ===
-*nwb_file_name *electrode_gro *electrode_id  probe_id       probe_shank    probe_electrod region_id     name     original_refer x           y         z        filtering      impedance     bad_channel    x_warped     y_warped     z_warped     contacts    
-+------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +-----------+ +------+ +------------+ +---------+ +-------+ +------+ +------------+ +-----------+ +------------+ +----------+ +----------+ +----------+ +----------+
-H4813-220728_. probe1_shank1  0              Cambridge Neur 1              0              1             0        -1             -7.6675     1.7       -3.3     unfiltered     nan           False          0.0          0.0          0.0                      
-H4813-220728_. probe1_shank1  1              Cambridge Neur 1              1              1             1        -1             -7.6325     1.725     -3.3     unfiltered     nan           False          0.0          0.0          0.0                      
-H4813-220728_. probe1_shank1  2              Cambridge Neur 1              2              1             2        -1             -7.667      1.75      -3.3     unfiltered     nan           False          0.0          0.0          0.0                      
-H4813-220728_. probe1_shank1  3              Cambridge Neur 1              3              1             3        -1             -7.633      1.775     -3.3     unfiltered     nan           False          0.0          0.0          0.0                      
-H4813-220728_. probe1_shank1  4              Cambridge Neur 1              4              1             4        -1             -7.6665     1.8       -3.3     unfiltered     nan           False          0.0          0.0          0.0                      
-H4813-220728_. probe1_shank1  5              Cambridge Neur 1              5              1             5        -1             -7.6335     1.825     -3.3     unfiltered     nan           False          0.0          0.0          0.0                      
-H4813-220728_. probe1_shank1  6              Cambridge Neur 1              6              1             6        -1             -7.666      1.85      -3.3     unfiltered     nan           False          0.0          0.0          0.0                      
-H4813-220728_. probe1_shank1  7              Cambridge Neur 1              7              1             7        -1             -7.634      1.875     -3.3     unfiltered     nan           False          0.0          0.0          0.0                      
-H4813-220728_. probe1_shank1  8              Cambridge Neur 1              8              1             8        -1             -7.6655     1.9       -3.3     unfiltered     nan           False          0.0          0.0          0.0                      
-H4813-220728_. probe1_shank1  9              Cambridge Neur 1              9              1             9        -1             -7.6345     1.925     -3.3     unfiltered     nan           False          0.0          0.0          0.0                      
-H4813-220728_. probe1_shank1  10             Cambridge Neur 1              10             1             10       -1             -7.665      1.95      -3.3     unfiltered     nan           False          0.0          0.0          0.0                      
-H4813-220728_. probe1_shank1  11             Cambridge Neur 1              11             1             11       -1             -7.635      1.975     -3.3     unfiltered     nan           False          0.0          0.0          0.0                      
+*nwb_file_name *electrode_gro *electrode_id  probe_id       probe_shank    probe_electrod region_id     name     original_refer x       y       z       filtering      impedance     bad_channel    x_warped     y_warped     z_warped     contacts    
++------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +-----------+ +------+ +------------+ +-----+ +-----+ +-----+ +------------+ +-----------+ +------------+ +----------+ +----------+ +----------+ +----------+
+H4813-220728_. probe1_shank1  0              Cambridge Neur 1              0              2             0        -1             nan     nan     nan     unfiltered     nan           False          0.0          0.0          0.0                      
+H4813-220728_. probe1_shank1  1              Cambridge Neur 1              1              2             1        -1             nan     nan     nan     unfiltered     nan           False          0.0          0.0          0.0                      
+H4813-220728_. probe1_shank1  2              Cambridge Neur 1              2              2             2        -1             nan     nan     nan     unfiltered     nan           False          0.0          0.0          0.0                      
+H4813-220728_. probe1_shank1  3              Cambridge Neur 1              3              2             3        -1             nan     nan     nan     unfiltered     nan           False          0.0          0.0          0.0                      
+H4813-220728_. probe1_shank1  4              Cambridge Neur 1              4              2             4        -1             nan     nan     nan     unfiltered     nan           False          0.0          0.0          0.0                      
+H4813-220728_. probe1_shank1  5              Cambridge Neur 1              5              2             5        -1             nan     nan     nan     unfiltered     nan           False          0.0          0.0          0.0                      
+H4813-220728_. probe1_shank1  6              Cambridge Neur 1              6              2             6        -1             nan     nan     nan     unfiltered     nan           False          0.0          0.0          0.0                      
+H4813-220728_. probe1_shank1  7              Cambridge Neur 1              7              2             7        -1             nan     nan     nan     unfiltered     nan           False          0.0          0.0          0.0                      
+H4813-220728_. probe1_shank1  8              Cambridge Neur 1              8              2             8        -1             nan     nan     nan     unfiltered     nan           False          0.0          0.0          0.0                      
+H4813-220728_. probe1_shank1  9              Cambridge Neur 1              9              2             9        -1             nan     nan     nan     unfiltered     nan           False          0.0          0.0          0.0                      
+H4813-220728_. probe1_shank1  10             Cambridge Neur 1              10             2             10       -1             nan     nan     nan     unfiltered     nan           False          0.0          0.0          0.0                      
+H4813-220728_. probe1_shank1  11             Cambridge Neur 1              11             2             11       -1             nan     nan     nan     unfiltered     nan           False          0.0          0.0          0.0                      
    ...
  (Total: 64)
 
 === Electrode Group ===
 *nwb_file_name *electrode_gro region_id     probe_id       description    target_hemisph
 +------------+ +------------+ +-----------+ +------------+ +------------+ +------------+
-H4813-220728_. probe1_shank1  1             Cambridge Neur Electrodes fro Left          
-H4813-220728_. probe1_shank2  1             Cambridge Neur Electrodes fro Left          
+H4813-220728_. probe1_shank1  2             Cambridge Neur Electrodes fro Left          
+H4813-220728_. probe1_shank2  2             Cambridge Neur Electrodes fro Left          
  (Total: 2)
 
 === Probe ===
@@ -158,15 +157,15 @@ Cambridge Neur 1              11             165.0          5.0       275.0     
  (Total: 64)
 
 === Raw ===
-*nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
-+------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H4813-220728_. raw data valid 52cf1823-58ab- 30000.0        no comments    Acquisition tr
- (Total: 1)
+*nwb_file_name interval_list_ raw_object_id  sampling_rate  comments     description   
++------------+ +------------+ +------------+ +------------+ +----------+ +------------+
+
+ (Total: 0)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H4813-220728_. imported_lfp_0 imported lfp 0 1250.0         f5c4eb30-cdd8-
+H4813-220728_. imported_lfp_0 imported lfp 0 1250.0         b9710f03-094c-
  (Total: 1)
 
 === PositionSource ===
@@ -185,8 +184,8 @@ H4813-220728_. pos 0 valid ti 1      position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H4813-220728_. pos 0 valid ti 0      4c34e895-f196-
-H4813-220728_. pos 0 valid ti 1      aeb9ae07-65b4-
+H4813-220728_. pos 0 valid ti 0      f08d7ad1-ad08-
+H4813-220728_. pos 0 valid ti 1      1bd44e3c-e405-
  (Total: 2)
 
 === RawPosition ===

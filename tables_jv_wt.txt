@@ -13,8 +13,11 @@ H3022-210805_. H3022          University of  Wood/Dudchenko 210805         Explo
 === Subject ===
 *subject_id    age     description    genotype     sex     species       
 +------------+ +-----+ +------------+ +----------+ +-----+ +------------+
-H3022          P0D     All experiment WT           M       Rattus norvegi
- (Total: 1)
+H3016          P0D     All experiment Fmr1-/y      U       Rattus norvegi
+H3022          P0D     All experiment WT           U       Rattus norvegi
+H4813          P0D     All experiment WT           U       Rattus norvegi
+H4817          P0D     All experiment Fmr1-/y      U       Rattus norvegi
+ (Total: 4)
 
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline      
@@ -25,11 +28,10 @@ H3022-210805_. 03             =BLOB=
 H3022-210805_. 04             =BLOB=                   
 H3022-210805_. imported lfp 0 =BLOB=     imported_lfp  
 H3022-210805_. pos 0 valid ti =BLOB=     position      
-H3022-210805_. raw data valid =BLOB=                   
 H3022-210805_. sleep_nrem     =BLOB=                   
 H3022-210805_. sleep_rem      =BLOB=                   
 H3022-210805_. sleep_wake     =BLOB=                   
- (Total: 10)
+ (Total: 9)
 
 === Task ===
 *task_name     task_descripti task_type     task_subtype  
@@ -84,10 +86,11 @@ H3022-210805_. 4         wake_cue_rot   None           04             cylindrica
  (Total: 0)
 
 === Camera Device ===
-*camera_name   meters_per_pix manufacturer   model     lens         camera_id    
-+------------+ +------------+ +------------+ +-------+ +----------+ +-----------+
-Logitech Camer 0.0016                        C930e     built-in     0            
- (Total: 1)
+*camera_name   meters_per_pix manufacturer   model          lens           camera_id    
++------------+ +------------+ +------------+ +------------+ +------------+ +-----------+
+Basler Camera  0.0016                        acA1300-75gc   LMVZ4411 Kowa  1            
+Logitech Camer 0.0016                        C930e          built-in       0            
+ (Total: 2)
 
 === Data Acquisition Device ===
 *data_acquisit data_acquisiti data_acquisiti adc_circuit   
@@ -96,27 +99,27 @@ data_acquisiti OpenEphys      Intan RHD ampl Intan RHD adc
  (Total: 1)
 
 === Electrode ===
-*nwb_file_name *electrode_gro *electrode_id  probe_id       probe_shank    probe_electrod region_id     name     original_refer x           y          z        filtering      impedance     bad_channel    x_warped     y_warped     z_warped     contacts    
-+------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +-----------+ +------+ +------------+ +---------+ +--------+ +------+ +------------+ +-----------+ +------------+ +----------+ +----------+ +----------+ +----------+
-H3022-210805_. probe1_shank1  0              Cambridge Neur 1              0              1             0        -1             -6.2775     1.6        -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
-H3022-210805_. probe1_shank1  1              Cambridge Neur 1              1              1             1        -1             -6.3        1.6125     -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
-H3022-210805_. probe1_shank1  2              Cambridge Neur 1              2              1             2        -1             -6.2775     1.625      -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
-H3022-210805_. probe1_shank1  3              Cambridge Neur 1              3              1             3        -1             -6.3        1.6375     -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
-H3022-210805_. probe1_shank1  4              Cambridge Neur 1              4              1             4        -1             -6.2775     1.65       -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
-H3022-210805_. probe1_shank1  5              Cambridge Neur 1              5              1             5        -1             -6.3        1.6625     -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
-H3022-210805_. probe1_shank1  6              Cambridge Neur 1              6              1             6        -1             -6.2775     1.675      -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
-H3022-210805_. probe1_shank1  7              Cambridge Neur 1              7              1             7        -1             -6.3        1.6875     -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
-H3022-210805_. probe1_shank1  8              Cambridge Neur 1              8              1             8        -1             -6.2775     1.7        -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
-H3022-210805_. probe1_shank1  9              Cambridge Neur 1              9              1             9        -1             -6.3        1.7125     -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
-H3022-210805_. probe1_shank1  10             Cambridge Neur 1              10             1             10       -1             -6.2775     1.725      -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
-H3022-210805_. probe1_shank1  11             Cambridge Neur 1              11             1             11       -1             -6.3        1.7375     -3.1     unfiltered     nan           True           0.0          0.0          0.0                      
+*nwb_file_name *electrode_gro *electrode_id  probe_id       probe_shank    probe_electrod region_id     name     original_refer x       y       z       filtering      impedance     bad_channel    x_warped     y_warped     z_warped     contacts    
++------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +-----------+ +------+ +------------+ +-----+ +-----+ +-----+ +------------+ +-----------+ +------------+ +----------+ +----------+ +----------+ +----------+
+H3022-210805_. probe1_shank1  0              Cambridge Neur 1              0              2             0        -1             nan     nan     nan     unfiltered     nan           True           0.0          0.0          0.0                      
+H3022-210805_. probe1_shank1  1              Cambridge Neur 1              1              2             1        -1             nan     nan     nan     unfiltered     nan           True           0.0          0.0          0.0                      
+H3022-210805_. probe1_shank1  2              Cambridge Neur 1              2              2             2        -1             nan     nan     nan     unfiltered     nan           True           0.0          0.0          0.0                      
+H3022-210805_. probe1_shank1  3              Cambridge Neur 1              3              2             3        -1             nan     nan     nan     unfiltered     nan           True           0.0          0.0          0.0                      
+H3022-210805_. probe1_shank1  4              Cambridge Neur 1              4              2             4        -1             nan     nan     nan     unfiltered     nan           True           0.0          0.0          0.0                      
+H3022-210805_. probe1_shank1  5              Cambridge Neur 1              5              2             5        -1             nan     nan     nan     unfiltered     nan           True           0.0          0.0          0.0                      
+H3022-210805_. probe1_shank1  6              Cambridge Neur 1              6              2             6        -1             nan     nan     nan     unfiltered     nan           True           0.0          0.0          0.0                      
+H3022-210805_. probe1_shank1  7              Cambridge Neur 1              7              2             7        -1             nan     nan     nan     unfiltered     nan           True           0.0          0.0          0.0                      
+H3022-210805_. probe1_shank1  8              Cambridge Neur 1              8              2             8        -1             nan     nan     nan     unfiltered     nan           True           0.0          0.0          0.0                      
+H3022-210805_. probe1_shank1  9              Cambridge Neur 1              9              2             9        -1             nan     nan     nan     unfiltered     nan           True           0.0          0.0          0.0                      
+H3022-210805_. probe1_shank1  10             Cambridge Neur 1              10             2             10       -1             nan     nan     nan     unfiltered     nan           True           0.0          0.0          0.0                      
+H3022-210805_. probe1_shank1  11             Cambridge Neur 1              11             2             11       -1             nan     nan     nan     unfiltered     nan           True           0.0          0.0          0.0                      
    ...
  (Total: 32)
 
 === Electrode Group ===
 *nwb_file_name *electrode_gro region_id     probe_id       description    target_hemisph
 +------------+ +------------+ +-----------+ +------------+ +------------+ +------------+
-H3022-210805_. probe1_shank1  1             Cambridge Neur Electrodes fro Left          
+H3022-210805_. probe1_shank1  2             Cambridge Neur Electrodes fro Left          
  (Total: 1)
 
 === Probe ===
@@ -138,15 +141,15 @@ H3022-210805_. probe1_shank1  1             Cambridge Neur Electrodes fro Left
  (Total: 0)
 
 === Raw ===
-*nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
-+------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210805_. raw data valid ad8d8f6f-2d52- 30000.0        no comments    Acquisition tr
- (Total: 1)
+*nwb_file_name interval_list_ raw_object_id  sampling_rate  comments     description   
++------------+ +------------+ +------------+ +------------+ +----------+ +------------+
+
+ (Total: 0)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210805_. imported_lfp_0 imported lfp 0 1250.0         4f54204b-2fac-
+H3022-210805_. imported_lfp_0 imported lfp 0 1250.0         39ca9cb0-6671-
  (Total: 1)
 
 === PositionSource ===
@@ -165,8 +168,8 @@ H3022-210805_. pos 0 valid ti 1      position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H3022-210805_. pos 0 valid ti 0      dcdd32fa-a398-
-H3022-210805_. pos 0 valid ti 1      333c9c5d-b1a3-
+H3022-210805_. pos 0 valid ti 0      c4deba0d-44fa-
+H3022-210805_. pos 0 valid ti 1      c1d21d33-b58f-
  (Total: 2)
 
 === RawPosition ===
