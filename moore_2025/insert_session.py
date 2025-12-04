@@ -196,7 +196,6 @@ def main():
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
     print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
-    return
     # Example Juvenile KO Session
     nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3016-210423.nwb")
     table_path = Path("tables_jv_ko.txt")
