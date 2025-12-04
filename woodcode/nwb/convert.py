@@ -719,7 +719,8 @@ def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, epochs: pd.DataFrame, xml
     if stub_test:
         recording = _stub_recording(recording)
 
-    eseries_kwargs = dict(name="ElectricalSeries", description="Acquisition traces for the ElectricalSeries.")
+    # NOTE: spyglass now requires raw electrical series objects to be named, specifically, e-series. 
+    eseries_kwargs = dict(name="e-series", description="Acquisition traces for the ElectricalSeries.")
 
     channel_ids = recording.get_channel_ids()
     region = list(range(len(channel_ids)))
