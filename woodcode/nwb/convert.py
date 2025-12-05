@@ -15,6 +15,7 @@ import warnings
 import pynapple as nap
 from ndx_franklab_novela import CameraDevice, DataAcqDevice, Probe, Shank, ShanksElectrode, NwbElectrodeGroup
 from pynwb.image import ImageSeries
+from neuroconv.utils import calculate_regular_series_rate
 
 def create_nwb_file(metadata, start_time):
     # get info from folder name
@@ -24,36 +25,39 @@ def create_nwb_file(metadata, start_time):
 
     # calculate animal age
     if metadata['subject']['dob'] is None:
-        age_days = 0
+        age_days = 0 # TODO: remove this placeholder once age_metadata has been shared
     else:
         dob_str = str(metadata['subject']['dob'])
         dob = datetime(2000 + int(dob_str[:2]), int(dob_str[2:4]), int(dob_str[4:6]))
         age_days = (start_time.date() - dob.date()).days
 
-    if metadata['subject']['stock_id'] is None:
-        metadata['subject']['stock_id'] = -1
-
     # create an nwb file
     nwbfile = NWBFile(
         session_description=metadata['file']['session_description'],
-        experiment_description=metadata['file']['experiment_description'],
         identifier=metadata['file']['name'],
         session_start_time=start_time,
-        session_id=rec_id[1],
-        protocol=metadata['file']['protocol'],
-        notes=metadata['file']['notes'],
         experimenter=metadata['file']['experimenter'],
-        lab=metadata['file']['lab'],
+        experiment_description=metadata['file']['experiment_description'],
+        session_id=rec_id[1],
         institution=metadata['file']['institution'],
-        virus='')
+        keywords=metadata['file']['keywords'].split(', '),
+        notes=metadata['file']['notes'],
+        protocol=metadata['file']['protocol'],
+        related_publications=metadata['file']['related_publications'],
+        surgery=metadata['file']['surgery'],
+        lab=metadata['file']['lab'],
+    )
 
     # add subject
-    nwbfile.subject = Subject(age=f"P{age_days}D",
-                              description=f"{metadata['subject']['line']} {int(metadata['subject']['stock_id'])}",
-                              species='Rattus norvegicus',
-                              subject_id=rec_id[0],
-                              genotype=metadata['subject']['genotype'],
-                              sex=metadata['subject']['sex'])
+    nwbfile.subject = Subject(
+        age=f"P{age_days}D",
+        description=metadata['subject']['description'],
+        species='Rattus norvegicus',
+        subject_id=rec_id[0],
+        genotype=metadata['subject']['genotype'],
+        sex=metadata['subject']['sex'],
+        strain=metadata['subject']['strain'],
+    )
 
     return nwbfile
 
@@ -139,7 +143,7 @@ def add_units(nwbfile, xml_data, spikes, waveforms, shank_id):
     return nwbfile
 
 
-def add_probes(nwbfile, metadata, xmldata, nrsdata):
+def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
     # to do: add depth info
     """
     Adds probes, electrode groups, and electrodes to the NWB file using Spyglass-compatible types.
@@ -150,14 +154,14 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
     # get a list of dead channels from the nrs file
     good_channels = nrsdata['channels_shown']
 
-    # Build shank assignments list: each tuple is (probe_id, global_shank_id, probe_location, probe_step, probe_coordinates)
+    # Build shank assignments list: each tuple is (probe_id, global_shank_id, probe_location, probe_step, probe_coordinates, probe_reference)
     shank_assignments = []
     global_shank_id = 1 # Global shank ID across all probes
     for probe_metadata in metadata["probe"]:
         probe_id = probe_metadata["id"]
         nshanks = probe_metadata["nshanks"]
         for _ in range(nshanks):
-            shank_assignments.append((probe_id, global_shank_id, probe_metadata["location"], probe_metadata["step"], probe_metadata["coordinates"]))
+            shank_assignments.append((probe_id, global_shank_id, probe_metadata["location"], probe_metadata["step"], probe_metadata["coordinates"], probe_metadata["reference"]))
             global_shank_id += 1
 
     # Ensure number of shanks in metadata matches xmldata
@@ -165,15 +169,16 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
         raise ValueError("Mismatch between shank count in metadata and xmldata['spike_groups']")
 
     shank_id_to_num_electrodes = {}
-    for (_, shank_id, _, _, _), electrodes in zip(shank_assignments, xmldata["spike_groups"]):
+    for (_, shank_id, _, _, _, _), electrodes in zip(shank_assignments, xmldata["spike_groups"]):
         shank_id_to_num_electrodes[shank_id] = len(electrodes)
 
     # Add DataAcqDevice (Spyglass requirement)
     data_acq_device = DataAcqDevice(
         name="data_acquisition_device",
-        system="OpenEphys",
-        amplifier="Unknown",  # TODO: Replace placeholder - actual amplifier name needed
-        adc_circuit="Unknown",  # TODO: Replace placeholder - actual ADC circuit name needed
+        description=metadata["probe"][0]["data_acquisition_description"],
+        system=metadata["probe"][0]["data_acquisition_system"],
+        amplifier=metadata["probe"][0]["data_acuisition_amplifier"],
+        adc_circuit=metadata["probe"][0]["data_acquisition_adc_circuit"],
     )
     nwbfile.add_device(data_acq_device)
 
@@ -186,7 +191,9 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
     # Build Shank objects with ShanksElectrode objects, organized by probe
     probe_id_to_shanks = {}  # Maps probe_id -> list of Shank objects
     electrode_counter = 0  # Global electrode counter across all shanks and probes
-    for probe_id, shank_id, probe_location, probe_step, probe_coordinates in shank_assignments:
+    for probe_id, shank_id, probe_location, probe_step, probe_coordinates, probe_reference in shank_assignments:
+        shank_info = probe_info[probe_id][shank_id]
+        electrode_coordinates = shank_info['electrode_coordinates']
         num_electrodes = shank_id_to_num_electrodes[shank_id]
         # Initialize probe entry if needed
         if probe_id not in probe_id_to_shanks:
@@ -195,13 +202,11 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
         # Build ShanksElectrode objects for this shank
         shanks_electrodes = []
         for ielec in range(num_electrodes):
-            elec_depth = probe_step * (num_electrodes - ielec - 1)
-
             shanks_electrode = ShanksElectrode(
                 name=str(electrode_counter),
-                rel_x=0.0,
-                rel_y=float(elec_depth),
-                rel_z=0.0,
+                rel_x=electrode_coordinates[ielec][0],
+                rel_y=electrode_coordinates[ielec][1],
+                rel_z=electrode_coordinates[ielec][2],
             )
             shanks_electrodes.append(shanks_electrode)
             electrode_counter += 1
@@ -216,28 +221,30 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
     # Create Probe devices and add them to nwbfile
     for probe_metadata in metadata["probe"]:
         probe_id = probe_metadata["id"]
+        contact_size = probe_info[probe_id]['contact_size']
         probe_name = f"Probe {probe_id}"
         
         probe = Probe(
             name=probe_name,
+            description=probe_metadata["description"],
             id=probe_id,
             probe_type=probe_metadata["type"],
             units="um",
             probe_description=probe_metadata["description"],
-            contact_side_numbering=False,  # TODO: Replace placeholder - actual numbering scheme needed
-            contact_size=165.0, # 11x15 um = 165 um^2
+            contact_side_numbering=True,
+            contact_size=contact_size,
             shanks=probe_id_to_shanks[probe_id],
         )
         nwbfile.add_device(probe)
 
     # Add NwbElectrodeGroup objects for each shank
-    for probe_id, shank_id, probe_location, probe_step, probe_coordinates in shank_assignments:
+    for probe_id, shank_id, probe_location, probe_step, probe_coordinates, probe_reference in shank_assignments:
         probe_name = f"Probe {probe_id}"
         probe = nwbfile.devices[probe_name]
         group_name = f"probe{probe_id}_shank{shank_id}"
         electrode_group = NwbElectrodeGroup(
             name=group_name,
-            description=f"Electrodes from {group_name}, step: {probe_step}",
+            description=f"Electrodes from {group_name}, step: {probe_step}. Targeted (x, y, z) represents (AP, DV, ML) coordinates from Bregma, with Ventral being positive.",
             location=probe_location,
             device=probe,
             targeted_location=probe_location,
@@ -250,24 +257,26 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata):
 
     # Add Electrodes to the NWBFile
     electrode_counter = 0
-    for probe_id, shank_id, probe_location, probe_step, probe_coordinates in shank_assignments:
+    for probe_id, shank_id, probe_location, probe_step, probe_coordinates, probe_reference in shank_assignments:
+        shank_info = probe_info[probe_id][shank_id]
+        shank_electrode_coordinates = shank_info['electrode_coordinates']
         group_name = f"probe{probe_id}_shank{shank_id}"
         electrode_group = nwbfile.electrode_groups[group_name]
         num_electrodes = shank_id_to_num_electrodes[shank_id]
         for ielec in range(num_electrodes):
-            elec_depth = probe_step * (num_electrodes - ielec - 1)
             is_bad_channel = electrode_counter not in good_channels
             
             nwbfile.add_electrode(
-                x=0.,
-                y=float(elec_depth),
-                z=0.,
+                rel_x=shank_electrode_coordinates[ielec][0],
+                rel_y=shank_electrode_coordinates[ielec][1],
+                rel_z=0.0,
                 group=electrode_group,
                 location=electrode_group.location,
                 probe_shank=shank_id,
                 probe_electrode=electrode_counter,
                 bad_channel=is_bad_channel,
-                ref_elect_id=-1,  # TODO: Replace placeholder - actual reference electrode ID needed
+                ref_elect_id=-1, # Spyglass requires this field to be specified as an integer even when none of the probe electrodes served as the original reference.
+                reference=probe_reference,
             )
             electrode_counter += 1
 
@@ -290,11 +299,10 @@ def add_tracking(nwbfile, pos, ang=None):
         description='(x,y) position',
         data=pos.values,
         timestamps=pos.index.to_numpy(),
-        reference_frame='',
+        reference_frame='', # TODO: add reference frame info once shared
         unit='centimeters'
     )
     position_obj = Position(spatial_series=spatial_series_obj)
-    # behavior_module.add(position_obj)
 
     # Add head-direction data only if ang is provided
     if ang is not None:
@@ -307,8 +315,6 @@ def add_tracking(nwbfile, pos, ang=None):
             reference_frame='',
             unit='radians'
         )
-        # direction_obj = CompassDirection(spatial_series=spatial_series_obj)
-        # behavior_module.add(direction_obj)
         position_obj.add_spatial_series(spatial_series_obj)
         behavior_module.add(position_obj)
 
@@ -327,40 +333,61 @@ def add_sleep(nwbfile, sleep_path, folder_name):
     epNREM = np.float32(sleepEpochs['SleepState']['ints']['NREMstate'])
     epREM = np.float32(sleepEpochs['SleepState']['ints']['REMstate'])
 
-    sleep_stages = TimeIntervals(name='sleep_stages')
-
+    # Build a list of dictionaries with row data
+    sleep_stage_rows = []
+    
     if epREM.size > 0:
         if epREM.ndim == 1:  # in case there is only one interval
-            sleep_stages.add_row(start_time=epREM[0], stop_time=epREM[1], tags=['rem'])  # tags need to go as list
+            sleep_stage_rows.append({'start_time': epREM[0], 'stop_time': epREM[1], 'tags': ['rem']})
         elif epREM.ndim == 2:
             for nrow in range(len(epREM)):
-                sleep_stages.add_row(start_time=epREM[nrow, 0], stop_time=epREM[nrow, 1], tags=['rem'])
+                sleep_stage_rows.append({'start_time': epREM[nrow, 0], 'stop_time': epREM[nrow, 1], 'tags': ['rem']})
 
     if epNREM.size > 0:
         if epNREM.ndim == 1:  # in case there is only one interval
-            sleep_stages.add_row(start_time=epNREM[0], stop_time=epNREM[1], tags=['nrem'])
+            sleep_stage_rows.append({'start_time': epNREM[0], 'stop_time': epNREM[1], 'tags': ['nrem']})
         elif epNREM.ndim == 2:
             for nrow in range(len(epNREM)):
-                sleep_stages.add_row(start_time=epNREM[nrow, 0], stop_time=epNREM[nrow, 1], tags=['nrem'])
+                sleep_stage_rows.append({'start_time': epNREM[nrow, 0], 'stop_time': epNREM[nrow, 1], 'tags': ['nrem']})
 
     if epWake.size > 0:
         if epWake.ndim == 1:  # in case there is only one interval
-            sleep_stages.add_row(start_time=epWake[0], stop_time=epWake[1], tags=['wake'])
+            sleep_stage_rows.append({'start_time': epWake[0], 'stop_time': epWake[1], 'tags': ['wake']})
         elif epWake.ndim == 2:
             for nrow in range(len(epWake)):
-                sleep_stages.add_row(start_time=epWake[nrow, 0], stop_time=epWake[nrow, 1], tags=['wake'])
+                sleep_stage_rows.append({'start_time': epWake[nrow, 0], 'stop_time': epWake[nrow, 1], 'tags': ['wake']})
+
+    # Sort rows by start time
+    sleep_stage_rows.sort(key=lambda x: x['start_time'])
+
+    # Iterate through the list and add each row to sleep_stages
+    sleep_stages = TimeIntervals(name='sleep_stages')
+    for row_data in sleep_stage_rows:
+        sleep_stages.add_row(**row_data)
 
     nwbfile.add_time_intervals(sleep_stages)
 
     print('Adding pseudoEMG to the NWB file...')
 
     emg = spio.loadmat(emg_file, simplify_cells=True)
+
+
+    rate = calculate_regular_series_rate(emg['EMGFromLFP']['timestamps'])
+    if rate is not None: # If the pseudo-EMG timestamps are perfectly regular, use the more efficient starting time and rate. 
+        timestamps = None
+        starting_time = float(emg['EMGFromLFP']['timestamps'][0])
+    else: # Otherwise, use the timestamps directly.
+        timestamps = emg['EMGFromLFP']['timestamps']
+        starting_time = None
+
     emg = TimeSeries(
         name="pseudoEMG",
         description="Pseudo EMG from correlated high-frequency LFP",
         data=emg['EMGFromLFP']['data'],
         unit="a.u.",
-        timestamps=emg['EMGFromLFP']['timestamps']
+        timestamps=timestamps,
+        rate=rate,
+        starting_time=starting_time,
     )
 
     # Create an extracellular ephys module or add to the existing one
@@ -410,12 +437,12 @@ def add_epochs(nwbfile, epochs, metadata):
     # Add tasks to NWB file
     unique_tasks = set(epoch_tags.values())
     tasks_module = nwbfile.create_processing_module(name="tasks", description="tasks module")
-    tasks_metadata = metadata["task"]
+    tasks_metadata = metadata["Task"]
     for task in unique_tasks:
         task_metadata = tasks_metadata[task]
         description = task_metadata["description"]
         environment = task_metadata["environment"]
-        camera_id = [0]
+        camera_id = [task_metadata["camera_id"]]
         task_epochs = [epoch for epoch, tag in epoch_tags.items() if tag == task]
         task_table = DynamicTable(name=task, description=description)
         task_table.add_column(name="task_name", description="Name of the task.")
@@ -623,6 +650,7 @@ def add_video(
         nwbfile: NWBFile,
         video_file_paths: list[Path],
         timestamp_file_paths: list[Path],
+        timestamp_column_name: str,
         metadata: dict,
 ) -> NWBFile:
     print("Adding video to NWB file...")
@@ -632,9 +660,9 @@ def add_video(
 
     # load timestamps from the first file to get starting datetime
     timestamp_file_path = timestamp_file_paths[0]
-    timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=["Item4.Timestamp"])
-    starting_datetime = timestamps_df["Item4.Timestamp"].iloc[0]
-    timestamps_df["timestamps"] = (timestamps_df["Item4.Timestamp"] - starting_datetime).dt.total_seconds()
+    timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
+    starting_datetime = timestamps_df[timestamp_column_name].iloc[0]
+    timestamps_df["timestamps"] = (timestamps_df[timestamp_column_name] - starting_datetime).dt.total_seconds()
     timestamps = timestamps_df["timestamps"].to_numpy()
     # dt = np.mean(np.diff(timestamps))
     # timestamps = np.concatenate((timestamps, [timestamps[-1] + dt])) # Last frame is missing from the csv file TODO: double check with the Dudchenko lab
@@ -642,8 +670,8 @@ def add_video(
 
     # load timestamps from the rest of the files normalized to the starting datetime
     for timestamp_file_path in timestamp_file_paths[1:]:
-        timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=["Item4.Timestamp"])
-        timestamps_df["timestamps"] = (timestamps_df["Item4.Timestamp"] - starting_datetime).dt.total_seconds()
+        timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
+        timestamps_df["timestamps"] = (timestamps_df[timestamp_column_name] - starting_datetime).dt.total_seconds()
         timestamps = timestamps_df["timestamps"].to_numpy()
         # dt = np.mean(np.diff(timestamps))
         # timestamps = np.concatenate((timestamps, [timestamps[-1] + dt])) # Last frame is missing from the csv file TODO: double check with the Dudchenko lab
@@ -653,6 +681,7 @@ def add_video(
     camera_device_metadata = metadata["Video"]["CameraDevice"]
     camera_device = CameraDevice(
         name=camera_device_metadata["name"],
+        description=camera_device_metadata["description"],
         meters_per_pixel=camera_device_metadata["meters_per_pixel"],
         model=camera_device_metadata["model"],
         lens=camera_device_metadata["lens"],
@@ -680,18 +709,18 @@ from neuroconv.tools.spikeinterface.spikeinterface import _stub_recording
 from neuroconv.utils import calculate_regular_series_rate
 import pynwb
 from .multi_segment_recording_data_chunk_iterator import MultiSegmentRecordingDataChunkIterator
-def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, epochs: pd.DataFrame, xml_data: dict, stub_test: bool = False) -> NWBFile:
+def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, epochs: pd.DataFrame, xml_data: dict, stream_name: str, stub_test: bool = False) -> NWBFile:
     print("Adding raw ephys to NWB file...")
 
     segment_starting_times = epochs.Start.values
     chan_order = np.concatenate(xml_data['spike_groups'])
 
-    stream_name = "Rhythm_FPGA-100.0" # TODO: expose this as a parameter
     recording = OpenEphysBinaryRecordingExtractor(folder_path=folder_path, stream_name=stream_name)
     if stub_test:
         recording = _stub_recording(recording)
 
-    eseries_kwargs = dict(name="ElectricalSeries", description="Acquisition traces for the ElectricalSeries.")
+    # NOTE: spyglass now requires raw electrical series objects to be named, specifically, e-series. 
+    eseries_kwargs = dict(name="e-series", description="Acquisition traces for the ElectricalSeries.")
 
     channel_ids = recording.get_channel_ids()
     region = list(range(len(channel_ids)))
