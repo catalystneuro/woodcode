@@ -6,6 +6,9 @@ from neuroconv.utils.dict import load_dict_from_file, dict_deep_update
 import woodcode.nwb as nwb
 import probeinterface as pbi
 import numpy as np
+import re
+from datetime import datetime
+import pytz
 
 def get_probe_info_juveniles() -> dict:
     # TODO: add logic for daily probe advancement after multi-day example data gets shared. 
@@ -77,6 +80,34 @@ def get_probe_info_adults() -> dict:
     }
     return probe_info
 
+def get_start_time(timestamps_file_path: Path) -> str:
+    """
+    Get the session start datetime from the name of the timestamps CSV file.
+    
+    Parameters
+    ----------
+    timestamps_file_path : Path
+        Path to the timestamps CSV file.
+    
+    Returns
+    -------
+    datetime
+        The session start datetime with timezone information.
+    """
+    # Example filename: 'Bonsai testing2021-08-05T17_06_23.csv'
+    filename = timestamps_file_path.stem  # Ex. 'Bonsai testing2021-08-05T17_06_23'
+    pattern = r'(\d{4}-\d{2}-\d{2}T\d{2}_\d{2}_\d{2})'
+    match = re.search(pattern, filename)
+    if not match:
+        raise ValueError(f"Could not extract datetime from filename: {filename}")
+    
+    start_time = match.group(1)
+    start_time = datetime.strptime(start_time, '%Y-%m-%dT%H_%M_%S')
+    tz_info = pytz.timezone('Europe/London')
+    start_time = tz_info.localize(start_time)
+
+    return start_time
+
 def session_to_nwb(
     *,
     dataset_path: Path,
@@ -146,7 +177,7 @@ def session_to_nwb(
     xml_data = nwb.io.read_xml(xml_path)  # load all ephys info from the xml file
     nrs_data = nwb.io.read_nrs(nrs_path)  # load faulty channel info from the nrs file (i.e. channels not shown in Neuroscope)
     metadata = nwb.io.read_metadata(meta_path, folder_name, print_output=True)  # Load all metadata from the xlsx file
-    start_time = nwb.io.get_start_time(folder_name, Path(""))  # load start time from Metadata.txt file # TODO: Fix this fn to generate a full start datetime
+    start_time = get_start_time(timestamps_file_paths[0])  # load start time from the first timestamps CSV file
 
     # Load tracking, epochs and spikes from Matlab files (mostly loaded as pynapple objects)
     pos = nwb.io.get_matlab_position(mat_path / 'TrackingProcessed_Final.mat', vbl_name='pos')
