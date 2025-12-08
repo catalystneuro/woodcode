@@ -704,25 +704,6 @@ def add_video(
 
     return nwbfile
 
-def get_segment_start_times(folder_path: Path) -> list[float]:
-    experiment_path = folder_path / "experiment1"
-    recording_paths = [d for d in experiment_path.iterdir() if d.is_dir() and d.name.startswith("recording")] # recording1, recording2, ...
-    segment_starting_times = []
-    for recording_path in recording_paths:
-        sync_messages_path = recording_path / "sync_messages.txt"
-        with open(sync_messages_path, 'r') as f:
-            lines = f.readlines()
-        for line in lines:
-            if "start time:" in line: # Ex. Processor: Rhythm FPGA Id: 100 subProcessor: 0 start time: 205985024@30000Hz
-                start_time_str = line.split("start time:")[1].strip() # Ex. 205985024@30000Hz
-                index, rate = start_time_str.split("@") # Ex. 205985024, 30000Hz
-                index = int(index) # Ex. 205985024
-                rate = float(rate.replace("Hz", "")) # Ex. 30000.0
-                segment_starting_time = index / rate # Ex. 6866.167466666667 seconds (=~ 1.9hrs)
-                break
-        segment_starting_times.append(segment_starting_time)
-    return segment_starting_times
-
 from spikeinterface.extractors import OpenEphysBinaryRecordingExtractor
 from neuroconv.tools.spikeinterface.spikeinterface import _stub_recording
 from neuroconv.utils import calculate_regular_series_rate
@@ -731,7 +712,6 @@ from .multi_segment_recording_data_chunk_iterator import MultiSegmentRecordingDa
 def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, epochs: pd.DataFrame, xml_data: dict, stream_name: str, stub_test: bool = False) -> NWBFile:
     print("Adding raw ephys to NWB file...")
 
-    segment_starting_times = get_segment_start_times(folder_path=folder_path)
     chan_order = np.concatenate(xml_data['spike_groups'])
 
     recording = OpenEphysBinaryRecordingExtractor(folder_path=folder_path, stream_name=stream_name)
@@ -791,8 +771,6 @@ def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, epochs: pd.DataFrame, xml
     timestamps = []
     for i in segment_indices:
         segment_timestamps = recording.get_times(segment_index=i)
-        segment_starting_time = segment_starting_times[i]
-        segment_timestamps = segment_timestamps + segment_starting_time
         timestamps.append(segment_timestamps)
     timestamps = np.concatenate(timestamps)
 
