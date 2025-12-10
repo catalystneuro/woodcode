@@ -646,36 +646,13 @@ def collect_nwb_metadata(nwbfile):
 
 
 def add_video(
-        *,
-        nwbfile: NWBFile,
-        video_file_paths: list[Path],
-        timestamp_file_paths: list[Path],
-        timestamp_column_name: str,
-        metadata: dict,
+    *,
+    nwbfile: NWBFile,
+    video_file_paths: list[Path],
+    all_aligned_video_timestamps: list[np.ndarray],
+    metadata: dict,
 ) -> NWBFile:
     print("Adding video to NWB file...")
-
-    # Load timestamps from .csv files
-    all_timestamps = []
-
-    # load timestamps from the first file to get starting datetime
-    timestamp_file_path = timestamp_file_paths[0]
-    timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
-    starting_datetime = timestamps_df[timestamp_column_name].iloc[0]
-    timestamps_df["timestamps"] = (timestamps_df[timestamp_column_name] - starting_datetime).dt.total_seconds()
-    timestamps = timestamps_df["timestamps"].to_numpy()
-    # dt = np.mean(np.diff(timestamps))
-    # timestamps = np.concatenate((timestamps, [timestamps[-1] + dt])) # Last frame is missing from the csv file TODO: double check with the Dudchenko lab
-    all_timestamps.append(timestamps)
-
-    # load timestamps from the rest of the files normalized to the starting datetime
-    for timestamp_file_path in timestamp_file_paths[1:]:
-        timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
-        timestamps_df["timestamps"] = (timestamps_df[timestamp_column_name] - starting_datetime).dt.total_seconds()
-        timestamps = timestamps_df["timestamps"].to_numpy()
-        # dt = np.mean(np.diff(timestamps))
-        # timestamps = np.concatenate((timestamps, [timestamps[-1] + dt])) # Last frame is missing from the csv file TODO: double check with the Dudchenko lab
-        all_timestamps.append(timestamps)
 
     # Add camera device
     camera_device_metadata = metadata["Video"]["CameraDevice"]
@@ -691,7 +668,7 @@ def add_video(
 
     # Add image series for each video file
     image_series_metadata = metadata["Video"]["ImageSeries"]
-    for meta, timestamps, file_path in zip(image_series_metadata, all_timestamps, video_file_paths):
+    for meta, timestamps, file_path in zip(image_series_metadata, all_aligned_video_timestamps, video_file_paths):
         image_series = ImageSeries(
             name=meta["name"],
             description=meta["description"],

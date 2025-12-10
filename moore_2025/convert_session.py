@@ -9,6 +9,8 @@ import numpy as np
 import re
 from datetime import datetime
 import pytz
+from spikeinterface.extractors import OpenEphysBinaryRecordingExtractor
+from scipy.signal import correlate, correlation_lags
 
 def get_probe_info_juveniles() -> dict:
     # TODO: add logic for daily probe advancement after multi-day example data gets shared. 
@@ -108,6 +110,132 @@ def get_start_time(timestamps_file_path: Path) -> str:
 
     return start_time
 
+def get_ttl_timestaps(*, traces: np.ndarray, timestamps: np.ndarray, threshold: float) -> np.ndarray:
+    """
+    Get TTL timestamps from traces.
+
+    Parameters
+    ----------
+    traces : np.ndarray
+        The input signal traces.
+    timestamps : np.ndarray
+        The corresponding timestamps for the traces.
+    threshold : float
+        The threshold to detect TTL onsets and offsets.
+    
+    Returns
+    -------
+    np.ndarray
+        The timestamps of detected TTL centers.
+    """    
+
+    peak_points = np.where((traces > threshold))[0]
+    gaps = np.diff(peak_points) > 1
+    onsets = np.concatenate([[peak_points[0]], peak_points[1:][gaps]])
+    offsets = np.concatenate([peak_points[:-1][gaps], [peak_points[-1]]])
+    onsets = np.array(onsets)
+    offsets = np.array(offsets)
+    centers = (onsets + offsets) // 2
+
+    ttl_timestamps = timestamps[centers]
+    return ttl_timestamps
+
+def align_by_interpolation(unaligned_dense_timestamps: np.ndarray, unaligned_sparse_timestamps: np.ndarray, aligned_sparse_timestamps: np.ndarray) -> np.ndarray:
+    """
+    Interpolate timestamps using a mapping from an unaligned time basis to an aligned one.
+
+    Use this function when the unaligned timestamps of data are not directly tracked by a primary
+    system, but are known to occur between timestamps that are tracked. The timestamps are aligned
+    by interpolating between the two time bases.
+
+    An example could be a metronomic TTL pulse (e.g., every second) from a secondary data stream to the primary
+    timing system; if the time references are recorded within the relative time of the secondary
+    data stream, then their exact time in the primary system is inferred given the pulse times.
+
+    Parameters
+    ----------
+    unaligned_dense_timestamps : np.ndarray
+        The dense timestamps of the unaligned secondary time basis that need to be aligned.
+    unaligned_sparse_timestamps : np.ndarray
+        The timestamps of the unaligned secondary time basis.
+    aligned_sparse_timestamps : np.ndarray
+        The timestamps aligned to the primary time basis.
+
+    Returns
+    -------
+    np.ndarray
+        The aligned dense timestamps.
+    """
+    aligned_dense_timestamps = np.interp(
+        x=unaligned_dense_timestamps,
+        xp=unaligned_sparse_timestamps,
+        fp=aligned_sparse_timestamps
+    )
+    return aligned_dense_timestamps
+
+def get_aligned_video_timestamps_juveniles(
+    *,
+    timestamp_file_path: Path,
+    ephys_folder_path: Path,
+) -> np.ndarray:
+    """
+    Get aligned video timestamps for juvenile sessions.
+
+    Parameters
+    ----------
+    timestamp_file_path : Path
+        Path to the video timestamps CSV file.
+    ephys_folder_path : Path
+        Path to the ephys OpenEphys record node folder.
+
+    Returns
+    -------
+    np.ndarray
+        The aligned video timestamps.
+    """
+    led_threshold = 2_000
+    video_sampling_rate = 30.0
+    timestamp_column_name = "Item4.Timestamp"
+    led_column_name = "Item3.Val0"
+    ttl_threshold = 20_000
+    ttl_stream_name = "Rhythm_FPGA-100.0_ADC"
+    ttl_channel_id = 'ADC1'
+
+    timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
+    traces = timestamps_df[led_column_name].values
+    video_timestamps = np.arange(traces.shape[0]) / video_sampling_rate
+    led_timestamps = get_ttl_timestaps(traces=traces, timestamps=video_timestamps, threshold=led_threshold)
+    led_intervals = np.diff(led_timestamps)
+
+    extractor = OpenEphysBinaryRecordingExtractor(folder_path=ephys_folder_path, stream_name=ttl_stream_name)
+    ttl_timestamps = np.ones_like(led_timestamps) * np.nan
+    for segment_index in range(extractor.get_num_segments()):
+        traces = extractor.get_traces(segment_index=segment_index, channel_ids=[ttl_channel_id])
+        ephys_timestamps = extractor.get_times(segment_index=segment_index)
+        single_segment_ttl_timestamps = get_ttl_timestaps(traces=traces, timestamps=ephys_timestamps, threshold=ttl_threshold)
+        ttl_intervals = np.diff(single_segment_ttl_timestamps)
+        correlation = correlate(led_intervals, ttl_intervals, mode='full')
+        lags = correlation_lags(len(led_intervals), len(ttl_intervals), mode='full')
+        best_lag = lags[np.argmax(correlation)]
+        assert np.all(np.isnan(ttl_timestamps[best_lag:best_lag + len(single_segment_ttl_timestamps)])), f"Overlap in TTL timestamps at segment {segment_index}"
+        ttl_timestamps[best_lag:best_lag + len(single_segment_ttl_timestamps)] = single_segment_ttl_timestamps
+        error = led_intervals[best_lag:best_lag + len(ttl_intervals)] - ttl_intervals
+        assert np.max(np.abs(error)) < 1.0, f"Alignment error too large: {np.max(np.abs(error))} seconds for segment {segment_index}"
+
+    # NaN values represent LED pulses that were not recorded in the ephys data (ex. between segments)
+    not_nan = ~np.isnan(ttl_timestamps)
+    led_timestamps = led_timestamps[not_nan]
+    ttl_timestamps = ttl_timestamps[not_nan]
+
+    aligned_video_timestamps = align_by_interpolation(
+        unaligned_dense_timestamps=video_timestamps,
+        unaligned_sparse_timestamps=led_timestamps,
+        aligned_sparse_timestamps=ttl_timestamps,
+    )
+
+    return aligned_video_timestamps
+    
+
 def session_to_nwb(
     *,
     dataset_path: Path,
@@ -169,6 +297,11 @@ def session_to_nwb(
         timestamp_column_name = "Item4.Timestamp"
         stream_name = "Rhythm_FPGA-100.0"
         probe_info = get_probe_info_juveniles()
+        aligned_video_timestamps = get_aligned_video_timestamps_juveniles(
+            timestamp_file_path=timestamps_file_paths[0],
+            ephys_folder_path=raw_ephys_folder_path,
+        )
+        all_aligned_video_timestamps = [aligned_video_timestamps]
 
     save_path.mkdir(parents=True, exist_ok=True)
 
@@ -195,7 +328,7 @@ def session_to_nwb(
     nwbfile = nwb.convert.add_tracking(nwbfile, pos, hd)
     nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
     nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name)
-    nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, timestamp_file_paths=timestamps_file_paths, metadata=metadata, timestamp_column_name=timestamp_column_name)
+    nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, all_aligned_video_timestamps=all_aligned_video_timestamps, metadata=metadata)
     nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=xml_data, stub_test=stub_test)
     nwbfile = nwb.convert.add_raw_ephys(nwbfile=nwbfile, folder_path=raw_ephys_folder_path, epochs=epochs, xml_data=xml_data, stream_name=stream_name, stub_test=stub_test)
 
@@ -295,6 +428,7 @@ def main():
         is_adult=False,
     )
 
+    return
     # Example Adult Sessions
     adult_folder_path = dataset_path / "H4800_Adults"
     metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/adult_metadata.yaml")
