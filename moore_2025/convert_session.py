@@ -110,7 +110,7 @@ def get_start_time(timestamps_file_path: Path) -> str:
 
     return start_time
 
-def get_ttl_timestaps(*, traces: np.ndarray, timestamps: np.ndarray, threshold: float) -> np.ndarray:
+def get_ttl_timestaps(*, traces: np.ndarray, timestamps: np.ndarray, threshold: float, cooldown_in_seconds: float, sampling_rate: float) -> np.ndarray:
     """
     Get TTL timestamps from traces.
 
@@ -122,6 +122,10 @@ def get_ttl_timestaps(*, traces: np.ndarray, timestamps: np.ndarray, threshold: 
         The corresponding timestamps for the traces.
     threshold : float
         The threshold to detect TTL onsets and offsets.
+    cooldown_in_seconds : float
+        The cooldown period in seconds to avoid detecting the same onset multiple times.
+    sampling_rate : float
+        The sampling rate of the traces in Hz.
     
     Returns
     -------
@@ -136,6 +140,11 @@ def get_ttl_timestaps(*, traces: np.ndarray, timestamps: np.ndarray, threshold: 
     onsets = np.array(onsets)
     offsets = np.array(offsets)
     centers = (onsets + offsets) // 2
+
+    # Add a cooldown period to avoid detecting the same onset multiple times
+    cooldown_in_samples = int(cooldown_in_seconds * sampling_rate)
+    center_diff = np.diff(centers)
+    centers = np.concatenate([[centers[0]], centers[1:][center_diff > cooldown_in_samples]])
 
     ttl_timestamps = timestamps[centers]
     return ttl_timestamps
@@ -200,19 +209,21 @@ def get_aligned_video_timestamps_juveniles(
     ttl_threshold = 20_000
     ttl_stream_name = "Rhythm_FPGA-100.0_ADC"
     ttl_channel_id = 'ADC1'
+    cooldown_in_seconds = 0.5
 
     timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
     traces = timestamps_df[led_column_name].values
     video_timestamps = np.arange(traces.shape[0]) / video_sampling_rate
-    led_timestamps = get_ttl_timestaps(traces=traces, timestamps=video_timestamps, threshold=led_threshold)
+    led_timestamps = get_ttl_timestaps(traces=traces, timestamps=video_timestamps, threshold=led_threshold, cooldown_in_seconds=cooldown_in_seconds, sampling_rate=video_sampling_rate)
     led_intervals = np.diff(led_timestamps)
 
     extractor = OpenEphysBinaryRecordingExtractor(folder_path=ephys_folder_path, stream_name=ttl_stream_name)
+    sampling_rate = extractor.get_sampling_frequency()
     ttl_timestamps = np.ones_like(led_timestamps) * np.nan
     for segment_index in range(extractor.get_num_segments()):
         traces = extractor.get_traces(segment_index=segment_index, channel_ids=[ttl_channel_id])
         ephys_timestamps = extractor.get_times(segment_index=segment_index)
-        single_segment_ttl_timestamps = get_ttl_timestaps(traces=traces, timestamps=ephys_timestamps, threshold=ttl_threshold)
+        single_segment_ttl_timestamps = get_ttl_timestaps(traces=traces, timestamps=ephys_timestamps, threshold=ttl_threshold, cooldown_in_seconds=cooldown_in_seconds, sampling_rate=sampling_rate)
         ttl_intervals = np.diff(single_segment_ttl_timestamps)
         correlation = correlate(led_intervals, ttl_intervals, mode='full')
         lags = correlation_lags(len(led_intervals), len(ttl_intervals), mode='full')
@@ -329,7 +340,7 @@ def session_to_nwb(
     nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
     nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name)
     nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, all_aligned_video_timestamps=all_aligned_video_timestamps, metadata=metadata)
-    nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=xml_data, stub_test=stub_test)
+    nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=xml_data, stub_test=stub_test) # TODO: temporally align lfp
     nwbfile = nwb.convert.add_raw_ephys(nwbfile=nwbfile, folder_path=raw_ephys_folder_path, epochs=epochs, xml_data=xml_data, stream_name=stream_name, stub_test=stub_test)
 
     # TODO: figure out what these events are

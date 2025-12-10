@@ -463,7 +463,7 @@ def add_epochs(nwbfile, epochs, metadata):
 
 
 
-def add_lfp(nwbfile, lfp_path, xml_data, stub_test=False):
+def add_lfp(nwbfile, lfp_path, xml_data, stub_test=False): # TODO: temporally align lfp
 
     print('Adding LFP to the NWB file...')
 
