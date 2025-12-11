@@ -245,6 +245,60 @@ def get_aligned_video_timestamps_juveniles(
     )
 
     return aligned_video_timestamps
+
+
+def get_aligned_video_timestamps_adults(
+    *,
+    timestamp_file_paths: list[Path],
+    ephys_folder_path: Path,
+) -> list[np.ndarray]:
+    """
+    Get aligned video timestamps for adult sessions.
+
+    Parameters
+    ----------
+    timestamp_file_paths : list[Path]
+        List of paths to the video timestamps CSV files.
+    ephys_folder_path : Path
+        Path to the ephys OpenEphys record node folder.
+
+    Returns
+    -------
+    list[np.ndarray]
+        The aligned video timestamps for each segment/file.
+    """
+    timestamp_column_name = "Item3.Timestamp"
+    ttl_threshold = 10_000
+    ttl_stream_name = "Rhythm_FPGA-103.0_ADC"
+    ttl_channel_id = 'ADC6'
+    cooldown_in_seconds = 0.0
+
+    extractor = OpenEphysBinaryRecordingExtractor(folder_path=ephys_folder_path, stream_name=ttl_stream_name)
+    sampling_rate = extractor.get_sampling_frequency()
+    assert extractor.get_num_segments() == len(timestamp_file_paths), f"Number of ephys segments ({extractor.get_num_segments()}) does not match number of timestamp files ({len(timestamp_file_paths)})."
+    all_aligned_video_timestamps = []
+
+    for segment_index, timestamp_file_path in enumerate(timestamp_file_paths):
+        timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
+        num_frames = timestamps_df.shape[0] + 1 # + 1 bc video has one extra frame at the end
+        traces = extractor.get_traces(segment_index=segment_index, channel_ids=[ttl_channel_id])
+        ephys_timestamps = extractor.get_times(segment_index=segment_index)
+        single_segment_ttl_timestamps = get_ttl_timestaps(traces=traces, timestamps=ephys_timestamps, threshold=ttl_threshold, cooldown_in_seconds=cooldown_in_seconds, sampling_rate=sampling_rate)
+        num_ttls = single_segment_ttl_timestamps.shape[0]
+        assert num_ttls >= num_frames, f"Number of TTLs ({num_ttls}) is less than number of video frames ({num_frames}) for segment {segment_index}."
+
+        # Correct for dropped frames by removing the TTLs that correspond to the largest gaps
+        num_dropped_frames = num_ttls - num_frames
+        timestamps_df["seconds"] = (timestamps_df[timestamp_column_name] - timestamps_df[timestamp_column_name].iloc[0]).dt.total_seconds()
+        t_diff = np.diff(timestamps_df["seconds"])
+        drop_indices = np.argsort(t_diff)[-num_dropped_frames:]  # indices of largest gaps
+        drop_indices = np.sort(drop_indices)  # sort chronologically
+        ttl_indices_to_remove = drop_indices + 1 # since drop happens AFTER that CSV frame
+        single_segment_ttl_timestamps = np.delete(single_segment_ttl_timestamps, ttl_indices_to_remove)
+
+        all_aligned_video_timestamps.append(single_segment_ttl_timestamps)
+
+    return all_aligned_video_timestamps
     
 
 def session_to_nwb(
@@ -301,11 +355,13 @@ def session_to_nwb(
         Whether the subject is an adult or a juvenile, by default True
     """
     if is_adult:
-        timestamp_column_name = "Item3.Timestamp"
         stream_name = "Rhythm_FPGA-103.0"
         probe_info = get_probe_info_adults()
+        all_aligned_video_timestamps = get_aligned_video_timestamps_adults(
+            timestamp_file_paths=timestamps_file_paths,
+            ephys_folder_path=raw_ephys_folder_path,
+        )
     else: # juvenile
-        timestamp_column_name = "Item4.Timestamp"
         stream_name = "Rhythm_FPGA-100.0"
         probe_info = get_probe_info_juveniles()
         aligned_video_timestamps = get_aligned_video_timestamps_juveniles(
@@ -362,84 +418,83 @@ def main():
     if output_folder_path.exists():
         shutil.rmtree(output_folder_path)
 
-    # Example Juvenile Sessions
-    juvenile_folder_path = dataset_path / "H3000_Juveniles"
-    metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/juvenile_metadata.yaml")
+    # # Example Juvenile Sessions
+    # juvenile_folder_path = dataset_path / "H3000_Juveniles"
+    # metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/juvenile_metadata.yaml")
 
-    # Example Juvenile WT session
-    jv_wt_folder_path = juvenile_folder_path / "WT"
-    folder_name = 'H3022-210805'
-    xml_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.xml')  # path to xml file
-    nrs_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
-    meta_path = dataset_path / 'MooreDataset_Metadata.xlsx'  # path to metadata file
-    mat_path = jv_wt_folder_path / folder_name / "Processed" / 'Analysis'
-    sleep_path = jv_wt_folder_path / folder_name / "Processed" / 'Sleep'
-    video_file_paths = [
-        jv_wt_folder_path / folder_name / "Raw" / "BonsaiCaptureALL2021-08-05T17_06_24.avi",
-    ]
-    timestamps_file_paths = [
-        jv_wt_folder_path / folder_name / "Raw" / "Bonsai testing2021-08-05T17_06_23.csv",
-    ]
-    lfp_file_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
-    raw_ephys_folder_path = jv_wt_folder_path / folder_name / "Raw"
-    save_path = output_folder_path
+    # # Example Juvenile WT session
+    # jv_wt_folder_path = juvenile_folder_path / "WT"
+    # folder_name = 'H3022-210805'
+    # xml_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.xml')  # path to xml file
+    # nrs_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
+    # meta_path = dataset_path / 'MooreDataset_Metadata.xlsx'  # path to metadata file
+    # mat_path = jv_wt_folder_path / folder_name / "Processed" / 'Analysis'
+    # sleep_path = jv_wt_folder_path / folder_name / "Processed" / 'Sleep'
+    # video_file_paths = [
+    #     jv_wt_folder_path / folder_name / "Raw" / "BonsaiCaptureALL2021-08-05T17_06_24.avi",
+    # ]
+    # timestamps_file_paths = [
+    #     jv_wt_folder_path / folder_name / "Raw" / "Bonsai testing2021-08-05T17_06_23.csv",
+    # ]
+    # lfp_file_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
+    # raw_ephys_folder_path = jv_wt_folder_path / folder_name / "Raw"
+    # save_path = output_folder_path
 
-    session_to_nwb(
-        dataset_path=dataset_path,
-        folder_name=folder_name,
-        xml_path=xml_path,
-        nrs_path=nrs_path,
-        meta_path=meta_path,
-        mat_path=mat_path,
-        sleep_path=sleep_path,
-        video_file_paths=video_file_paths,
-        timestamps_file_paths=timestamps_file_paths,
-        lfp_file_path=lfp_file_path,
-        raw_ephys_folder_path=raw_ephys_folder_path,
-        save_path=save_path,
-        metadata_file_path=metadata_file_path,
-        stub_test=stub_test,
-        is_adult=False,
-    )
+    # session_to_nwb(
+    #     dataset_path=dataset_path,
+    #     folder_name=folder_name,
+    #     xml_path=xml_path,
+    #     nrs_path=nrs_path,
+    #     meta_path=meta_path,
+    #     mat_path=mat_path,
+    #     sleep_path=sleep_path,
+    #     video_file_paths=video_file_paths,
+    #     timestamps_file_paths=timestamps_file_paths,
+    #     lfp_file_path=lfp_file_path,
+    #     raw_ephys_folder_path=raw_ephys_folder_path,
+    #     save_path=save_path,
+    #     metadata_file_path=metadata_file_path,
+    #     stub_test=stub_test,
+    #     is_adult=False,
+    # )
 
-    # Example Juvenile KO session
-    jv_ko_folder_path = juvenile_folder_path / "KO"
-    folder_name = 'H3016-210423'
-    # Note: H3016-210423 uses H3022-210805's XML because the original had faulty channels removed from spikeDetection (26 vs 32 channels). Both sessions share the same probe mapping.
-    xml_path = jv_wt_folder_path / 'H3022-210805' / "Processed" / ( 'H3022-210805' + '.xml')
-    nrs_path = jv_ko_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
-    meta_path = dataset_path / 'MooreDataset_Metadata.xlsx'  # path to metadata file
-    mat_path = jv_ko_folder_path / folder_name / "Processed" / 'Analysis'
-    sleep_path = jv_ko_folder_path / folder_name / "Processed" / 'Sleep'
-    video_file_paths = [
-        jv_ko_folder_path / folder_name / "Raw" / "BonsaiCaptureALL2021-04-23T14_14_05.avi",
-    ]
-    timestamps_file_paths = [
-        jv_ko_folder_path / folder_name / "Raw" / "Bonsai testing2021-04-23T14_13_55.csv",
-    ]
-    lfp_file_path = jv_ko_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
-    raw_ephys_folder_path = jv_ko_folder_path / folder_name / "Raw"
-    save_path = output_folder_path
+    # # Example Juvenile KO session
+    # jv_ko_folder_path = juvenile_folder_path / "KO"
+    # folder_name = 'H3016-210423'
+    # # Note: H3016-210423 uses H3022-210805's XML because the original had faulty channels removed from spikeDetection (26 vs 32 channels). Both sessions share the same probe mapping.
+    # xml_path = jv_wt_folder_path / 'H3022-210805' / "Processed" / ( 'H3022-210805' + '.xml')
+    # nrs_path = jv_ko_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
+    # meta_path = dataset_path / 'MooreDataset_Metadata.xlsx'  # path to metadata file
+    # mat_path = jv_ko_folder_path / folder_name / "Processed" / 'Analysis'
+    # sleep_path = jv_ko_folder_path / folder_name / "Processed" / 'Sleep'
+    # video_file_paths = [
+    #     jv_ko_folder_path / folder_name / "Raw" / "BonsaiCaptureALL2021-04-23T14_14_05.avi",
+    # ]
+    # timestamps_file_paths = [
+    #     jv_ko_folder_path / folder_name / "Raw" / "Bonsai testing2021-04-23T14_13_55.csv",
+    # ]
+    # lfp_file_path = jv_ko_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
+    # raw_ephys_folder_path = jv_ko_folder_path / folder_name / "Raw"
+    # save_path = output_folder_path
 
-    session_to_nwb(
-        dataset_path=dataset_path,
-        folder_name=folder_name,
-        xml_path=xml_path,
-        nrs_path=nrs_path,
-        meta_path=meta_path,
-        mat_path=mat_path,
-        sleep_path=sleep_path,
-        video_file_paths=video_file_paths,
-        timestamps_file_paths=timestamps_file_paths,
-        lfp_file_path=lfp_file_path,
-        raw_ephys_folder_path=raw_ephys_folder_path,
-        save_path=save_path,
-        metadata_file_path=metadata_file_path,
-        stub_test=stub_test,
-        is_adult=False,
-    )
+    # session_to_nwb(
+    #     dataset_path=dataset_path,
+    #     folder_name=folder_name,
+    #     xml_path=xml_path,
+    #     nrs_path=nrs_path,
+    #     meta_path=meta_path,
+    #     mat_path=mat_path,
+    #     sleep_path=sleep_path,
+    #     video_file_paths=video_file_paths,
+    #     timestamps_file_paths=timestamps_file_paths,
+    #     lfp_file_path=lfp_file_path,
+    #     raw_ephys_folder_path=raw_ephys_folder_path,
+    #     save_path=save_path,
+    #     metadata_file_path=metadata_file_path,
+    #     stub_test=stub_test,
+    #     is_adult=False,
+    # )
 
-    return
     # Example Adult Sessions
     adult_folder_path = dataset_path / "H4800_Adults"
     metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/adult_metadata.yaml")
