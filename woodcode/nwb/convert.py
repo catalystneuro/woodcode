@@ -402,6 +402,36 @@ def add_sleep(nwbfile, sleep_path, folder_name):
     return nwbfile
 
 
+def get_epochs_from_eseries(eseries):
+    """
+    Extracts epochs from an ElectricalSeries object.
+
+    Parameters:
+    - eseries: ElectricalSeries object
+
+    Returns:
+    - DataFrame containing 'Start' and 'End' times of epochs
+    """
+
+    timestamps = eseries.timestamps[:]
+    diff = np.diff(timestamps)
+    gap_threshold = 2 * np.median(diff)
+    gap_indices = np.where(diff > gap_threshold)[0]
+    start_times = [timestamps[0]]
+    stop_times = []
+    for gap_index in gap_indices:
+        stop_times.append(timestamps[gap_index])
+        start_times.append(timestamps[gap_index + 1])
+    stop_times.append(timestamps[-1])
+
+    epochs = pd.DataFrame({
+        'Start': start_times,
+        'End': stop_times
+    })
+
+    return epochs
+
+
 def add_epochs(nwbfile, epochs, metadata):
     """
     Adds epochs to an NWB file.
@@ -463,9 +493,18 @@ def add_epochs(nwbfile, epochs, metadata):
 
 
 
-def add_lfp(nwbfile, lfp_path, xml_data, stub_test=False):
+def add_lfp(nwbfile, lfp_path, xml_data, raw_eseries, stub_test=False):
 
     print('Adding LFP to the NWB file...')
+
+    raw_timestamps = raw_eseries.timestamps[:]
+    raw_sampling_rate = 30_000.0
+    raw_conversion = raw_eseries.conversion
+    raw_offset = raw_eseries.offset
+
+    lfp_sampling_rate = float(xml_data['eeg_sampling_rate'])
+    downsample_factor = int(raw_sampling_rate / lfp_sampling_rate)
+    lfp_timestamps = raw_timestamps[::downsample_factor]
 
     all_table_region = nwbfile.create_electrode_table_region(
         region=list(range(len(nwbfile.electrodes))),
@@ -480,15 +519,20 @@ def add_lfp(nwbfile, lfp_path, xml_data, stub_test=False):
                             bytes_size=2)
     lfp_data = lfp_data[:, chan_order]  # get only probe channels
     if stub_test:
-        lfp_data = lfp_data[:100, :]
+        raw_num_pts = 100 # This is the number of points used for stubbing a single segment of raw ephys data.
+        lfp_num_pts = int(raw_num_pts / downsample_factor)
+        lfp_data = lfp_data[:lfp_num_pts, :]
+        lfp_timestamps = lfp_timestamps[:lfp_num_pts]
 
     # create ElectricalSeries
     lfp_elec_series = ElectricalSeries(
         name='LFP',
         data=H5DataIO(lfp_data, compression=True),  # use this function to compress
+        timestamps=lfp_timestamps,
         description='Local field potential (downsampled DAT file)',
         electrodes=all_table_region,
-        rate=float(xml_data['eeg_sampling_rate'])
+        conversion=raw_conversion,
+        offset=raw_offset,
     )
 
     # store ElectricalSeries in an LFP container
@@ -646,36 +690,13 @@ def collect_nwb_metadata(nwbfile):
 
 
 def add_video(
-        *,
-        nwbfile: NWBFile,
-        video_file_paths: list[Path],
-        timestamp_file_paths: list[Path],
-        timestamp_column_name: str,
-        metadata: dict,
+    *,
+    nwbfile: NWBFile,
+    video_file_paths: list[Path],
+    all_aligned_video_timestamps: list[np.ndarray],
+    metadata: dict,
 ) -> NWBFile:
     print("Adding video to NWB file...")
-
-    # Load timestamps from .csv files
-    all_timestamps = []
-
-    # load timestamps from the first file to get starting datetime
-    timestamp_file_path = timestamp_file_paths[0]
-    timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
-    starting_datetime = timestamps_df[timestamp_column_name].iloc[0]
-    timestamps_df["timestamps"] = (timestamps_df[timestamp_column_name] - starting_datetime).dt.total_seconds()
-    timestamps = timestamps_df["timestamps"].to_numpy()
-    # dt = np.mean(np.diff(timestamps))
-    # timestamps = np.concatenate((timestamps, [timestamps[-1] + dt])) # Last frame is missing from the csv file TODO: double check with the Dudchenko lab
-    all_timestamps.append(timestamps)
-
-    # load timestamps from the rest of the files normalized to the starting datetime
-    for timestamp_file_path in timestamp_file_paths[1:]:
-        timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
-        timestamps_df["timestamps"] = (timestamps_df[timestamp_column_name] - starting_datetime).dt.total_seconds()
-        timestamps = timestamps_df["timestamps"].to_numpy()
-        # dt = np.mean(np.diff(timestamps))
-        # timestamps = np.concatenate((timestamps, [timestamps[-1] + dt])) # Last frame is missing from the csv file TODO: double check with the Dudchenko lab
-        all_timestamps.append(timestamps)
 
     # Add camera device
     camera_device_metadata = metadata["Video"]["CameraDevice"]
@@ -691,7 +712,7 @@ def add_video(
 
     # Add image series for each video file
     image_series_metadata = metadata["Video"]["ImageSeries"]
-    for meta, timestamps, file_path in zip(image_series_metadata, all_timestamps, video_file_paths):
+    for meta, timestamps, file_path in zip(image_series_metadata, all_aligned_video_timestamps, video_file_paths):
         image_series = ImageSeries(
             name=meta["name"],
             description=meta["description"],
@@ -709,10 +730,9 @@ from neuroconv.tools.spikeinterface.spikeinterface import _stub_recording
 from neuroconv.utils import calculate_regular_series_rate
 import pynwb
 from .multi_segment_recording_data_chunk_iterator import MultiSegmentRecordingDataChunkIterator
-def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, epochs: pd.DataFrame, xml_data: dict, stream_name: str, stub_test: bool = False) -> NWBFile:
+def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, xml_data: dict, stream_name: str, stub_test: bool = False) -> NWBFile:
     print("Adding raw ephys to NWB file...")
 
-    segment_starting_times = epochs.Start.values
     chan_order = np.concatenate(xml_data['spike_groups'])
 
     recording = OpenEphysBinaryRecordingExtractor(folder_path=folder_path, stream_name=stream_name)
@@ -772,8 +792,6 @@ def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, epochs: pd.DataFrame, xml
     timestamps = []
     for i in segment_indices:
         segment_timestamps = recording.get_times(segment_index=i)
-        segment_starting_time = segment_starting_times[i]
-        segment_timestamps = segment_timestamps + segment_starting_time
         timestamps.append(segment_timestamps)
     timestamps = np.concatenate(timestamps)
 
