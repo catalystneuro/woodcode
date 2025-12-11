@@ -463,9 +463,18 @@ def add_epochs(nwbfile, epochs, metadata):
 
 
 
-def add_lfp(nwbfile, lfp_path, xml_data, stub_test=False): # TODO: temporally align lfp
+def add_lfp(nwbfile, lfp_path, xml_data, raw_eseries, stub_test=False):
 
     print('Adding LFP to the NWB file...')
+
+    raw_timestamps = raw_eseries.timestamps[:]
+    raw_sampling_rate = 30_000.0
+    raw_conversion = raw_eseries.conversion
+    raw_offset = raw_eseries.offset
+
+    lfp_sampling_rate = float(xml_data['eeg_sampling_rate'])
+    downsample_factor = int(raw_sampling_rate / lfp_sampling_rate)
+    lfp_timestamps = raw_timestamps[::downsample_factor]
 
     all_table_region = nwbfile.create_electrode_table_region(
         region=list(range(len(nwbfile.electrodes))),
@@ -480,15 +489,20 @@ def add_lfp(nwbfile, lfp_path, xml_data, stub_test=False): # TODO: temporally al
                             bytes_size=2)
     lfp_data = lfp_data[:, chan_order]  # get only probe channels
     if stub_test:
-        lfp_data = lfp_data[:100, :]
+        raw_num_pts = 100 # This is the number of points used for stubbing a single segment of raw ephys data.
+        lfp_num_pts = int(raw_num_pts / downsample_factor)
+        lfp_data = lfp_data[:lfp_num_pts, :]
+        lfp_timestamps = lfp_timestamps[:lfp_num_pts]
 
     # create ElectricalSeries
     lfp_elec_series = ElectricalSeries(
         name='LFP',
         data=H5DataIO(lfp_data, compression=True),  # use this function to compress
+        timestamps=lfp_timestamps,
         description='Local field potential (downsampled DAT file)',
         electrodes=all_table_region,
-        rate=float(xml_data['eeg_sampling_rate'])
+        conversion=raw_conversion,
+        offset=raw_offset,
     )
 
     # store ElectricalSeries in an LFP container

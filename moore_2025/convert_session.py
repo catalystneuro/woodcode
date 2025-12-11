@@ -340,8 +340,8 @@ def session_to_nwb(
     nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
     nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name)
     nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, all_aligned_video_timestamps=all_aligned_video_timestamps, metadata=metadata)
-    nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=xml_data, stub_test=stub_test) # TODO: temporally align lfp
     nwbfile = nwb.convert.add_raw_ephys(nwbfile=nwbfile, folder_path=raw_ephys_folder_path, epochs=epochs, xml_data=xml_data, stream_name=stream_name, stub_test=stub_test)
+    nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=xml_data, raw_eseries=nwbfile.acquisition['e-series'], stub_test=stub_test)
 
     # TODO: figure out what these events are
     # events = nwb.io.get_openephys_events(mat_path / 'states.npy', mat_path / 'timestamps.npy', time_offset=epochs.at[len(epochs)-1, 'Start'], skip_first=16)  # load LED events
