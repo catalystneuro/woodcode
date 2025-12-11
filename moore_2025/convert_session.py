@@ -326,7 +326,6 @@ def session_to_nwb(
     # Load tracking, epochs and spikes from Matlab files (mostly loaded as pynapple objects)
     pos = nwb.io.get_matlab_position(mat_path / 'TrackingProcessed_Final.mat', vbl_name='pos')
     hd = nwb.io.get_matlab_hd(mat_path / 'TrackingProcessed_Final.mat', vbl_name='ang')
-    epochs = pd.read_csv(mat_path / 'Epoch_TS.csv', header=None, names=['Start', 'End'])
     spikes, waveforms, shank_id = nwb.io.get_matlab_spikes(mat_path)
 
     # Update metadata with info from metadata.yaml
@@ -337,11 +336,12 @@ def session_to_nwb(
     nwbfile = nwb.convert.create_nwb_file(metadata, start_time)
     nwbfile = nwb.convert.add_probes(nwbfile, metadata, xml_data, nrs_data, probe_info)
     nwbfile = nwb.convert.add_tracking(nwbfile, pos, hd)
-    nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
     nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name)
     nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, all_aligned_video_timestamps=all_aligned_video_timestamps, metadata=metadata)
-    nwbfile = nwb.convert.add_raw_ephys(nwbfile=nwbfile, folder_path=raw_ephys_folder_path, epochs=epochs, xml_data=xml_data, stream_name=stream_name, stub_test=stub_test)
+    nwbfile = nwb.convert.add_raw_ephys(nwbfile=nwbfile, folder_path=raw_ephys_folder_path, xml_data=xml_data, stream_name=stream_name, stub_test=stub_test)
     nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=xml_data, raw_eseries=nwbfile.acquisition['e-series'], stub_test=stub_test)
+    epochs = nwb.convert.get_epochs_from_eseries(eseries=nwbfile.acquisition['e-series'])
+    nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
 
     # TODO: figure out what these events are
     # events = nwb.io.get_openephys_events(mat_path / 'states.npy', mat_path / 'timestamps.npy', time_offset=epochs.at[len(epochs)-1, 'Start'], skip_first=16)  # load LED events
@@ -356,7 +356,7 @@ def session_to_nwb(
 
 def main():
     """Define paths and convert example sessions to NWB."""
-    stub_test = True
+    stub_test = False
     dataset_path = Path('/Volumes/T7/CatalystNeuro/Dudchenko/251104_MooreDataset')
     output_folder_path = Path('/Volumes/T7/CatalystNeuro/Spyglass/raw')
     if output_folder_path.exists():

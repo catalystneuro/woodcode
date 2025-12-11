@@ -402,6 +402,36 @@ def add_sleep(nwbfile, sleep_path, folder_name):
     return nwbfile
 
 
+def get_epochs_from_eseries(eseries):
+    """
+    Extracts epochs from an ElectricalSeries object.
+
+    Parameters:
+    - eseries: ElectricalSeries object
+
+    Returns:
+    - DataFrame containing 'Start' and 'End' times of epochs
+    """
+
+    timestamps = eseries.timestamps[:]
+    diff = np.diff(timestamps)
+    gap_threshold = 2 * np.median(diff)
+    gap_indices = np.where(diff > gap_threshold)[0]
+    start_times = [timestamps[0]]
+    stop_times = []
+    for gap_index in gap_indices:
+        stop_times.append(timestamps[gap_index])
+        start_times.append(timestamps[gap_index + 1])
+    stop_times.append(timestamps[-1])
+
+    epochs = pd.DataFrame({
+        'Start': start_times,
+        'End': stop_times
+    })
+
+    return epochs
+
+
 def add_epochs(nwbfile, epochs, metadata):
     """
     Adds epochs to an NWB file.
@@ -700,7 +730,7 @@ from neuroconv.tools.spikeinterface.spikeinterface import _stub_recording
 from neuroconv.utils import calculate_regular_series_rate
 import pynwb
 from .multi_segment_recording_data_chunk_iterator import MultiSegmentRecordingDataChunkIterator
-def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, epochs: pd.DataFrame, xml_data: dict, stream_name: str, stub_test: bool = False) -> NWBFile:
+def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, xml_data: dict, stream_name: str, stub_test: bool = False) -> NWBFile:
     print("Adding raw ephys to NWB file...")
 
     chan_order = np.concatenate(xml_data['spike_groups'])
