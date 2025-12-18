@@ -284,6 +284,20 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
 
 
 def add_tracking(nwbfile, pos, ang=None):
+    comment = """
+        WARNING: These timestamps use a different alignment method than other temporally aligned data in this file.
+
+        This time series uses a cross-correlation-based alignment method:
+        1. OpenEphys LED TTL channel (30 kHz) was downsampled to 1 kHz
+        2. Bonsai tracking data and LED signal were upsampled to 1 kHz via interpolation
+        3. For each recording epoch, the two LED signals were cross-correlated to find the temporal offset
+        4. Bonsai data was shifted by the calculated offset for each epoch
+        5. Aligned data was downsampled back to 30 Hz
+        6. New timestamps were assigned assuming regular 30 Hz spacing: epoch_start + (0:nFrames-1)/30
+
+        All other data in this file has been appropriately temporally aligned to a common time basis using a different method.
+    """
+
     # to do: add units as input
     print('Adding tracking to NWB file...')
 
@@ -300,7 +314,8 @@ def add_tracking(nwbfile, pos, ang=None):
         data=pos.values,
         timestamps=pos.index.to_numpy(),
         reference_frame='', # TODO: add reference frame info once shared
-        unit='centimeters'
+        unit='centimeters',
+        comment=comment,
     )
     position_obj = Position(spatial_series=spatial_series_obj)
 
@@ -313,7 +328,8 @@ def add_tracking(nwbfile, pos, ang=None):
             data=data,
             timestamps=ang.index.to_numpy(),
             reference_frame='',
-            unit='radians'
+            unit='radians',
+            comment=comment,
         )
         position_obj.add_spatial_series(spatial_series_obj)
         behavior_module.add(position_obj)
