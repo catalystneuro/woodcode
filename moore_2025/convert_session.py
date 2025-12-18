@@ -375,6 +375,7 @@ def session_to_nwb(
     # LOAD DATA
     # load all metadata
     xml_data = nwb.io.read_xml(xml_path)  # load all ephys info from the xml file
+    lfp_sampling_rate = float(xml_data['eeg_sampling_rate'])
     nrs_data = nwb.io.read_nrs(nrs_path)  # load faulty channel info from the nrs file (i.e. channels not shown in Neuroscope)
     metadata = nwb.io.read_metadata(meta_path, folder_name, print_output=True)  # Load all metadata from the xlsx file
     start_time = get_start_time(timestamps_file_paths[0])  # load start time from the first timestamps CSV file
@@ -392,10 +393,11 @@ def session_to_nwb(
     nwbfile = nwb.convert.create_nwb_file(metadata, start_time)
     nwbfile = nwb.convert.add_probes(nwbfile, metadata, xml_data, nrs_data, probe_info)
     nwbfile = nwb.convert.add_tracking(nwbfile, pos, hd)
-    nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name)
     nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, all_aligned_video_timestamps=all_aligned_video_timestamps, metadata=metadata)
     nwbfile = nwb.convert.add_raw_ephys(nwbfile=nwbfile, folder_path=raw_ephys_folder_path, xml_data=xml_data, stream_name=stream_name, stub_test=stub_test)
     nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=xml_data, raw_eseries=nwbfile.acquisition['e-series'], stub_test=stub_test)
+    lfp_eseries = nwbfile.processing["ecephys"].data_interfaces["LFP"].electrical_series["LFP"]
+    nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate)
     epochs = nwb.convert.get_epochs_from_eseries(eseries=nwbfile.acquisition['e-series'])
     nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
 

@@ -321,7 +321,7 @@ def add_tracking(nwbfile, pos, ang=None):
     return nwbfile
 
 
-def add_sleep(nwbfile, sleep_path, folder_name):
+def add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate):
 
     sleep_file = sleep_path / (folder_name + '.SleepState.states.mat')
     emg_file = sleep_path / (folder_name + '.EMGFromLFP.LFP.mat')
@@ -360,6 +360,17 @@ def add_sleep(nwbfile, sleep_path, folder_name):
     # Sort rows by start time
     sleep_stage_rows.sort(key=lambda x: x['start_time'])
 
+    # Temporally align sleep stage times to LFP timestamps
+    unaligned_lfp_timestamps = np.arange(0, lfp_eseries.data.shape[0]) / lfp_sampling_rate
+    aligned_lfp_timestamps = lfp_eseries.timestamps[:]
+    unaligned_start_times = [row['start_time'] for row in sleep_stage_rows]
+    unaligned_stop_times = [row['stop_time'] for row in sleep_stage_rows]
+    aligned_start_times = np.interp(x=unaligned_start_times, xp=unaligned_lfp_timestamps, fp=aligned_lfp_timestamps)
+    aligned_stop_times = np.interp(x=unaligned_stop_times, xp=unaligned_lfp_timestamps, fp=aligned_lfp_timestamps)
+    for row, start_time, stop_time in zip(sleep_stage_rows, aligned_start_times, aligned_stop_times):
+        row['start_time'] = start_time
+        row['stop_time'] = stop_time
+
     # Iterate through the list and add each row to sleep_stages
     sleep_stages = TimeIntervals(name='sleep_stages')
     for row_data in sleep_stage_rows:
@@ -371,13 +382,16 @@ def add_sleep(nwbfile, sleep_path, folder_name):
 
     emg = spio.loadmat(emg_file, simplify_cells=True)
 
+    # Temporally align pseudo-EMG timestamps to LFP timestamps
+    unaligned_emg_timestamps = emg['EMGFromLFP']['timestamps']
+    aligned_emg_timestamps = np.interp(x=unaligned_emg_timestamps, xp=unaligned_lfp_timestamps, fp=aligned_lfp_timestamps)
 
-    rate = calculate_regular_series_rate(emg['EMGFromLFP']['timestamps'])
+    rate = calculate_regular_series_rate(aligned_emg_timestamps)
     if rate is not None: # If the pseudo-EMG timestamps are perfectly regular, use the more efficient starting time and rate. 
         timestamps = None
-        starting_time = float(emg['EMGFromLFP']['timestamps'][0])
+        starting_time = float(aligned_emg_timestamps[0])
     else: # Otherwise, use the timestamps directly.
-        timestamps = emg['EMGFromLFP']['timestamps']
+        timestamps = aligned_emg_timestamps
         starting_time = None
 
     emg = TimeSeries(
