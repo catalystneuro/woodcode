@@ -284,18 +284,18 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
 
 
 def add_tracking(nwbfile, pos, ang=None):
-    comment = """
+    comments = """
         WARNING: These timestamps use a different alignment method than other temporally aligned data in this file.
 
         This time series uses a cross-correlation-based alignment method:
         1. OpenEphys LED TTL channel (30 kHz) was downsampled to 1 kHz
-        2. Bonsai tracking data and LED signal were upsampled to 1 kHz via interpolation
+        2. Bonsai tracking data and LED signal (30Hz) were upsampled to 1 kHz via interpolation
         3. For each recording epoch, the two LED signals were cross-correlated to find the temporal offset
         4. Bonsai data was shifted by the calculated offset for each epoch
         5. Aligned data was downsampled back to 30 Hz
         6. New timestamps were assigned assuming regular 30 Hz spacing: epoch_start + (0:nFrames-1)/30
 
-        All other data in this file has been appropriately temporally aligned to a common time basis using a different method.
+        All other data in this file were temporally aligned to a common time basis using a different method.
     """
 
     # to do: add units as input
@@ -315,7 +315,7 @@ def add_tracking(nwbfile, pos, ang=None):
         timestamps=pos.index.to_numpy(),
         reference_frame='', # TODO: add reference frame info once shared
         unit='centimeters',
-        comment=comment,
+        comments=comments,
     )
     position_obj = Position(spatial_series=spatial_series_obj)
 
@@ -329,9 +329,56 @@ def add_tracking(nwbfile, pos, ang=None):
             timestamps=ang.index.to_numpy(),
             reference_frame='',
             unit='radians',
-            comment=comment,
+            comments=comments,
         )
         position_obj.add_spatial_series(spatial_series_obj)
+
+    behavior_module.add(position_obj)
+    return nwbfile
+
+
+def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: list[np.ndarray]):
+    print('Adding raw tracking to NWB file...')
+
+    item1_pos, item_2_pos, full_aligned_timestamps = [], [], []
+    for file_path, aligned_timestamps in zip(file_paths, all_aligned_timestamps):
+        tracking_df = pd.read_csv(file_path)
+        item1_x = tracking_df['Item1.X'].to_numpy()
+        item1_y = tracking_df['Item1.Y'].to_numpy()
+        item2_x = tracking_df['Item2.X'].to_numpy()
+        item2_y = tracking_df['Item2.Y'].to_numpy()
+        item1_pos.append(np.column_stack((item1_x, item1_y)))
+        item_2_pos.append(np.column_stack((item2_x, item2_y)))
+        aligned_timestamps = aligned_timestamps[:-1] # -1 bc video has one extra frame at the end compared to Bonsai tracking data
+        full_aligned_timestamps.append(aligned_timestamps)
+    item1_pos = np.concatenate(item1_pos, axis=0)
+    item_2_pos = np.concatenate(item_2_pos, axis=0)
+    full_aligned_timestamps = np.concatenate(full_aligned_timestamps, axis=0)
+
+    behavior_module = nwbfile.processing['behavior']
+    # Create the spatial series for position
+    spatial_series_1 = SpatialSeries(
+        name='item1_position',
+        description="Raw (x,y) position of Item 1 from Bonsai tracking data. Item 1 is an LED or marker placed on the animal's head.",
+        data=item1_pos,
+        timestamps=full_aligned_timestamps,
+        reference_frame='', # TODO: add reference frame info once shared
+        unit='a.u.',
+    )
+    spatial_series_2 = SpatialSeries(
+        name='item2_position',
+        description="Raw (x,y) position of Item 2 from Bonsai tracking data. Item 2 is an LED or marker placed on the animal's head.",
+        data=item_2_pos,
+        timestamps=full_aligned_timestamps,
+        reference_frame='', # TODO: add reference frame info once shared
+        unit='a.u.',
+    )
+    if "Position" in behavior_module.data_interfaces:
+        position_obj = behavior_module.data_interfaces["Position"]
+        position_obj.add_spatial_series(spatial_series_1)
+        position_obj.add_spatial_series(spatial_series_2)
+    else:
+        position_obj = Position(spatial_series=[spatial_series_1, spatial_series_2])
         behavior_module.add(position_obj)
 
     return nwbfile

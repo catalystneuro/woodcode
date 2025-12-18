@@ -393,6 +393,7 @@ def session_to_nwb(
     nwbfile = nwb.convert.create_nwb_file(metadata, start_time)
     nwbfile = nwb.convert.add_probes(nwbfile, metadata, xml_data, nrs_data, probe_info)
     nwbfile = nwb.convert.add_tracking(nwbfile, pos, hd)
+    nwbfile = nwb.convert.add_raw_tracking(nwbfile=nwbfile, file_paths=timestamps_file_paths, all_aligned_timestamps=all_aligned_video_timestamps)
     nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, all_aligned_video_timestamps=all_aligned_video_timestamps, metadata=metadata)
     nwbfile = nwb.convert.add_raw_ephys(nwbfile=nwbfile, folder_path=raw_ephys_folder_path, xml_data=xml_data, stream_name=stream_name, stub_test=stub_test)
     nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=xml_data, raw_eseries=nwbfile.acquisition['e-series'], stub_test=stub_test)
