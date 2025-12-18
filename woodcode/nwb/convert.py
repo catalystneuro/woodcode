@@ -126,7 +126,7 @@ def add_events(nwbfile, events, event_name="events"):
 
 
 
-def add_units(nwbfile, xml_data, spikes, waveforms, shank_id):
+def add_units(nwbfile, xml_data, spikes, waveforms, shank_id, lfp_eseries, lfp_sampling_rate):
     print('Adding units to NWB file...')
 
     # Get skipped channels per shank for waveform mean adjustment
@@ -148,6 +148,7 @@ def add_units(nwbfile, xml_data, spikes, waveforms, shank_id):
     for ncell in range(len(spikes)):
         group_name = shank_names[shank_id[ncell]]  # Map shank_id to correct name
         waveform_mean = waveforms[ncell].T
+        spike_times = spikes[ncell].index.to_numpy()
 
         # Add NaN columns for skipped channels
         shank_index = shank_id[ncell]
@@ -158,8 +159,13 @@ def add_units(nwbfile, xml_data, spikes, waveforms, shank_id):
         assert waveform_mean.shape[1] == shank_id_to_num_channels[shank_index], \
             f"Waveform mean shape {waveform_mean.shape[1]} does not match expected number of channels {shank_id_to_num_channels[shank_index]} for shank {shank_index}"
         
+        # Temporally align spike times to LFP timestamps
+        unaligned_lfp_timestamps = np.arange(0, lfp_eseries.data.shape[0]) / lfp_sampling_rate
+        aligned_lfp_timestamps = lfp_eseries.timestamps[:]
+        aligned_spike_times = np.interp(x=spike_times, xp=unaligned_lfp_timestamps, fp=aligned_lfp_timestamps)
+        
         nwbfile.add_unit(id=ncell,
-                         spike_times=spikes[ncell].index.to_numpy(),
+                         spike_times=aligned_spike_times,
                          waveform_mean=waveform_mean,
                          sampling_rate=xml_data['dat_sampling_rate'],
                          electrode_group=nwbfile.electrode_groups[group_name])
