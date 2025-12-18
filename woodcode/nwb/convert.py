@@ -129,15 +129,38 @@ def add_events(nwbfile, events, event_name="events"):
 def add_units(nwbfile, xml_data, spikes, waveforms, shank_id):
     print('Adding units to NWB file...')
 
+    # Get skipped channels per shank for waveform mean adjustment
+    shank_id_to_skipped_channel_indices = {}
+    shank_id_to_num_channels = {}
+    for shank_index, spike_group in enumerate(xml_data['spike_groups']):
+        shank_id_to_num_channels[shank_index] = len(spike_group)
+        anatomical_group = xml_data['anatomical_groups'][shank_index]
+        for idx, channel in enumerate(anatomical_group):
+            if channel in xml_data['skipped_channels']:
+                if shank_index not in shank_id_to_skipped_channel_indices:
+                    shank_id_to_skipped_channel_indices[shank_index] = []
+                shank_id_to_skipped_channel_indices[shank_index].append(idx)
+
     # Add extra unit column
     nwbfile.add_unit_column(name="sampling_rate", description="Sampling rate of the raw ephys signal")
 
     shank_names = list(nwbfile.electrode_groups.keys())
     for ncell in range(len(spikes)):
         group_name = shank_names[shank_id[ncell]]  # Map shank_id to correct name
+        waveform_mean = waveforms[ncell].T
+
+        # Add NaN columns for skipped channels
+        shank_index = shank_id[ncell]
+        if shank_index in shank_id_to_skipped_channel_indices:
+            skipped_indices = shank_id_to_skipped_channel_indices[shank_index]
+            for skipped_idx in sorted(skipped_indices):
+                waveform_mean = np.insert(waveform_mean, skipped_idx, np.nan, axis=1)
+        assert waveform_mean.shape[1] == shank_id_to_num_channels[shank_index], \
+            f"Waveform mean shape {waveform_mean.shape[1]} does not match expected number of channels {shank_id_to_num_channels[shank_index]} for shank {shank_index}"
+        
         nwbfile.add_unit(id=ncell,
                          spike_times=spikes[ncell].index.to_numpy(),
-                         waveform_mean=waveforms[ncell].T,
+                         waveform_mean=waveform_mean,
                          sampling_rate=xml_data['dat_sampling_rate'],
                          electrode_group=nwbfile.electrode_groups[group_name])
     return nwbfile

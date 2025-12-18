@@ -409,7 +409,7 @@ def session_to_nwb(
 
     # TODO: Figure out how to accommodate waveform_means with different numbers of channels for each shank
     # TODO: don't forget to temporally align the spike times when they get included in the conversion.
-    # nwbfile = nwb.convert.add_units(nwbfile, xml_data, spikes, waveforms, shank_id)  # get shank names from NWB file
+    nwbfile = nwb.convert.add_units(nwbfile, xml_data, spikes, waveforms, shank_id)  # get shank names from NWB file
 
     # save NWB file
     nwb.convert.save_nwb_file(nwbfile, save_path, folder_name)
