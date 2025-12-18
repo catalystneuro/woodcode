@@ -402,10 +402,12 @@ def session_to_nwb(
     nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
 
     # TODO: figure out what these events are
+    # TODO: don't forget to temporally align the events if and when they get included in the conversion
     # events = nwb.io.get_openephys_events(mat_path / 'states.npy', mat_path / 'timestamps.npy', time_offset=epochs.at[len(epochs)-1, 'Start'], skip_first=16)  # load LED events
     # nwbfile = nwb.convert.add_events(nwbfile, events)
 
     # TODO: Figure out how to accommodate waveform_means with different numbers of channels for each shank
+    # TODO: don't forget to temporally align the spike times when they get included in the conversion.
     # nwbfile = nwb.convert.add_units(nwbfile, xml_data, spikes, waveforms, shank_id)  # get shank names from NWB file
 
     # save NWB file
