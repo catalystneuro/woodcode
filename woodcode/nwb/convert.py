@@ -284,6 +284,20 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
 
 
 def add_tracking(nwbfile, pos, ang=None):
+    comments = """
+        WARNING: These timestamps use a different alignment method than other temporally aligned data in this file.
+
+        This time series uses a cross-correlation-based alignment method:
+        1. OpenEphys LED TTL channel (30 kHz) was downsampled to 1 kHz
+        2. Bonsai tracking data and LED signal (30Hz) were upsampled to 1 kHz via interpolation
+        3. For each recording epoch, the two LED signals were cross-correlated to find the temporal offset
+        4. Bonsai data was shifted by the calculated offset for each epoch
+        5. Aligned data was downsampled back to 30 Hz
+        6. New timestamps were assigned assuming regular 30 Hz spacing: epoch_start + (0:nFrames-1)/30
+
+        All other data in this file were temporally aligned to a common time basis using a different method.
+    """
+
     # to do: add units as input
     print('Adding tracking to NWB file...')
 
@@ -300,7 +314,8 @@ def add_tracking(nwbfile, pos, ang=None):
         data=pos.values,
         timestamps=pos.index.to_numpy(),
         reference_frame='', # TODO: add reference frame info once shared
-        unit='centimeters'
+        unit='centimeters',
+        comments=comments,
     )
     position_obj = Position(spatial_series=spatial_series_obj)
 
@@ -313,15 +328,63 @@ def add_tracking(nwbfile, pos, ang=None):
             data=data,
             timestamps=ang.index.to_numpy(),
             reference_frame='',
-            unit='radians'
+            unit='radians',
+            comments=comments,
         )
         position_obj.add_spatial_series(spatial_series_obj)
+
+    behavior_module.add(position_obj)
+    return nwbfile
+
+
+def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: list[np.ndarray]):
+    print('Adding raw tracking to NWB file...')
+
+    item1_pos, item_2_pos, full_aligned_timestamps = [], [], []
+    for file_path, aligned_timestamps in zip(file_paths, all_aligned_timestamps):
+        tracking_df = pd.read_csv(file_path)
+        item1_x = tracking_df['Item1.X'].to_numpy()
+        item1_y = tracking_df['Item1.Y'].to_numpy()
+        item2_x = tracking_df['Item2.X'].to_numpy()
+        item2_y = tracking_df['Item2.Y'].to_numpy()
+        item1_pos.append(np.column_stack((item1_x, item1_y)))
+        item_2_pos.append(np.column_stack((item2_x, item2_y)))
+        aligned_timestamps = aligned_timestamps[:-1] # -1 bc video has one extra frame at the end compared to Bonsai tracking data
+        full_aligned_timestamps.append(aligned_timestamps)
+    item1_pos = np.concatenate(item1_pos, axis=0)
+    item_2_pos = np.concatenate(item_2_pos, axis=0)
+    full_aligned_timestamps = np.concatenate(full_aligned_timestamps, axis=0)
+
+    behavior_module = nwbfile.processing['behavior']
+    # Create the spatial series for position
+    spatial_series_1 = SpatialSeries(
+        name='item1_position',
+        description="Raw (x,y) position of Item 1 from Bonsai tracking data. Item 1 is an LED or marker placed on the animal's head.",
+        data=item1_pos,
+        timestamps=full_aligned_timestamps,
+        reference_frame='', # TODO: add reference frame info once shared
+        unit='a.u.',
+    )
+    spatial_series_2 = SpatialSeries(
+        name='item2_position',
+        description="Raw (x,y) position of Item 2 from Bonsai tracking data. Item 2 is an LED or marker placed on the animal's head.",
+        data=item_2_pos,
+        timestamps=full_aligned_timestamps,
+        reference_frame='', # TODO: add reference frame info once shared
+        unit='a.u.',
+    )
+    if "Position" in behavior_module.data_interfaces:
+        position_obj = behavior_module.data_interfaces["Position"]
+        position_obj.add_spatial_series(spatial_series_1)
+        position_obj.add_spatial_series(spatial_series_2)
+    else:
+        position_obj = Position(spatial_series=[spatial_series_1, spatial_series_2])
         behavior_module.add(position_obj)
 
     return nwbfile
 
 
-def add_sleep(nwbfile, sleep_path, folder_name):
+def add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate):
 
     sleep_file = sleep_path / (folder_name + '.SleepState.states.mat')
     emg_file = sleep_path / (folder_name + '.EMGFromLFP.LFP.mat')
@@ -360,6 +423,17 @@ def add_sleep(nwbfile, sleep_path, folder_name):
     # Sort rows by start time
     sleep_stage_rows.sort(key=lambda x: x['start_time'])
 
+    # Temporally align sleep stage times to LFP timestamps
+    unaligned_lfp_timestamps = np.arange(0, lfp_eseries.data.shape[0]) / lfp_sampling_rate
+    aligned_lfp_timestamps = lfp_eseries.timestamps[:]
+    unaligned_start_times = [row['start_time'] for row in sleep_stage_rows]
+    unaligned_stop_times = [row['stop_time'] for row in sleep_stage_rows]
+    aligned_start_times = np.interp(x=unaligned_start_times, xp=unaligned_lfp_timestamps, fp=aligned_lfp_timestamps)
+    aligned_stop_times = np.interp(x=unaligned_stop_times, xp=unaligned_lfp_timestamps, fp=aligned_lfp_timestamps)
+    for row, start_time, stop_time in zip(sleep_stage_rows, aligned_start_times, aligned_stop_times):
+        row['start_time'] = start_time
+        row['stop_time'] = stop_time
+
     # Iterate through the list and add each row to sleep_stages
     sleep_stages = TimeIntervals(name='sleep_stages')
     for row_data in sleep_stage_rows:
@@ -371,13 +445,16 @@ def add_sleep(nwbfile, sleep_path, folder_name):
 
     emg = spio.loadmat(emg_file, simplify_cells=True)
 
+    # Temporally align pseudo-EMG timestamps to LFP timestamps
+    unaligned_emg_timestamps = emg['EMGFromLFP']['timestamps']
+    aligned_emg_timestamps = np.interp(x=unaligned_emg_timestamps, xp=unaligned_lfp_timestamps, fp=aligned_lfp_timestamps)
 
-    rate = calculate_regular_series_rate(emg['EMGFromLFP']['timestamps'])
+    rate = calculate_regular_series_rate(aligned_emg_timestamps)
     if rate is not None: # If the pseudo-EMG timestamps are perfectly regular, use the more efficient starting time and rate. 
         timestamps = None
-        starting_time = float(emg['EMGFromLFP']['timestamps'][0])
+        starting_time = float(aligned_emg_timestamps[0])
     else: # Otherwise, use the timestamps directly.
-        timestamps = emg['EMGFromLFP']['timestamps']
+        timestamps = aligned_emg_timestamps
         starting_time = None
 
     emg = TimeSeries(
@@ -400,6 +477,36 @@ def add_sleep(nwbfile, sleep_path, folder_name):
         nwbfile.processing['ecephys'].add(emg)
 
     return nwbfile
+
+
+def get_epochs_from_eseries(eseries):
+    """
+    Extracts epochs from an ElectricalSeries object.
+
+    Parameters:
+    - eseries: ElectricalSeries object
+
+    Returns:
+    - DataFrame containing 'Start' and 'End' times of epochs
+    """
+
+    timestamps = eseries.timestamps[:]
+    diff = np.diff(timestamps)
+    gap_threshold = 2 * np.median(diff)
+    gap_indices = np.where(diff > gap_threshold)[0]
+    start_times = [timestamps[0]]
+    stop_times = []
+    for gap_index in gap_indices:
+        stop_times.append(timestamps[gap_index])
+        start_times.append(timestamps[gap_index + 1])
+    stop_times.append(timestamps[-1])
+
+    epochs = pd.DataFrame({
+        'Start': start_times,
+        'End': stop_times
+    })
+
+    return epochs
 
 
 def add_epochs(nwbfile, epochs, metadata):
@@ -463,9 +570,18 @@ def add_epochs(nwbfile, epochs, metadata):
 
 
 
-def add_lfp(nwbfile, lfp_path, xml_data, stub_test=False):
+def add_lfp(nwbfile, lfp_path, xml_data, raw_eseries, stub_test=False):
 
     print('Adding LFP to the NWB file...')
+
+    raw_timestamps = raw_eseries.timestamps[:]
+    raw_sampling_rate = 30_000.0
+    raw_conversion = raw_eseries.conversion
+    raw_offset = raw_eseries.offset
+
+    lfp_sampling_rate = float(xml_data['eeg_sampling_rate'])
+    downsample_factor = int(raw_sampling_rate / lfp_sampling_rate)
+    lfp_timestamps = raw_timestamps[::downsample_factor]
 
     all_table_region = nwbfile.create_electrode_table_region(
         region=list(range(len(nwbfile.electrodes))),
@@ -480,15 +596,20 @@ def add_lfp(nwbfile, lfp_path, xml_data, stub_test=False):
                             bytes_size=2)
     lfp_data = lfp_data[:, chan_order]  # get only probe channels
     if stub_test:
-        lfp_data = lfp_data[:100, :]
+        raw_num_pts = 100 # This is the number of points used for stubbing a single segment of raw ephys data.
+        lfp_num_pts = int(raw_num_pts / downsample_factor)
+        lfp_data = lfp_data[:lfp_num_pts, :]
+        lfp_timestamps = lfp_timestamps[:lfp_num_pts]
 
     # create ElectricalSeries
     lfp_elec_series = ElectricalSeries(
         name='LFP',
         data=H5DataIO(lfp_data, compression=True),  # use this function to compress
+        timestamps=lfp_timestamps,
         description='Local field potential (downsampled DAT file)',
         electrodes=all_table_region,
-        rate=float(xml_data['eeg_sampling_rate'])
+        conversion=raw_conversion,
+        offset=raw_offset,
     )
 
     # store ElectricalSeries in an LFP container
@@ -646,36 +767,13 @@ def collect_nwb_metadata(nwbfile):
 
 
 def add_video(
-        *,
-        nwbfile: NWBFile,
-        video_file_paths: list[Path],
-        timestamp_file_paths: list[Path],
-        timestamp_column_name: str,
-        metadata: dict,
+    *,
+    nwbfile: NWBFile,
+    video_file_paths: list[Path],
+    all_aligned_video_timestamps: list[np.ndarray],
+    metadata: dict,
 ) -> NWBFile:
     print("Adding video to NWB file...")
-
-    # Load timestamps from .csv files
-    all_timestamps = []
-
-    # load timestamps from the first file to get starting datetime
-    timestamp_file_path = timestamp_file_paths[0]
-    timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
-    starting_datetime = timestamps_df[timestamp_column_name].iloc[0]
-    timestamps_df["timestamps"] = (timestamps_df[timestamp_column_name] - starting_datetime).dt.total_seconds()
-    timestamps = timestamps_df["timestamps"].to_numpy()
-    # dt = np.mean(np.diff(timestamps))
-    # timestamps = np.concatenate((timestamps, [timestamps[-1] + dt])) # Last frame is missing from the csv file TODO: double check with the Dudchenko lab
-    all_timestamps.append(timestamps)
-
-    # load timestamps from the rest of the files normalized to the starting datetime
-    for timestamp_file_path in timestamp_file_paths[1:]:
-        timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
-        timestamps_df["timestamps"] = (timestamps_df[timestamp_column_name] - starting_datetime).dt.total_seconds()
-        timestamps = timestamps_df["timestamps"].to_numpy()
-        # dt = np.mean(np.diff(timestamps))
-        # timestamps = np.concatenate((timestamps, [timestamps[-1] + dt])) # Last frame is missing from the csv file TODO: double check with the Dudchenko lab
-        all_timestamps.append(timestamps)
 
     # Add camera device
     camera_device_metadata = metadata["Video"]["CameraDevice"]
@@ -691,7 +789,7 @@ def add_video(
 
     # Add image series for each video file
     image_series_metadata = metadata["Video"]["ImageSeries"]
-    for meta, timestamps, file_path in zip(image_series_metadata, all_timestamps, video_file_paths):
+    for meta, timestamps, file_path in zip(image_series_metadata, all_aligned_video_timestamps, video_file_paths):
         image_series = ImageSeries(
             name=meta["name"],
             description=meta["description"],
@@ -709,10 +807,9 @@ from neuroconv.tools.spikeinterface.spikeinterface import _stub_recording
 from neuroconv.utils import calculate_regular_series_rate
 import pynwb
 from .multi_segment_recording_data_chunk_iterator import MultiSegmentRecordingDataChunkIterator
-def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, epochs: pd.DataFrame, xml_data: dict, stream_name: str, stub_test: bool = False) -> NWBFile:
+def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, xml_data: dict, stream_name: str, stub_test: bool = False) -> NWBFile:
     print("Adding raw ephys to NWB file...")
 
-    segment_starting_times = epochs.Start.values
     chan_order = np.concatenate(xml_data['spike_groups'])
 
     recording = OpenEphysBinaryRecordingExtractor(folder_path=folder_path, stream_name=stream_name)
@@ -772,8 +869,6 @@ def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, epochs: pd.DataFrame, xml
     timestamps = []
     for i in segment_indices:
         segment_timestamps = recording.get_times(segment_index=i)
-        segment_starting_time = segment_starting_times[i]
-        segment_timestamps = segment_timestamps + segment_starting_time
         timestamps.append(segment_timestamps)
     timestamps = np.concatenate(timestamps)
 
