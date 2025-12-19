@@ -126,17 +126,17 @@ def add_events(nwbfile, events, event_name="events"):
 
 
 
-def add_units(nwbfile, xml_data, spikes, waveforms, shank_id, lfp_eseries, lfp_sampling_rate):
+def add_units(nwbfile, raw_xml_data, processed_xml_data, spikes, waveforms, shank_id, lfp_eseries, lfp_sampling_rate):
     print('Adding units to NWB file...')
 
     # Get skipped channels per shank for waveform mean adjustment
     shank_id_to_skipped_channel_indices = {}
     shank_id_to_num_channels = {}
-    for shank_index, spike_group in enumerate(xml_data['spike_groups']):
-        shank_id_to_num_channels[shank_index] = len(spike_group)
-        anatomical_group = xml_data['anatomical_groups'][shank_index]
-        for idx, channel in enumerate(anatomical_group):
-            if channel in xml_data['skipped_channels']:
+    for shank_index, raw_spike_group in enumerate(raw_xml_data['spike_groups']):
+        processed_spike_group = processed_xml_data['spike_groups'][shank_index]
+        shank_id_to_num_channels[shank_index] = len(raw_spike_group)
+        for idx, channel in enumerate(raw_spike_group):
+            if channel not in processed_spike_group:
                 if shank_index not in shank_id_to_skipped_channel_indices:
                     shank_id_to_skipped_channel_indices[shank_index] = []
                 shank_id_to_skipped_channel_indices[shank_index].append(idx)
@@ -167,7 +167,7 @@ def add_units(nwbfile, xml_data, spikes, waveforms, shank_id, lfp_eseries, lfp_s
         nwbfile.add_unit(id=ncell,
                          spike_times=aligned_spike_times,
                          waveform_mean=waveform_mean,
-                         sampling_rate=xml_data['dat_sampling_rate'],
+                         sampling_rate=raw_xml_data['dat_sampling_rate'],
                          electrode_group=nwbfile.electrode_groups[group_name])
     return nwbfile
 
