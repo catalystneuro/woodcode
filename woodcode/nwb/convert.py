@@ -366,7 +366,7 @@ def add_tracking(nwbfile, pos, ang=None):
     return nwbfile
 
 
-def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: list[np.ndarray]):
+def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: list[np.ndarray], is_adult: bool):
     print('Adding raw tracking to NWB file...')
 
     item1_pos, item_2_pos, full_aligned_timestamps = [], [], []
@@ -378,7 +378,8 @@ def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: li
         item2_y = tracking_df['Item2.Y'].to_numpy()
         item1_pos.append(np.column_stack((item1_x, item1_y)))
         item_2_pos.append(np.column_stack((item2_x, item2_y)))
-        aligned_timestamps = aligned_timestamps[:-1] # -1 bc video has one extra frame at the end compared to Bonsai tracking data
+        if is_adult:
+            aligned_timestamps = aligned_timestamps[:-1] # -1 bc video has one extra frame at the end compared to Bonsai tracking data
         full_aligned_timestamps.append(aligned_timestamps)
     item1_pos = np.concatenate(item1_pos, axis=0)
     item_2_pos = np.concatenate(item_2_pos, axis=0)
