@@ -126,8 +126,20 @@ def add_events(nwbfile, events, event_name="events"):
 
 
 
-def add_units(nwbfile, xml_data, spikes, waveforms, shank_id):
+def add_units(nwbfile, raw_xml_data, processed_xml_data, spikes, waveforms, shank_id, lfp_eseries, lfp_sampling_rate):
     print('Adding units to NWB file...')
+
+    # Get skipped channels per shank for waveform mean adjustment
+    shank_id_to_skipped_channel_indices = {}
+    shank_id_to_num_channels = {}
+    for shank_index, raw_spike_group in enumerate(raw_xml_data['spike_groups']):
+        processed_spike_group = processed_xml_data['spike_groups'][shank_index]
+        shank_id_to_num_channels[shank_index] = len(raw_spike_group)
+        for idx, channel in enumerate(raw_spike_group):
+            if channel not in processed_spike_group:
+                if shank_index not in shank_id_to_skipped_channel_indices:
+                    shank_id_to_skipped_channel_indices[shank_index] = []
+                shank_id_to_skipped_channel_indices[shank_index].append(idx)
 
     # Add extra unit column
     nwbfile.add_unit_column(name="sampling_rate", description="Sampling rate of the raw ephys signal")
@@ -135,10 +147,27 @@ def add_units(nwbfile, xml_data, spikes, waveforms, shank_id):
     shank_names = list(nwbfile.electrode_groups.keys())
     for ncell in range(len(spikes)):
         group_name = shank_names[shank_id[ncell]]  # Map shank_id to correct name
+        waveform_mean = waveforms[ncell].T
+        spike_times = spikes[ncell].index.to_numpy()
+
+        # Add NaN columns for skipped channels
+        shank_index = shank_id[ncell]
+        if shank_index in shank_id_to_skipped_channel_indices:
+            skipped_indices = shank_id_to_skipped_channel_indices[shank_index]
+            for skipped_idx in sorted(skipped_indices):
+                waveform_mean = np.insert(waveform_mean, skipped_idx, np.nan, axis=1)
+        assert waveform_mean.shape[1] == shank_id_to_num_channels[shank_index], \
+            f"Waveform mean shape {waveform_mean.shape[1]} does not match expected number of channels {shank_id_to_num_channels[shank_index]} for shank {shank_index}"
+        
+        # Temporally align spike times to LFP timestamps
+        unaligned_lfp_timestamps = np.arange(0, lfp_eseries.data.shape[0]) / lfp_sampling_rate
+        aligned_lfp_timestamps = lfp_eseries.timestamps[:]
+        aligned_spike_times = np.interp(x=spike_times, xp=unaligned_lfp_timestamps, fp=aligned_lfp_timestamps)
+        
         nwbfile.add_unit(id=ncell,
-                         spike_times=spikes[ncell].index.to_numpy(),
-                         waveform_mean=waveforms[ncell].T,
-                         sampling_rate=xml_data['dat_sampling_rate'],
+                         spike_times=aligned_spike_times,
+                         waveform_mean=waveform_mean,
+                         sampling_rate=raw_xml_data['dat_sampling_rate'],
                          electrode_group=nwbfile.electrode_groups[group_name])
     return nwbfile
 
@@ -337,7 +366,7 @@ def add_tracking(nwbfile, pos, ang=None):
     return nwbfile
 
 
-def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: list[np.ndarray]):
+def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: list[np.ndarray], is_adult: bool):
     print('Adding raw tracking to NWB file...')
 
     item1_pos, item_2_pos, full_aligned_timestamps = [], [], []
@@ -349,7 +378,8 @@ def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: li
         item2_y = tracking_df['Item2.Y'].to_numpy()
         item1_pos.append(np.column_stack((item1_x, item1_y)))
         item_2_pos.append(np.column_stack((item2_x, item2_y)))
-        aligned_timestamps = aligned_timestamps[:-1] # -1 bc video has one extra frame at the end compared to Bonsai tracking data
+        if is_adult:
+            aligned_timestamps = aligned_timestamps[:-1] # -1 bc video has one extra frame at the end compared to Bonsai tracking data
         full_aligned_timestamps.append(aligned_timestamps)
     item1_pos = np.concatenate(item1_pos, axis=0)
     item_2_pos = np.concatenate(item_2_pos, axis=0)
