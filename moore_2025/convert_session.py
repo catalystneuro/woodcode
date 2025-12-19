@@ -548,8 +548,9 @@ def main():
     # Example Adult KO session
     adult_ko_folder_path = adult_folder_path / "KO"
     folder_name = 'H4817-220828'
-    raw_xml_path = adult_ko_folder_path / folder_name / "Raw" / "experiment1" / "recording1" / "continuous" / "Rhythm_FPGA-103.0" / "continuous.xml"
+    # Raw XML for this session is missing one of the channels (channel 38 on shank 1), so using the Processed XML instead
     processed_xml_path = adult_ko_folder_path / folder_name / "Processed" / (folder_name + '.xml')  # path to xml file
+    raw_xml_path = processed_xml_path
     nrs_path = adult_ko_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
     meta_path = dataset_path / 'MooreDataset_Metadata.xlsx'  # path to metadata file
     mat_path = adult_ko_folder_path / folder_name / "Processed" / 'Analysis'
