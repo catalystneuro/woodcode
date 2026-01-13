@@ -202,77 +202,78 @@ def main():
     juvenile_folder_path = dataset_path / "H3000_Juveniles"
     metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/juvenile_metadata.yaml")
 
-    # # Example Juvenile WT sessions
-    # jv_wt_folder_path = juvenile_folder_path / "WT"
+    # Example Juvenile WT sessions
+    jv_wt_folder_path = juvenile_folder_path / "WT"
 
     # Day 1
-    # folder_name = 'H3022-210805'
-    # raw_xml_path = jv_wt_folder_path / folder_name / "Raw" / "experiment1" / "recording1" / "continuous" / "Rhythm_FPGA-100.0" / "continuous.xml"
-    # processed_xml_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.xml')  # path to xml file
-    # nrs_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
-    # mat_path = jv_wt_folder_path / folder_name / "Processed" / 'Analysis'
-    # sleep_path = jv_wt_folder_path / folder_name / "Processed" / 'Sleep'
-    # video_file_paths = [
-    #     jv_wt_folder_path / folder_name / "Raw" / "BonsaiCaptureALL2021-08-05T17_06_24.avi",
-    # ]
-    # timestamps_file_paths = [
-    #     jv_wt_folder_path / folder_name / "Raw" / "Bonsai testing2021-08-05T17_06_23.csv",
-    # ]
-    # lfp_file_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
-    # raw_ephys_folder_path = jv_wt_folder_path / folder_name / "Raw"
+    folder_name = 'H3022-210805'
+    raw_xml_path = jv_wt_folder_path / folder_name / "Raw" / "experiment1" / "recording1" / "continuous" / "Rhythm_FPGA-100.0" / "continuous.xml"
+    processed_xml_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.xml')  # path to xml file
+    nrs_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
+    mat_path = jv_wt_folder_path / folder_name / "Processed" / 'Analysis'
+    sleep_path = jv_wt_folder_path / folder_name / "Processed" / 'Sleep'
+    video_file_paths = [
+        jv_wt_folder_path / folder_name / "Raw" / "BonsaiCaptureALL2021-08-05T17_06_24.avi",
+    ]
+    timestamps_file_paths = [
+        jv_wt_folder_path / folder_name / "Raw" / "Bonsai testing2021-08-05T17_06_23.csv",
+    ]
+    lfp_file_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
+    raw_ephys_folder_path = jv_wt_folder_path / folder_name / "Raw"
 
-    # session_to_nwb(
-    #     dataset_path=dataset_path,
-    #     folder_name=folder_name,
-    #     raw_xml_path=raw_xml_path,
-    #     processed_xml_path=processed_xml_path,
-    #     nrs_path=nrs_path,
-    #     meta_path=meta_path,
-    #     mat_path=mat_path,
-    #     sleep_path=sleep_path,
-    #     video_file_paths=video_file_paths,
-    #     timestamps_file_paths=timestamps_file_paths,
-    #     lfp_file_path=lfp_file_path,
-    #     raw_ephys_folder_path=raw_ephys_folder_path,
-    #     save_path=save_path,
-    #     metadata_file_path=metadata_file_path,
-    #     stub_test=stub_test,
-    #     is_adult=False,
-    # )
+    session_to_nwb(
+        dataset_path=dataset_path,
+        folder_name=folder_name,
+        raw_xml_path=raw_xml_path,
+        processed_xml_path=processed_xml_path,
+        nrs_path=nrs_path,
+        meta_path=meta_path,
+        mat_path=mat_path,
+        sleep_path=sleep_path,
+        video_file_paths=video_file_paths,
+        timestamps_file_paths=timestamps_file_paths,
+        lfp_file_path=lfp_file_path,
+        raw_ephys_folder_path=raw_ephys_folder_path,
+        save_path=save_path,
+        metadata_file_path=metadata_file_path,
+        stub_test=stub_test,
+        is_adult=False,
+    )
+    return
 
-    # # Day 2
-    # folder_name = 'H3022-210806'
-    # raw_xml_path = jv_wt_folder_path / folder_name / "Raw" / "experiment1" / "recording1" / "continuous" / "Rhythm_FPGA-100.0" / "continuous.xml"
-    # processed_xml_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.xml')  # path to xml file
-    # nrs_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
-    # mat_path = jv_wt_folder_path / folder_name / "Processed" / 'Analysis'
-    # sleep_path = jv_wt_folder_path / folder_name / "Processed" / 'Sleep'
-    # video_file_paths = [
-    #     jv_wt_folder_path / folder_name / "Raw" / "BonsaiCaptureALL2021-08-06T11_34_08.avi",
-    # ]
-    # timestamps_file_paths = [
-    #     jv_wt_folder_path / folder_name / "Raw" / "Bonsai testing2021-08-06T11_34_07.csv",
-    # ]
-    # lfp_file_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
-    # raw_ephys_folder_path = jv_wt_folder_path / folder_name / "Raw"
-    # session_to_nwb(
-    #     dataset_path=dataset_path,
-    #     folder_name=folder_name,
-    #     raw_xml_path=raw_xml_path,
-    #     processed_xml_path=processed_xml_path,
-    #     nrs_path=nrs_path,
-    #     meta_path=meta_path,
-    #     mat_path=mat_path,
-    #     sleep_path=sleep_path,
-    #     video_file_paths=video_file_paths,
-    #     timestamps_file_paths=timestamps_file_paths,
-    #     lfp_file_path=lfp_file_path,
-    #     raw_ephys_folder_path=raw_ephys_folder_path,
-    #     save_path=save_path,
-    #     metadata_file_path=metadata_file_path,
-    #     stub_test=stub_test,
-    #     is_adult=False,
-    # )
+    # Day 2
+    folder_name = 'H3022-210806'
+    raw_xml_path = jv_wt_folder_path / folder_name / "Raw" / "experiment1" / "recording1" / "continuous" / "Rhythm_FPGA-100.0" / "continuous.xml"
+    processed_xml_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.xml')  # path to xml file
+    nrs_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
+    mat_path = jv_wt_folder_path / folder_name / "Processed" / 'Analysis'
+    sleep_path = jv_wt_folder_path / folder_name / "Processed" / 'Sleep'
+    video_file_paths = [
+        jv_wt_folder_path / folder_name / "Raw" / "BonsaiCaptureALL2021-08-06T11_34_08.avi",
+    ]
+    timestamps_file_paths = [
+        jv_wt_folder_path / folder_name / "Raw" / "Bonsai testing2021-08-06T11_34_07.csv",
+    ]
+    lfp_file_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
+    raw_ephys_folder_path = jv_wt_folder_path / folder_name / "Raw"
+    session_to_nwb(
+        dataset_path=dataset_path,
+        folder_name=folder_name,
+        raw_xml_path=raw_xml_path,
+        processed_xml_path=processed_xml_path,
+        nrs_path=nrs_path,
+        meta_path=meta_path,
+        mat_path=mat_path,
+        sleep_path=sleep_path,
+        video_file_paths=video_file_paths,
+        timestamps_file_paths=timestamps_file_paths,
+        lfp_file_path=lfp_file_path,
+        raw_ephys_folder_path=raw_ephys_folder_path,
+        save_path=save_path,
+        metadata_file_path=metadata_file_path,
+        stub_test=stub_test,
+        is_adult=False,
+    )
 
     # Example Juvenile KO sessions
     jv_ko_folder_path = juvenile_folder_path / "KO"
@@ -310,7 +311,6 @@ def main():
         stub_test=stub_test,
         is_adult=False,
     )
-    return
 
     # Day 2
     folder_name = 'H3016-210423'
@@ -347,6 +347,7 @@ def main():
         is_adult=False,
     )
 
+    return
     # Example Adult Sessions
     adult_folder_path = dataset_path / "H4800_Adults"
     metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/adult_metadata.yaml")
