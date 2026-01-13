@@ -79,7 +79,7 @@ def get_ttl_timestamps(*, traces: np.ndarray, timestamps: np.ndarray, threshold:
     ttl_timestamps = timestamps[centers]
     return ttl_timestamps
 
-def find_interval_match(*, led_intervals: np.ndarray, ttl_intervals: np.ndarray, tolerance_in_seconds: float) -> tuple[int, int]:
+def find_putative_interval_match(*, led_intervals: np.ndarray, ttl_intervals: np.ndarray, tolerance_in_seconds: float) -> tuple[int, int]:
     """
     Find the first matching interval between LED intervals and TTL intervals within a specified tolerance.
 
@@ -96,6 +96,7 @@ def find_interval_match(*, led_intervals: np.ndarray, ttl_intervals: np.ndarray,
     -------
     tuple[int, int]
         A tuple containing the indices of the matching LED interval and TTL interval.
+        If no match is found, returns (None, None).
     """
     potential_first_ttl_intervals = [sum(ttl_intervals[:i+1]) for i in range(len(ttl_intervals))]
     for led_index, led_interval in enumerate(led_intervals):
@@ -106,7 +107,41 @@ def find_interval_match(*, led_intervals: np.ndarray, ttl_intervals: np.ndarray,
                 return led_index, ttl_index
             elif led_interval - ttl_interval < -1 * tolerance_in_seconds:
                 break
-    raise ValueError("No matching intervals found between LED and TTL times.")
+    return None, None
+
+def check_interval_match(*, match_led_index, match_ttl_index, led_intervals, ttl_intervals, min_matches, tolerance_in_seconds):
+    """
+    Check if a sequence of intervals match between LED and TTL intervals starting from given indices.
+
+    Parameters
+    ----------
+    match_led_index: int
+        The starting index in LED intervals.
+    match_ttl_index: int
+        The starting index in TTL intervals.
+    led_intervals: np.ndarray
+        Array of LED event intervals.
+    ttl_intervals: np.ndarray
+        Array of TTL event intervals.
+    min_matches: int
+        Minimum number of matching intervals required to consider an alignment valid.
+    tolerance_in_seconds: float
+        Tolerance in seconds for matching intervals.
+
+    Returns
+    -------
+    bool
+        True if the required number of intervals match, False otherwise.
+    """
+    global_ttl_index = match_ttl_index
+    for next_led_index in range(match_led_index+1, match_led_index + min_matches):
+        next_ttl_index = global_ttl_index + 1
+        next_led_interval = led_intervals[next_led_index]
+        _, ttl_index = find_putative_interval_match(led_intervals=[next_led_interval], ttl_intervals=ttl_intervals[next_ttl_index:], tolerance_in_seconds=tolerance_in_seconds)
+        if ttl_index is None:
+            return False
+        global_ttl_index = ttl_index + next_ttl_index
+    return True
 
 
 def find_segment_start(*, led_times: np.ndarray, ttl_times: np.ndarray, min_matches: int, tolerance_in_seconds: float) -> int:
@@ -136,29 +171,23 @@ def find_segment_start(*, led_times: np.ndarray, ttl_times: np.ndarray, min_matc
     match_is_found = False
     global_led_index = 0
     while not match_is_found:
-        led_index, ttl_index = find_interval_match(led_intervals=led_intervals, ttl_intervals=ttl_intervals, tolerance_in_seconds=tolerance_in_seconds)
-        global_ttl_index = ttl_index
+        led_index, ttl_index = find_putative_interval_match(led_intervals=led_intervals, ttl_intervals=ttl_intervals, tolerance_in_seconds=tolerance_in_seconds)
+        if led_index is None:
+            raise ValueError("No matching intervals found between LED and TTL times.")
         global_led_index += led_index
-        for next_led_index in range(led_index+1, led_index + min_matches):
-            next_ttl_index = global_ttl_index + 1
-            next_led_interval = led_intervals[next_led_index]
-            next_potential_ttl_intervals = [sum(ttl_intervals[next_ttl_index:i+1]) for i in range(next_ttl_index, len(ttl_intervals))]
-            for ttl_index, ttl_interval in enumerate(next_potential_ttl_intervals):
-                if abs(next_led_interval - ttl_interval) <= tolerance_in_seconds:
-                    global_ttl_index = ttl_index + next_ttl_index
-                    break
-            else:
-                match_is_found = False
-                break
-        else:
-            match_is_found = True
-
-        if not match_is_found:
-            led_intervals = led_intervals[led_index + 1:]
-            global_led_index += 1
-    
-    return global_led_index
-
+        match_is_found = check_interval_match(
+            match_led_index=led_index,
+            match_ttl_index=ttl_index,
+            led_intervals=led_intervals,
+            ttl_intervals=ttl_intervals,
+            min_matches=min_matches,
+            tolerance_in_seconds=tolerance_in_seconds,
+        )
+        if match_is_found:
+            return global_led_index
+        
+        led_intervals = led_intervals[led_index + 1:]
+        global_led_index += 1
 
 def correct_ttl_times(*, led_times: np.ndarray, ttl_times: np.ndarray, min_matches: int, tolerance_in_seconds: float) -> np.ndarray:
     """
