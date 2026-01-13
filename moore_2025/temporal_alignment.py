@@ -160,7 +160,7 @@ def find_segment_start(*, led_times: np.ndarray, ttl_times: np.ndarray, min_matc
     return global_led_index
 
 
-def correct_ttl_times(*, led_times: np.ndarray, ttl_times: np.ndarray) -> np.ndarray:
+def correct_ttl_times(*, led_times: np.ndarray, ttl_times: np.ndarray, min_matches: int, tolerance_in_seconds: float) -> np.ndarray:
     """
     Correct TTL times to align with LED times starting from a given index.
 
@@ -170,6 +170,10 @@ def correct_ttl_times(*, led_times: np.ndarray, ttl_times: np.ndarray) -> np.nda
         Array of LED event timestamps.
     ttl_times: np.ndarray
         Array of TTL event timestamps.
+    min_matches: int
+        Minimum number of matching intervals required to consider an alignment valid.
+    tolerance_in_seconds: float
+        Tolerance in seconds for matching intervals.
 
     Returns
     -------
@@ -178,7 +182,7 @@ def correct_ttl_times(*, led_times: np.ndarray, ttl_times: np.ndarray) -> np.nda
     """
     ttl_intervals = np.diff(ttl_times)
     corrected_ttl_timestamps = [] # TTL timestamps with some number of dropped pulses to account for dropped LED flashes.
-    segment_start_index = find_segment_start(led_times=led_times, ttl_times=ttl_times, min_matches=5, tolerance_in_seconds=0.5)
+    segment_start_index = find_segment_start(led_times=led_times, ttl_times=ttl_times, min_matches=min_matches, tolerance_in_seconds=tolerance_in_seconds)
     segment_led_times = led_times[segment_start_index:]
     segment_led_intervals = np.diff(segment_led_times)
 
@@ -191,9 +195,9 @@ def correct_ttl_times(*, led_times: np.ndarray, ttl_times: np.ndarray) -> np.nda
         for ttl_timestamp_index in range(previous_ttl_index+1, len(ttl_times)):
             next_ttl_timestamp = ttl_times[ttl_timestamp_index]
             ttl_interval = next_ttl_timestamp - previous_ttl_timestamp
-            if led_interval - ttl_interval > 1:
+            if led_interval - ttl_interval > tolerance_in_seconds:
                 continue
-            elif led_interval - ttl_interval < 1 or led_interval - ttl_interval > -1:
+            elif led_interval - ttl_interval < tolerance_in_seconds or led_interval - ttl_interval > -1 * tolerance_in_seconds:
                 corrected_ttl_timestamps.append(next_ttl_timestamp)
                 previous_ttl_timestamp = next_ttl_timestamp
                 previous_ttl_index = ttl_timestamp_index
@@ -205,7 +209,7 @@ def correct_ttl_times(*, led_times: np.ndarray, ttl_times: np.ndarray) -> np.nda
     # If the last interval does not match, there is no way to correct it with a compound interval, so we drop it.
     last_ttl_interval = corrected_ttl_timestamps[-1] - corrected_ttl_timestamps[-2]
     last_led_interval = segment_led_times[len(corrected_ttl_timestamps)-1] - segment_led_times[len(corrected_ttl_timestamps)-2]
-    if abs(last_ttl_interval - last_led_interval) > 1.0:
+    if np.abs(last_ttl_interval - last_led_interval) > tolerance_in_seconds:
         corrected_ttl_timestamps = corrected_ttl_timestamps[:-1]
 
     return corrected_ttl_timestamps, segment_start_index
@@ -272,6 +276,8 @@ def get_aligned_video_timestamps_juveniles(
     ttl_stream_name = "Rhythm_FPGA-100.0_ADC"
     ttl_channel_id = 'ADC1'
     cooldown_in_seconds = 1.0
+    min_matches = 5
+    tolerance_in_seconds = 0.5
 
     timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
     traces = timestamps_df[led_column_name].values
@@ -287,13 +293,13 @@ def get_aligned_video_timestamps_juveniles(
         traces = extractor.get_traces(segment_index=segment_index, channel_ids=[ttl_channel_id])
         ephys_timestamps = extractor.get_times(segment_index=segment_index)
         single_segment_ttl_timestamps = get_ttl_timestamps(traces=traces, timestamps=ephys_timestamps, threshold=ttl_threshold, cooldown_in_seconds=cooldown_in_seconds, sampling_rate=sampling_rate)
-        single_segment_ttl_timestamps, segment_start_index = correct_ttl_times(led_times=led_timestamps, ttl_times=single_segment_ttl_timestamps)
+        single_segment_ttl_timestamps, segment_start_index = correct_ttl_times(led_times=led_timestamps, ttl_times=single_segment_ttl_timestamps, min_matches=min_matches, tolerance_in_seconds=tolerance_in_seconds)
         
         ttl_intervals = np.diff(single_segment_ttl_timestamps)
         assert np.all(np.isnan(ttl_timestamps[segment_start_index:segment_start_index + len(single_segment_ttl_timestamps)])), f"Overlap in TTL timestamps at segment {segment_index}"
         ttl_timestamps[segment_start_index:segment_start_index + len(single_segment_ttl_timestamps)] = single_segment_ttl_timestamps
         error = led_intervals[segment_start_index:segment_start_index + len(ttl_intervals)] - ttl_intervals
-        assert np.max(np.abs(error)) < 1.0, f"Alignment error too large: {np.max(np.abs(error))} seconds for segment {segment_index}"
+        assert np.max(np.abs(error)) < tolerance_in_seconds, f"Alignment error too large: {np.max(np.abs(error))} seconds for segment {segment_index}"
 
     # NaN values represent LED pulses that were not recorded in the ephys data (ex. between segments)
     not_nan = ~np.isnan(ttl_timestamps)
