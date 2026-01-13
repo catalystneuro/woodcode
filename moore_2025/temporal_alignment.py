@@ -83,7 +83,7 @@ def get_ttl_timestamps(*, traces: np.ndarray, timestamps: np.ndarray, threshold:
     ttl_timestamps = timestamps[centers]
     return ttl_timestamps
 
-def find_interval_match(led_intervals: np.ndarray, ttl_intervals: np.ndarray, tolerance_in_seconds: float) -> tuple[int, int]:
+def find_interval_match(*, led_intervals: np.ndarray, ttl_intervals: np.ndarray, tolerance_in_seconds: float) -> tuple[int, int]:
     """
     Find the first matching interval between LED intervals and TTL intervals within a specified tolerance.
 
@@ -109,7 +109,7 @@ def find_interval_match(led_intervals: np.ndarray, ttl_intervals: np.ndarray, to
     raise ValueError("No matching intervals found between LED and TTL times.")
 
 
-def find_segment_start(led_times: np.ndarray, ttl_times: np.ndarray, min_matches: int, tolerance_in_seconds: float) -> int:
+def find_segment_start(*, led_times: np.ndarray, ttl_times: np.ndarray, min_matches: int, tolerance_in_seconds: float) -> int:
     """
     Find the index of the LED times that best aligns with the start of the TTL times for this segment.
 
@@ -136,7 +136,7 @@ def find_segment_start(led_times: np.ndarray, ttl_times: np.ndarray, min_matches
     match_is_found = False
     global_led_index = 0
     while not match_is_found:
-        led_index, ttl_index = find_interval_match(led_intervals, ttl_intervals, tolerance_in_seconds)
+        led_index, ttl_index = find_interval_match(led_intervals=led_intervals, ttl_intervals=ttl_intervals, tolerance_in_seconds=tolerance_in_seconds)
         global_ttl_index = ttl_index
         global_led_index += led_index
         for next_led_index in range(led_index+1, led_index + min_matches):
@@ -160,7 +160,7 @@ def find_segment_start(led_times: np.ndarray, ttl_times: np.ndarray, min_matches
     return global_led_index
 
 
-def correct_ttl_times(led_times: np.ndarray, ttl_times: np.ndarray) -> np.ndarray:
+def correct_ttl_times(*, led_times: np.ndarray, ttl_times: np.ndarray) -> np.ndarray:
     """
     Correct TTL times to align with LED times starting from a given index.
 
@@ -178,7 +178,7 @@ def correct_ttl_times(led_times: np.ndarray, ttl_times: np.ndarray) -> np.ndarra
     """
     ttl_intervals = np.diff(ttl_times)
     corrected_ttl_timestamps = [] # TTL timestamps with some number of dropped pulses to account for dropped LED flashes.
-    segment_start_index = find_segment_start(led_times, ttl_times, min_matches=5, tolerance_in_seconds=0.5)
+    segment_start_index = find_segment_start(led_times=led_times, ttl_times=ttl_times, min_matches=5, tolerance_in_seconds=0.5)
     segment_led_times = led_times[segment_start_index:]
     segment_led_intervals = np.diff(segment_led_times)
 
@@ -263,6 +263,7 @@ def get_aligned_video_timestamps_juveniles(
     np.ndarray
         The aligned video timestamps.
     """
+    print("Aligning juvenile video timestamps...")
     led_threshold = 2_100
     video_sampling_rate = 30.0
     timestamp_column_name = "Item4.Timestamp"
@@ -282,10 +283,11 @@ def get_aligned_video_timestamps_juveniles(
     sampling_rate = extractor.get_sampling_frequency()
     ttl_timestamps = np.ones_like(led_timestamps) * np.nan
     for segment_index in range(extractor.get_num_segments()):
+        print(f"  Aligning segment {segment_index}...")
         traces = extractor.get_traces(segment_index=segment_index, channel_ids=[ttl_channel_id])
         ephys_timestamps = extractor.get_times(segment_index=segment_index)
         single_segment_ttl_timestamps = get_ttl_timestamps(traces=traces, timestamps=ephys_timestamps, threshold=ttl_threshold, cooldown_in_seconds=cooldown_in_seconds, sampling_rate=sampling_rate)
-        single_segment_ttl_timestamps, segment_start_index = correct_ttl_times(led_timestamps, single_segment_ttl_timestamps)
+        single_segment_ttl_timestamps, segment_start_index = correct_ttl_times(led_times=led_timestamps, ttl_times=single_segment_ttl_timestamps)
         
         ttl_intervals = np.diff(single_segment_ttl_timestamps)
         assert np.all(np.isnan(ttl_timestamps[segment_start_index:segment_start_index + len(single_segment_ttl_timestamps)])), f"Overlap in TTL timestamps at segment {segment_index}"
