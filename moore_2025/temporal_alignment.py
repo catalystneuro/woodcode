@@ -98,7 +98,7 @@ def find_putative_interval_match(*, led_intervals: np.ndarray, ttl_intervals: np
         A tuple containing the indices of the matching LED interval and TTL interval.
         If no match is found, returns (None, None).
     """
-    potential_first_ttl_intervals = [sum(ttl_intervals[:i+1]) for i in range(len(ttl_intervals))]
+    potential_first_ttl_intervals = np.cumsum(ttl_intervals)
     for led_index, led_interval in enumerate(led_intervals):
         for ttl_index, ttl_interval in enumerate(potential_first_ttl_intervals):
             if led_interval - ttl_interval > tolerance_in_seconds:
