@@ -611,7 +611,7 @@ def add_lfp(nwbfile, lfp_path, xml_data, raw_eseries, stub_test=False):
 
     lfp_sampling_rate = float(xml_data['eeg_sampling_rate'])
     downsample_factor = int(raw_sampling_rate / lfp_sampling_rate)
-    lfp_timestamps = raw_timestamps[::downsample_factor]
+    lfp_timestamps = raw_timestamps[downsample_factor-1::downsample_factor]
 
     all_table_region = nwbfile.create_electrode_table_region(
         region=list(range(len(nwbfile.electrodes))),
