@@ -189,8 +189,12 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
     for probe_metadata in metadata["probe"]:
         probe_id = probe_metadata["id"]
         nshanks = probe_metadata["nshanks"]
+        ap_mm = probe_metadata["AP_mm"] # Posterior is positive
+        dv_mm = np.abs(probe_metadata["DV_mm"]) # Ventral aka down is positive
+        ml_mm = probe_metadata["ML_mm"] # Right is positive
+        coordinates = [ap_mm, dv_mm, ml_mm]
         for _ in range(nshanks):
-            shank_assignments.append((probe_id, global_shank_id, probe_metadata["location"], probe_metadata["step"], probe_metadata["coordinates"], probe_metadata["reference"]))
+            shank_assignments.append((probe_id, global_shank_id, probe_metadata["location"], probe_metadata["step"], coordinates, probe_metadata["reference"]))
             global_shank_id += 1
 
     # Ensure number of shanks in metadata matches xmldata

@@ -9,7 +9,6 @@ import numpy as np
 from moore_2025.temporal_alignment import get_aligned_video_timestamps_juveniles, get_aligned_video_timestamps_adults, get_start_time
 
 def get_probe_info_juveniles() -> dict:
-    # TODO: add logic for daily probe advancement after multi-day example data gets shared. 
     manufacturer = 'cambridgeneurotech'
     model = 'ASSY-37-H6b'
     probe = pbi.get_probe(manufacturer=manufacturer, probe_name=model)
@@ -190,7 +189,7 @@ def session_to_nwb(
 
 def main():
     """Define paths and convert example sessions to NWB."""
-    stub_test = False
+    stub_test = True
     dataset_path = Path('/Volumes/T7/CatalystNeuro/Dudchenko/251104_MooreDataset')
     output_folder_path = Path('/Volumes/T7/CatalystNeuro/Spyglass/raw')
     if output_folder_path.exists():
@@ -239,6 +238,7 @@ def main():
         stub_test=stub_test,
         is_adult=False,
     )
+    return
 
     # Day 2
     folder_name = 'H3022-210806'

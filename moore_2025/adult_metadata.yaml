@@ -36,7 +36,6 @@ Video:
 
 probe:
   - name: probe_1
-    coordinates: [-7.64, 1.7, -3.3] # mm AP, DV, ML from Bregma, BUT Ventral aka down is positive (also note ML is negative here for left hemisphere)
     reference: A silver ground wire was attached to one of the skull screws placed above the cerebellum as the reference.
     data_acquisition_description: For recording, the implanted silicon probe was connected to an Intan RHD headstage (Intan technologies). The headstage was connected to an Intan RHD standard SPI cable, which was connected to a 3D-printed commutator in the ceiling (custom-made in house). Signals were acquired at 30kHz with an OpenEphys data acquisition system.
     data_acquisition_system: OpenEphys
