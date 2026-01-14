@@ -28,7 +28,7 @@ Video:
   CameraDevice:
     name: camera_device 1
     description: For the adult recordings, images were acquired through an acA1300-75gc Basler camera with a LMVZ4411 Kowa lens, positioned at the ceiling of the rig.
-    meters_per_pixel: 0.0016 # TODO: update this value
+    meters_per_pixel: 0.00265
     manufacturer: Basler
     model: acA1300-75gc
     lens: LMVZ4411 Kowa Lens
