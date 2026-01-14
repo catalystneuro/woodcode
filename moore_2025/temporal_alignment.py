@@ -144,7 +144,7 @@ def check_interval_match(*, match_led_index, match_ttl_index, led_intervals, ttl
     return True
 
 
-def find_segment_start(*, led_times: np.ndarray, ttl_times: np.ndarray, min_matches: int, tolerance_in_seconds: float) -> int:
+def find_segment_start(*, led_times: np.ndarray, ttl_times: np.ndarray, min_matches: int, tolerance_in_seconds: float) -> int | None:
     """
     Find the index of the LED times that best aligns with the start of the TTL times for this segment.
 
@@ -162,8 +162,8 @@ def find_segment_start(*, led_times: np.ndarray, ttl_times: np.ndarray, min_matc
 
     Returns
     -------
-    int
-        The starting index in led_times that best aligns with ttl_times.
+    int | None
+        The starting index in led_times that best aligns with ttl_times. If no match is found, returns None.
     """
     led_intervals = np.diff(led_times)
     ttl_intervals = np.diff(ttl_times)
@@ -173,7 +173,7 @@ def find_segment_start(*, led_times: np.ndarray, ttl_times: np.ndarray, min_matc
     while not match_is_found:
         led_index, ttl_index = find_putative_interval_match(led_intervals=led_intervals, ttl_intervals=ttl_intervals, tolerance_in_seconds=tolerance_in_seconds)
         if led_index is None:
-            raise ValueError("No matching intervals found between LED and TTL times.")
+            return None
         global_led_index += led_index
         match_is_found = check_interval_match(
             match_led_index=led_index,
@@ -212,6 +212,12 @@ def correct_ttl_times(*, led_times: np.ndarray, ttl_times: np.ndarray, min_match
     ttl_intervals = np.diff(ttl_times)
     corrected_ttl_timestamps = [] # TTL timestamps with some number of dropped pulses to account for dropped LED flashes.
     segment_start_index = find_segment_start(led_times=led_times, ttl_times=ttl_times, min_matches=min_matches, tolerance_in_seconds=tolerance_in_seconds)
+    while segment_start_index is None:
+        if len(ttl_times) == 1:
+            raise ValueError("No matching intervals found between LED and TTL times.")
+        ttl_times = ttl_times[1:]
+        segment_start_index = find_segment_start(led_times=led_times, ttl_times=ttl_times, min_matches=min_matches, tolerance_in_seconds=tolerance_in_seconds)
+
     segment_led_times = led_times[segment_start_index:]
     segment_led_intervals = np.diff(segment_led_times)
 
