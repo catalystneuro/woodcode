@@ -7,15 +7,17 @@ H3016-210423_. =BLOB=
 === Session ===
 *nwb_file_name subject_id     institution_na lab_name       session_id     session_descri session_start_ timestamps_ref experiment_des
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3016-210423_. H3016          University of  Wood/Dudchenko 210423         Exploration, s 2021-04-23 00: 2021-04-23 00: Basic properti
+H3016-210423_. H3016          University of  Wood/Dudchenko 210423         Exploration, s 2021-04-23 14: 2021-04-23 14: Basic properti
  (Total: 1)
 
 === Subject ===
-*subject_id    age     description    genotype     sex     species       
-+------------+ +-----+ +------------+ +----------+ +-----+ +------------+
-H3016          P0D     All experiment Fmr1-/y      U       Rattus norvegi
-H3022          P0D     All experiment WT           U       Rattus norvegi
- (Total: 2)
+*subject_id    age      description    genotype     sex     species       
++------------+ +------+ +------------+ +----------+ +-----+ +------------+
+H3016          P23D     All experiment KO           M       Rattus norvegi
+H3022          P22D     All experiment WT           M       Rattus norvegi
+H4813          P65D     All experiment WT           M       Rattus norvegi
+H4817          P57D     All experiment KO           M       Rattus norvegi
+ (Total: 4)
 
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline      
@@ -26,11 +28,12 @@ H3016-210423_. 03             =BLOB=
 H3016-210423_. 04             =BLOB=                   
 H3016-210423_. imported lfp 0 =BLOB=     imported_lfp  
 H3016-210423_. pos 0 valid ti =BLOB=     position      
+H3016-210423_. pos 1 valid ti =BLOB=     position      
 H3016-210423_. raw data valid =BLOB=                   
 H3016-210423_. sleep_nrem     =BLOB=                   
 H3016-210423_. sleep_rem      =BLOB=                   
 H3016-210423_. sleep_wake     =BLOB=                   
- (Total: 10)
+ (Total: 11)
 
 === Task ===
 *task_name     task_descripti task_type     task_subtype  
@@ -50,56 +53,56 @@ H3016-210423_. 4         wake_cue_rot   None           04             cylindrica
  (Total: 4)
 
 === Sleep NREM Valid Times ===
-[[  41.   52.]
- [ 280.  292.]
- [ 544.  551.]
- [ 611.  653.]
- [ 780.  801.]
- [ 902.  911.]
- [ 957.  977.]
- [1150. 1168.]
- [1235. 1257.]
- [1279. 1290.]
- [1345. 1356.]
- [1378. 1385.]
- [1403. 1449.]
- [1463. 1476.]
- [1496. 1618.]
- [1680. 1705.]
- [1714. 1788.]
- [1798. 1814.]
- [1856. 1868.]
- [1883. 2315.]
- [2325. 2373.]
- [2394. 2602.]
- [2755. 2776.]
- [2797. 2882.]
- [2934. 3112.]
- [3191. 3200.]
- [3346. 3574.]
- [3583. 3630.]
- [3666. 3675.]
- [3953. 3966.]
- [4154. 4162.]
- [4189. 4815.]
- [5008. 5048.]
- [5299. 5662.]
- [5675. 5850.]
- [5869. 5949.]
- [5974. 6051.]
- [6270. 6556.]
- [6574. 6594.]
- [6962. 6971.]
- [7007. 7030.]
- [7216. 7225.]
- [7257. 7327.]
- [7401. 7419.]
- [7440. 7459.]
- [7577. 7587.]
- [8010. 8017.]
- [8648. 8668.]
- [9328. 9342.]
- [9355. 9416.]]
+[[  84.46103333   95.46103333]
+ [ 323.46103333  335.46103333]
+ [ 587.46103333  594.46103333]
+ [ 654.46103333  696.46103333]
+ [ 823.46103333  844.46103333]
+ [ 945.46103333  954.46103333]
+ [1000.46103333 1020.46103333]
+ [1193.46103333 1211.46103333]
+ [1311.7581     1333.7581    ]
+ [1355.7581     1366.7581    ]
+ [1421.7581     1432.7581    ]
+ [1454.7581     1461.7581    ]
+ [1479.7581     1525.7581    ]
+ [1539.7581     1552.7581    ]
+ [1572.7581     1694.7581    ]
+ [1756.7581     1781.7581    ]
+ [1790.7581     1864.7581    ]
+ [1874.7581     1890.7581    ]
+ [1932.7581     1944.7581    ]
+ [1959.7581     2391.7581    ]
+ [2401.7581     2449.7581    ]
+ [2470.7581     2678.7581    ]
+ [2831.7581     2852.7581    ]
+ [2873.7581     2958.7581    ]
+ [3010.7581     3188.7581    ]
+ [3267.7581     3276.7581    ]
+ [3422.7581     3650.7581    ]
+ [3659.7581     3706.7581    ]
+ [3742.7581     3751.7581    ]
+ [4029.7581     4042.7581    ]
+ [4230.7581     4238.7581    ]
+ [4265.7581     4891.7581    ]
+ [5084.7581     5124.7581    ]
+ [5375.7581     5738.7581    ]
+ [5751.7581     5926.7581    ]
+ [5945.7581     6025.7581    ]
+ [6050.7581     6127.7581    ]
+ [6346.7581     6632.7581    ]
+ [6650.7581     6670.7581    ]
+ [7166.99703333 7175.99703333]
+ [7211.99703333 7234.99703333]
+ [7420.99703333 7429.99703333]
+ [7461.99703333 7531.99703333]
+ [7605.99703333 7623.99703333]
+ [7644.99703333 7663.99703333]
+ [7781.99703333 7791.99703333]
+ [8214.99703333 8221.99703333]
+ [9101.3341     9121.3341    ]
+ [9781.3341     9795.3341    ]
+ [9808.3341     9869.3341    ]]
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
@@ -107,10 +110,11 @@ H3016-210423_. 4         wake_cue_rot   None           04             cylindrica
  (Total: 0)
 
 === Camera Device ===
-*camera_name   meters_per_pix manufacturer   model     lens         camera_id    
-+------------+ +------------+ +------------+ +-------+ +----------+ +-----------+
-Logitech Camer 0.0016                        C930e     built-in     0            
- (Total: 1)
+*camera_name   meters_per_pix manufacturer   model          lens           camera_id    
++------------+ +------------+ +------------+ +------------+ +------------+ +-----------+
+Basler Camera  0.00265                       acA1300-75gc   LMVZ4411 Kowa  1            
+Logitech Camer 0.00265                       C930e          built-in       0            
+ (Total: 2)
 
 === Data Acquisition Device ===
 *data_acquisit data_acquisiti data_acquisiti adc_circuit   
@@ -163,34 +167,39 @@ H3016-210423_. probe1_shank1  1             Cambridge Neur Electrodes fro Left
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3016-210423_. raw data valid 4fc0455d-af6d- 30000.0        no comments    Acquisition tr
+H3016-210423_. raw data valid 55f320e8-7400- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H3016-210423_. imported_lfp_0 imported lfp 0 1250.0         07bb86ed-7280-
+H3016-210423_. imported_lfp_0 imported lfp 0 1250.0         2a8b84fa-3875-
  (Total: 1)
 
 === PositionSource ===
 *nwb_file_name *interval_list source       import_file_na
 +------------+ +------------+ +----------+ +------------+
 H3016-210423_. pos 0 valid ti imported                   
- (Total: 1)
+H3016-210423_. pos 1 valid ti imported                   
+ (Total: 2)
 
 === PositionSource.SpatialSeries ===
 *nwb_file_name *interval_list *id    name          
 +------------+ +------------+ +----+ +------------+
 H3016-210423_. pos 0 valid ti 0      head-direction
 H3016-210423_. pos 0 valid ti 1      position      
- (Total: 2)
+H3016-210423_. pos 1 valid ti 0      item1_position
+H3016-210423_. pos 1 valid ti 1      item2_position
+ (Total: 4)
 
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H3016-210423_. pos 0 valid ti 0      28ded3ff-c688-
-H3016-210423_. pos 0 valid ti 1      bede26df-05d0-
- (Total: 2)
+H3016-210423_. pos 0 valid ti 0      b3f4e2e2-8d8e-
+H3016-210423_. pos 0 valid ti 1      355ef203-1613-
+H3016-210423_. pos 1 valid ti 0      76d76728-e279-
+H3016-210423_. pos 1 valid ti 1      7552af62-d197-
+ (Total: 4)
 
 === RawPosition ===
           Horizontal angle of the head (yaw)1          x          y

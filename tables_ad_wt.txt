@@ -7,16 +7,17 @@ H4813-220728_. =BLOB=
 === Session ===
 *nwb_file_name subject_id     institution_na lab_name       session_id     session_descri session_start_ timestamps_ref experiment_des
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H4813-220728_. H4813          University of  Wood/Dudchenko 220728         Exploration, s 2022-07-28 00: 2022-07-28 00: Basic properti
+H4813-220728_. H4813          University of  Wood/Dudchenko 220728         Exploration, s 2022-07-28 18: 2022-07-28 18: Basic properti
  (Total: 1)
 
 === Subject ===
-*subject_id    age     description    genotype     sex     species       
-+------------+ +-----+ +------------+ +----------+ +-----+ +------------+
-H3016          P0D     All experiment Fmr1-/y      U       Rattus norvegi
-H3022          P0D     All experiment WT           U       Rattus norvegi
-H4813          P0D     All experiment WT           U       Rattus norvegi
- (Total: 3)
+*subject_id    age      description    genotype     sex     species       
++------------+ +------+ +------------+ +----------+ +-----+ +------------+
+H3016          P23D     All experiment KO           M       Rattus norvegi
+H3022          P22D     All experiment WT           M       Rattus norvegi
+H4813          P65D     All experiment WT           M       Rattus norvegi
+H4817          P57D     All experiment KO           M       Rattus norvegi
+ (Total: 4)
 
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline      
@@ -27,11 +28,12 @@ H4813-220728_. 03             =BLOB=
 H4813-220728_. 04             =BLOB=                   
 H4813-220728_. imported lfp 0 =BLOB=     imported_lfp  
 H4813-220728_. pos 0 valid ti =BLOB=     position      
+H4813-220728_. pos 1 valid ti =BLOB=     position      
 H4813-220728_. raw data valid =BLOB=                   
 H4813-220728_. sleep_nrem     =BLOB=                   
 H4813-220728_. sleep_rem      =BLOB=                   
 H4813-220728_. sleep_wake     =BLOB=                   
- (Total: 10)
+ (Total: 11)
 
 === Task ===
 *task_name     task_descripti task_type     task_subtype  
@@ -51,48 +53,50 @@ H4813-220728_. 4         wake_cue_rot   None           04             cylindrica
  (Total: 4)
 
 === Sleep NREM Valid Times ===
-[[ 717.  812.]
- [1542. 1549.]
- [1599. 1653.]
- [1663. 1968.]
- [2014. 2168.]
- [2401. 2409.]
- [2432. 3009.]
- [3035. 3276.]
- [3301. 3323.]
- [3348. 3563.]
- [3589. 3743.]
- [3895. 4065.]
- [4249. 4291.]
- [4312. 4412.]
- [4620. 4627.]
- [4639. 4678.]
- [4698. 4743.]
- [4782. 5101.]
- [5205. 5231.]
- [5295. 5314.]
- [5480. 5937.]
- [6140. 6171.]
- [6290. 6302.]
- [6324. 6331.]
- [6392. 6699.]
- [7592. 7601.]
- [7622. 7650.]
- [7678. 7938.]
- [8527. 8535.]
- [8553. 9180.]]
+[[ 717.00076667  812.00076667]
+ [1666.79223333 1673.79223333]
+ [1723.79223333 1777.79223333]
+ [1787.79223333 2092.79223333]
+ [2138.79223333 2292.79223333]
+ [2525.79223333 2533.79223333]
+ [2556.79223333 3133.79223333]
+ [3159.79223333 3400.79223333]
+ [3425.79223333 3447.79223333]
+ [3472.79223333 3687.79223333]
+ [3713.79223333 3867.79223333]
+ [4019.79223333 4189.79223333]
+ [4373.79223333 4415.79223333]
+ [4436.79223333 4536.79223333]
+ [4744.79223333 4751.79223333]
+ [4763.79223333 4802.79223333]
+ [4822.79223333 4867.79223333]
+ [4906.79223333 5225.79223333]
+ [5329.79223333 5355.79223333]
+ [5419.79223333 5438.79223333]
+ [5604.79223333 6061.79223333]
+ [6264.79223333 6295.79223333]
+ [6414.79223333 6426.79223333]
+ [6448.79223333 6455.79223333]
+ [6516.79223333 6870.71703333]
+ [7763.71703333 7772.71703333]
+ [7793.71703333 7821.71703333]
+ [7849.71703333 8343.16343333]
+ [8932.16343333 8940.16343333]
+ [8958.16343333 9585.16343333]]
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
-H4813-220728_. 1         1              Basler Camera  2f0f6bde-df45-
-H4813-220728_. 2         1              Basler Camera  fb8d8359-4ac0-
- (Total: 2)
+H4813-220728_. 1         1              Basler Camera  75085021-d087-
+H4813-220728_. 2         1              Basler Camera  0ef05f41-5f47-
+H4813-220728_. 3         1              Basler Camera  b5f0de4c-de50-
+H4813-220728_. 4         1              Basler Camera  9115ee78-ddba-
+ (Total: 4)
 
 === Camera Device ===
 *camera_name   meters_per_pix manufacturer   model          lens           camera_id    
 +------------+ +------------+ +------------+ +------------+ +------------+ +-----------+
-Basler Camera  0.0016                        acA1300-75gc   LMVZ4411 Kowa  1            
-Logitech Camer 0.0016                        C930e          built-in       0            
+Basler Camera  0.00265                       acA1300-75gc   LMVZ4411 Kowa  1            
+Logitech Camer 0.00265                       C930e          built-in       0            
  (Total: 2)
 
 === Data Acquisition Device ===
@@ -160,34 +164,39 @@ Cambridge Neur 1              11             165.0          5.0       275.0     
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H4813-220728_. raw data valid 935477cd-9844- 30000.0        no comments    Acquisition tr
+H4813-220728_. raw data valid 417d5403-7332- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H4813-220728_. imported_lfp_0 imported lfp 0 1250.0         7d42e63a-5660-
+H4813-220728_. imported_lfp_0 imported lfp 0 1250.0         6948f0cc-7c33-
  (Total: 1)
 
 === PositionSource ===
 *nwb_file_name *interval_list source       import_file_na
 +------------+ +------------+ +----------+ +------------+
 H4813-220728_. pos 0 valid ti imported                   
- (Total: 1)
+H4813-220728_. pos 1 valid ti imported                   
+ (Total: 2)
 
 === PositionSource.SpatialSeries ===
 *nwb_file_name *interval_list *id    name          
 +------------+ +------------+ +----+ +------------+
 H4813-220728_. pos 0 valid ti 0      head-direction
 H4813-220728_. pos 0 valid ti 1      position      
- (Total: 2)
+H4813-220728_. pos 1 valid ti 0      item1_position
+H4813-220728_. pos 1 valid ti 1      item2_position
+ (Total: 4)
 
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H4813-220728_. pos 0 valid ti 0      bda54367-cb56-
-H4813-220728_. pos 0 valid ti 1      8aa5ec33-383b-
- (Total: 2)
+H4813-220728_. pos 0 valid ti 0      76e4baf1-dd04-
+H4813-220728_. pos 0 valid ti 1      0d7679a5-d5a9-
+H4813-220728_. pos 1 valid ti 0      57231767-744f-
+H4813-220728_. pos 1 valid ti 1      734692e0-e6e0-
+ (Total: 4)
 
 === RawPosition ===
              Horizontal angle of the head (yaw)1          x          y

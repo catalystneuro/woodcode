@@ -130,9 +130,8 @@ def print_tables(nwbfile_path: Path, table_path: Path = Path("tables.txt")):
         print(sgc.Task(), file=f)
         print("=== Task Epoch ===", file=f)
         print(sgc.TaskEpoch & {"nwb_file_name": nwb_copy_file_name}, file=f)
-        # TODO: Uncomment once sleep data is added
-        # print("=== Sleep NREM Valid Times ===", file=f)
-        # print((sgc.IntervalList & {"nwb_file_name": nwb_copy_file_name, "interval_list_name": "sleep_nrem"}).fetch1("valid_times"), file=f)
+        print("=== Sleep NREM Valid Times ===", file=f)
+        print((sgc.IntervalList & {"nwb_file_name": nwb_copy_file_name, "interval_list_name": "sleep_nrem"}).fetch1("valid_times"), file=f)
 
         # Video and Camera tables
         print("=== Video File ===", file=f)
@@ -168,7 +167,7 @@ def print_tables(nwbfile_path: Path, table_path: Path = Path("tables.txt")):
         print("=== RawPosition.PosObject ===", file=f)
         print(sgc.RawPosition.PosObject & {"nwb_file_name": nwb_copy_file_name}, file=f)
         print("=== RawPosition ===", file=f)
-        print((sgc.RawPosition & {"nwb_file_name": nwb_copy_file_name}).fetch1_dataframe(), file=f)
+        print((sgc.RawPosition & {"nwb_file_name": nwb_copy_file_name, "interval_list_name": "pos 0 valid times"}).fetch1_dataframe(), file=f)
         
         # Spike Sorting tables
         # TODO: Uncomment once insert_sorting is functional
@@ -188,24 +187,44 @@ def main():
     (sgc.DataAcquisitionDevice & {"name": "data_acquisition_device"}).delete()
     sgc.Task().delete()
 
-    # Example Juvenile WT Session
+    # Example Juvenile WT
+    (sgc.Subject & {"subject_id": "H3022"}).delete()
+
+    # Example Juvenile WT Day 1 Session
     nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3022-210805.nwb")
-    table_path = Path("tables_jv_wt.txt")
+    table_path = Path("tables_jv_wt_day1.txt")
     nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    (sgc.Subject & {"subject_id": "H3022"}).delete()
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    return
-    # print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
-    # Example Juvenile KO Session
+    # Example Juvenile WT Day 2 Session
+    nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3022-210806.nwb")
+    table_path = Path("tables_jv_wt_day2.txt")
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+
+    # Example Juvenile KO
+    (sgc.Subject & {"subject_id": "H3016"}).delete()
+
+    # Example Juvenile KO Day 1 Session
+    nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3016-210422.nwb")
+    table_path = Path("tables_jv_ko_day1.txt")
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+
+    # Example Juvenile KO Day 2 Session
     nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3016-210423.nwb")
-    table_path = Path("tables_jv_ko.txt")
+    table_path = Path("tables_jv_ko_day2.txt")
     nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
     (sgc.Subject & {"subject_id": "H3016"}).delete()
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    # print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
     # Example Adult WT Session
     nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H4813-220728.nwb")
@@ -214,7 +233,7 @@ def main():
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
     (sgc.Subject & {"subject_id": "H4813"}).delete()
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    # print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
     # Example Adult KO Session
     nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H4817-220828.nwb")
@@ -223,7 +242,7 @@ def main():
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
     (sgc.Subject & {"subject_id": "H4817"}).delete()
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    # print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
 
 if __name__ == "__main__":
