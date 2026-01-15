@@ -178,10 +178,11 @@ def session_to_nwb(
     nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=raw_xml_data, raw_eseries=nwbfile.acquisition['e-series'], stub_test=stub_test)
     lfp_eseries = nwbfile.processing["ecephys"].data_interfaces["LFP"].electrical_series["LFP"]
     # TODO: add sleep once sleep data is available
-    # nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate)
+    nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate)
     epochs = nwb.convert.get_epochs_from_eseries(eseries=nwbfile.acquisition['e-series'])
     nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
-    nwbfile = nwb.convert.add_units(nwbfile, raw_xml_data, processed_xml_data, spikes, waveforms, shank_id, lfp_eseries, lfp_sampling_rate)  # get shank names from NWB file
+    # TODO: add units once spyglass bug is resolved: https://github.com/LorenFrankLab/spyglass/issues/1460
+    # nwbfile = nwb.convert.add_units(nwbfile, raw_xml_data, processed_xml_data, spikes, waveforms, shank_id, lfp_eseries, lfp_sampling_rate)  # get shank names from NWB file
 
     # save NWB file
     nwb.convert.save_nwb_file(nwbfile, save_path, folder_name)
@@ -189,7 +190,7 @@ def session_to_nwb(
 
 def main():
     """Define paths and convert example sessions to NWB."""
-    stub_test = True
+    stub_test = False
     dataset_path = Path('/Volumes/T7/CatalystNeuro/Dudchenko/251104_MooreDataset')
     output_folder_path = Path('/Volumes/T7/CatalystNeuro/Spyglass/raw')
     if output_folder_path.exists():
@@ -346,7 +347,6 @@ def main():
         is_adult=False,
     )
 
-    return
     # Example Adult Sessions
     adult_folder_path = dataset_path / "H4800_Adults"
     metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/adult_metadata.yaml")

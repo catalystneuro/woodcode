@@ -7,14 +7,15 @@ H3022-210805_. =BLOB=
 === Session ===
 *nwb_file_name subject_id     institution_na lab_name       session_id     session_descri session_start_ timestamps_ref experiment_des
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210805_. H3022          University of  Wood/Dudchenko 210805         Exploration, s 2021-08-05 00: 2021-08-05 00: Basic properti
+H3022-210805_. H3022          University of  Wood/Dudchenko 210805         Exploration, s 2021-08-05 17: 2021-08-05 17: Basic properti
  (Total: 1)
 
 === Subject ===
-*subject_id    age     description    genotype     sex     species       
-+------------+ +-----+ +------------+ +----------+ +-----+ +------------+
-H3022          P0D     All experiment WT           U       Rattus norvegi
- (Total: 1)
+*subject_id    age      description    genotype     sex     species       
++------------+ +------+ +------------+ +----------+ +-----+ +------------+
+H3022          P22D     All experiment WT           M       Rattus norvegi
+subject        P50D     this is a mock None         F       None          
+ (Total: 2)
 
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline      
@@ -25,11 +26,9 @@ H3022-210805_. 03             =BLOB=
 H3022-210805_. 04             =BLOB=                   
 H3022-210805_. imported lfp 0 =BLOB=     imported_lfp  
 H3022-210805_. pos 0 valid ti =BLOB=     position      
+H3022-210805_. pos 1 valid ti =BLOB=     position      
 H3022-210805_. raw data valid =BLOB=                   
-H3022-210805_. sleep_nrem     =BLOB=                   
-H3022-210805_. sleep_rem      =BLOB=                   
-H3022-210805_. sleep_wake     =BLOB=                   
- (Total: 10)
+ (Total: 8)
 
 === Task ===
 *task_name     task_descripti task_type     task_subtype  
@@ -48,35 +47,6 @@ H3022-210805_. 3         wake           None           03             cylindrica
 H3022-210805_. 4         wake_cue_rot   None           04             cylindrical_op =BLOB=    
  (Total: 4)
 
-=== Sleep NREM Valid Times ===
-[[ 457.  496.]
- [ 553.  578.]
- [ 707.  727.]
- [ 943.  953.]
- [1017. 1029.]
- [1227. 1279.]
- [1292. 1304.]
- [1605. 2051.]
- [2072. 2332.]
- [2379. 2407.]
- [2425. 2957.]
- [3027. 3036.]
- [3060. 3484.]
- [3803. 4063.]
- [4319. 4344.]
- [4365. 4768.]
- [5073. 5351.]
- [5504. 5511.]
- [5755. 6308.]
- [6355. 6373.]
- [6531. 6539.]
- [6563. 6770.]
- [6967. 6976.]
- [7185. 7207.]
- [7656. 7665.]
- [7690. 7697.]
- [7708. 7742.]
- [7940. 7976.]]
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
@@ -86,7 +56,7 @@ H3022-210805_. 4         wake_cue_rot   None           04             cylindrica
 === Camera Device ===
 *camera_name   meters_per_pix manufacturer   model     lens         camera_id    
 +------------+ +------------+ +------------+ +-------+ +----------+ +-----------+
-Logitech Camer 0.0016                        C930e     built-in     0            
+Logitech Camer 0.00265                       C930e     built-in     0            
  (Total: 1)
 
 === Data Acquisition Device ===
@@ -140,48 +110,38 @@ H3022-210805_. probe1_shank1  1             Cambridge Neur Electrodes fro Left
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210805_. raw data valid f0ba7844-7710- 30000.0        no comments    Acquisition tr
+H3022-210805_. raw data valid 972c6a6e-fcc6- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210805_. imported_lfp_0 imported lfp 0 1250.0         db6e9220-8867-
+H3022-210805_. imported_lfp_0 imported lfp 0 1250.0         21bb7fa6-3e86-
  (Total: 1)
 
 === PositionSource ===
 *nwb_file_name *interval_list source       import_file_na
 +------------+ +------------+ +----------+ +------------+
 H3022-210805_. pos 0 valid ti imported                   
- (Total: 1)
+H3022-210805_. pos 1 valid ti imported                   
+ (Total: 2)
 
 === PositionSource.SpatialSeries ===
 *nwb_file_name *interval_list *id    name          
 +------------+ +------------+ +----+ +------------+
 H3022-210805_. pos 0 valid ti 0      head-direction
 H3022-210805_. pos 0 valid ti 1      position      
- (Total: 2)
+H3022-210805_. pos 1 valid ti 0      item1_position
+H3022-210805_. pos 1 valid ti 1      item2_position
+ (Total: 4)
 
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H3022-210805_. pos 0 valid ti 0      1f3d4347-e891-
-H3022-210805_. pos 0 valid ti 1      8732edd7-533b-
- (Total: 2)
+H3022-210805_. pos 0 valid ti 0      88350227-3242-
+H3022-210805_. pos 0 valid ti 1      b9f93a55-2a9a-
+H3022-210805_. pos 1 valid ti 0      14aae55c-70e5-
+H3022-210805_. pos 1 valid ti 1      7e75acf2-29a5-
+ (Total: 4)
 
 === RawPosition ===
-          Horizontal angle of the head (yaw)1          x          y
-time                                                               
-0.000                                3.870731  42.625464  26.760932
-0.025                                3.863682  42.678511  26.715544
-0.050                                3.898456  42.631354  26.765040
-0.075                                3.918834  42.633575  26.801587
-0.100                                3.946772  42.592523  26.825004
-...                                       ...        ...        ...
-9216.550                             3.395486  34.727360  71.156234
-9216.575                             3.388250  34.730233  71.145022
-9216.600                             3.407607  34.670189  71.115719
-9216.625                             3.394682  34.722295  71.123407
-9216.650                             3.398010  34.729359  71.146298
-
-[147217 rows x 3 columns]
