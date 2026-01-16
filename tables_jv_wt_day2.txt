@@ -13,7 +13,7 @@ H3022-210806_. H3022          University of  Wood/Dudchenko 210806         Explo
 === Subject ===
 *subject_id    age      description    genotype     sex     species       
 +------------+ +------+ +------------+ +----------+ +-----+ +------------+
-H3016          P23D     All experiment KO           M       Rattus norvegi
+H3016          P22D     All experiment KO           M       Rattus norvegi
 H3022          P22D     All experiment WT           M       Rattus norvegi
 H4813          P65D     All experiment WT           M       Rattus norvegi
 H4817          P57D     All experiment KO           M       Rattus norvegi
@@ -92,11 +92,10 @@ H3022-210806_. 4         wake_cue_rot   None           04             cylindrica
  (Total: 0)
 
 === Camera Device ===
-*camera_name   meters_per_pix manufacturer   model          lens           camera_id    
-+------------+ +------------+ +------------+ +------------+ +------------+ +-----------+
-Basler Camera  0.00265                       acA1300-75gc   LMVZ4411 Kowa  1            
-Logitech Camer 0.00265                       C930e          built-in       0            
- (Total: 2)
+*camera_name   meters_per_pix manufacturer   model     lens         camera_id    
++------------+ +------------+ +------------+ +-------+ +----------+ +-----------+
+Logitech Camer 0.00265        Logitech       C930e     built-in     0            
+ (Total: 1)
 
 === Data Acquisition Device ===
 *data_acquisit data_acquisiti data_acquisiti adc_circuit   
@@ -149,13 +148,13 @@ H3022-210806_. probe1_shank1  1             Cambridge Neur Electrodes fro Left
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210806_. raw data valid bbf1a06d-1bc4- 30000.0        no comments    Acquisition tr
+H3022-210806_. raw data valid 9ad8942b-2c58- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210806_. imported_lfp_0 imported lfp 0 1250.0         5bc312b8-1ae5-
+H3022-210806_. imported_lfp_0 imported lfp 0 1250.0         264b36dc-5dcc-
  (Total: 1)
 
 === PositionSource ===
@@ -177,10 +176,10 @@ H3022-210806_. pos 1 valid ti 1      item2_position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H3022-210806_. pos 0 valid ti 0      aa837567-e4bd-
-H3022-210806_. pos 0 valid ti 1      4948d9c4-3837-
-H3022-210806_. pos 1 valid ti 0      ffde9c1f-6ef7-
-H3022-210806_. pos 1 valid ti 1      b83fb278-8b6e-
+H3022-210806_. pos 0 valid ti 0      f0198be4-d115-
+H3022-210806_. pos 0 valid ti 1      7f083774-cbf1-
+H3022-210806_. pos 1 valid ti 0      4a25c605-79e6-
+H3022-210806_. pos 1 valid ti 1      1bb228ce-72b0-
  (Total: 4)
 
 === RawPosition ===

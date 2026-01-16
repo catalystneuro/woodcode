@@ -133,6 +133,7 @@ def print_tables(nwbfile_path: Path, table_path: Path = Path("tables.txt")):
         print("=== Sleep NREM Valid Times ===", file=f)
         print((sgc.IntervalList & {"nwb_file_name": nwb_copy_file_name, "interval_list_name": "sleep_nrem"}).fetch1("valid_times"), file=f)
 
+        # TODO: Fix Video insert for juvenile sessions
         # Video and Camera tables
         print("=== Video File ===", file=f)
         print(sgc.VideoFile & {"nwb_file_name": nwb_copy_file_name}, file=f)
@@ -185,6 +186,8 @@ def main():
     (sgc.ProbeType & {"probe_type": "Cambridge Neurotech H6b probe"}).delete()
     (sgc.ProbeType & {"probe_type": "Cambridge Neurotech H7 probe"}).delete()
     (sgc.DataAcquisitionDevice & {"name": "data_acquisition_device"}).delete()
+    (sgc.CameraDevice & {"camera_name": "Basler Camera"}).delete()
+    (sgc.CameraDevice & {"camera_name": "Logitech Camera"}).delete()
     sgc.Task().delete()
 
     # Example Juvenile WT
@@ -222,7 +225,6 @@ def main():
     table_path = Path("tables_jv_ko_day2.txt")
     nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    (sgc.Subject & {"subject_id": "H3016"}).delete()
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
     print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 

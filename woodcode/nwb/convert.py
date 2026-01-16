@@ -815,6 +815,7 @@ def add_video(
         name=camera_device_metadata["name"],
         description=camera_device_metadata["description"],
         meters_per_pixel=camera_device_metadata["meters_per_pixel"],
+        manufacturer=camera_device_metadata["manufacturer"],
         model=camera_device_metadata["model"],
         lens=camera_device_metadata["lens"],
         camera_name=camera_device_metadata["camera_name"],

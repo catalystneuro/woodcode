@@ -122,11 +122,10 @@ H3016-210422_. 4         wake_cue_rot   None           04             cylindrica
  (Total: 0)
 
 === Camera Device ===
-*camera_name   meters_per_pix manufacturer   model          lens           camera_id    
-+------------+ +------------+ +------------+ +------------+ +------------+ +-----------+
-Basler Camera  0.00265                       acA1300-75gc   LMVZ4411 Kowa  1            
-Logitech Camer 0.00265                       C930e          built-in       0            
- (Total: 2)
+*camera_name   meters_per_pix manufacturer   model     lens         camera_id    
++------------+ +------------+ +------------+ +-------+ +----------+ +-----------+
+Logitech Camer 0.00265        Logitech       C930e     built-in     0            
+ (Total: 1)
 
 === Data Acquisition Device ===
 *data_acquisit data_acquisiti data_acquisiti adc_circuit   
@@ -179,13 +178,13 @@ H3016-210422_. probe1_shank1  1             Cambridge Neur Electrodes fro Left
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3016-210422_. raw data valid f843f3ee-2c2f- 30000.0        no comments    Acquisition tr
+H3016-210422_. raw data valid 0cd585dd-6df4- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H3016-210422_. imported_lfp_0 imported lfp 0 1250.0         e9201afd-56f4-
+H3016-210422_. imported_lfp_0 imported lfp 0 1250.0         a670bbf5-c560-
  (Total: 1)
 
 === PositionSource ===
@@ -207,10 +206,10 @@ H3016-210422_. pos 1 valid ti 1      item2_position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H3016-210422_. pos 0 valid ti 0      5249154c-a62d-
-H3016-210422_. pos 0 valid ti 1      b3b26c32-afa8-
-H3016-210422_. pos 1 valid ti 0      cb679244-2c9c-
-H3016-210422_. pos 1 valid ti 1      607266d6-8b75-
+H3016-210422_. pos 0 valid ti 0      ac606eb6-aa1c-
+H3016-210422_. pos 0 valid ti 1      e673c339-4427-
+H3016-210422_. pos 1 valid ti 0      c004a82e-cdcc-
+H3016-210422_. pos 1 valid ti 1      3e6794b5-6602-
  (Total: 4)
 
 === RawPosition ===

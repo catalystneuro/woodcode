@@ -13,7 +13,7 @@ H4813-220728_. H4813          University of  Wood/Dudchenko 220728         Explo
 === Subject ===
 *subject_id    age      description    genotype     sex     species       
 +------------+ +------+ +------------+ +----------+ +-----+ +------------+
-H3016          P23D     All experiment KO           M       Rattus norvegi
+H3016          P22D     All experiment KO           M       Rattus norvegi
 H3022          P22D     All experiment WT           M       Rattus norvegi
 H4813          P65D     All experiment WT           M       Rattus norvegi
 H4817          P57D     All experiment KO           M       Rattus norvegi
@@ -86,17 +86,17 @@ H4813-220728_. 4         wake_cue_rot   None           04             cylindrica
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
-H4813-220728_. 1         1              Basler Camera  75085021-d087-
-H4813-220728_. 2         1              Basler Camera  0ef05f41-5f47-
-H4813-220728_. 3         1              Basler Camera  b5f0de4c-de50-
-H4813-220728_. 4         1              Basler Camera  9115ee78-ddba-
+H4813-220728_. 1         1              Basler Camera  a6763f41-98b4-
+H4813-220728_. 2         1              Basler Camera  dd318dff-268c-
+H4813-220728_. 3         1              Basler Camera  81365efb-22f9-
+H4813-220728_. 4         1              Basler Camera  39631262-d48e-
  (Total: 4)
 
 === Camera Device ===
 *camera_name   meters_per_pix manufacturer   model          lens           camera_id    
 +------------+ +------------+ +------------+ +------------+ +------------+ +-----------+
-Basler Camera  0.00265                       acA1300-75gc   LMVZ4411 Kowa  1            
-Logitech Camer 0.00265                       C930e          built-in       0            
+Basler Camera  0.00265        Basler         acA1300-75gc   LMVZ4411 Kowa  1            
+Logitech Camer 0.00265        Logitech       C930e          built-in       0            
  (Total: 2)
 
 === Data Acquisition Device ===
@@ -164,13 +164,13 @@ Cambridge Neur 1              11             165.0          5.0       275.0     
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H4813-220728_. raw data valid 417d5403-7332- 30000.0        no comments    Acquisition tr
+H4813-220728_. raw data valid 9d29d82a-8532- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H4813-220728_. imported_lfp_0 imported lfp 0 1250.0         6948f0cc-7c33-
+H4813-220728_. imported_lfp_0 imported lfp 0 1250.0         7f29d467-3324-
  (Total: 1)
 
 === PositionSource ===
@@ -192,10 +192,10 @@ H4813-220728_. pos 1 valid ti 1      item2_position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H4813-220728_. pos 0 valid ti 0      76e4baf1-dd04-
-H4813-220728_. pos 0 valid ti 1      0d7679a5-d5a9-
-H4813-220728_. pos 1 valid ti 0      57231767-744f-
-H4813-220728_. pos 1 valid ti 1      734692e0-e6e0-
+H4813-220728_. pos 0 valid ti 0      1cf0e75e-c2e4-
+H4813-220728_. pos 0 valid ti 1      7baf1148-b011-
+H4813-220728_. pos 1 valid ti 0      4389d8e1-8699-
+H4813-220728_. pos 1 valid ti 1      8f8a52f6-4cc4-
  (Total: 4)
 
 === RawPosition ===
