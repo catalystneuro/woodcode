@@ -480,6 +480,7 @@ def add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate):
     emg = spio.loadmat(emg_file, simplify_cells=True)
 
     # Temporally align pseudo-EMG timestamps to LFP timestamps
+    # TODO: Double-check temporal alignment method here
     unaligned_emg_timestamps = emg['EMGFromLFP']['timestamps']
     aligned_emg_timestamps = np.interp(x=unaligned_emg_timestamps, xp=unaligned_lfp_timestamps, fp=aligned_lfp_timestamps)
 

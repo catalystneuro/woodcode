@@ -27,13 +27,14 @@ H4817-220828_. 02             =BLOB=
 H4817-220828_. 03             =BLOB=                   
 H4817-220828_. 04             =BLOB=                   
 H4817-220828_. imported lfp 0 =BLOB=     imported_lfp  
+H4817-220828_. imported pseud =BLOB=     imported_pseud
 H4817-220828_. pos 0 valid ti =BLOB=     position      
 H4817-220828_. pos 1 valid ti =BLOB=     position      
 H4817-220828_. raw data valid =BLOB=                   
 H4817-220828_. sleep_nrem     =BLOB=                   
 H4817-220828_. sleep_rem      =BLOB=                   
 H4817-220828_. sleep_wake     =BLOB=                   
- (Total: 11)
+ (Total: 12)
 
 === Task ===
 *task_name     task_descripti task_type     task_subtype  
@@ -83,6 +84,12 @@ H4817-220828_. 4         wake_cue_rot   None           04             cylindrica
  [8803.50743333 9109.50743333]
  [9135.50743333 9206.50743333]
  [9463.50743333 9612.50743333]]
+=== ImportedPseudoEMG ===
+*nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
++------------+ +------------+ +------------+ +------------+
+H4817-220828_. imported pseud a38e6ad0-dfa9- 2.0           
+ (Total: 1)
+
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+

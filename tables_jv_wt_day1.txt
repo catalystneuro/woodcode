@@ -13,7 +13,7 @@ H3022-210805_. H3022          University of  Wood/Dudchenko 210805         Explo
 === Subject ===
 *subject_id    age      description    genotype     sex     species       
 +------------+ +------+ +------------+ +----------+ +-----+ +------------+
-H3016          P22D     All experiment KO           M       Rattus norvegi
+H3016          P23D     All experiment KO           M       Rattus norvegi
 H3022          P22D     All experiment WT           M       Rattus norvegi
 H4813          P65D     All experiment WT           M       Rattus norvegi
 H4817          P57D     All experiment KO           M       Rattus norvegi
@@ -27,13 +27,14 @@ H3022-210805_. 02             =BLOB=
 H3022-210805_. 03             =BLOB=                   
 H3022-210805_. 04             =BLOB=                   
 H3022-210805_. imported lfp 0 =BLOB=     imported_lfp  
+H3022-210805_. imported pseud =BLOB=     imported_pseud
 H3022-210805_. pos 0 valid ti =BLOB=     position      
 H3022-210805_. pos 1 valid ti =BLOB=     position      
 H3022-210805_. raw data valid =BLOB=                   
 H3022-210805_. sleep_nrem     =BLOB=                   
 H3022-210805_. sleep_rem      =BLOB=                   
 H3022-210805_. sleep_wake     =BLOB=                   
- (Total: 11)
+ (Total: 12)
 
 === Task ===
 *task_name     task_descripti task_type     task_subtype  
@@ -81,6 +82,12 @@ H3022-210805_. 4         wake_cue_rot   None           04             cylindrica
  [7785.6509     7792.6509    ]
  [7803.6509     7837.6509    ]
  [8035.6509     8071.6509    ]]
+=== ImportedPseudoEMG ===
+*nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
++------------+ +------------+ +------------+ +------------+
+H3022-210805_. imported pseud 19e04ea6-7880- 2.0           
+ (Total: 1)
+
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+

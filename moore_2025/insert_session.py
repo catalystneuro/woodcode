@@ -27,6 +27,15 @@ from spyglass.spikesorting.analysis.v1.group import UnitSelectionParams
 from spyglass.spikesorting.analysis.v1.unit_annotation import UnitAnnotation
 from tqdm import tqdm
 
+# Custom Table Imports
+sys.path.append(
+    "/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/spyglass_extensions"
+)
+from imported_pseudo_emg import ImportedPseudoEMG
+
+def insert_pseudo_emg(nwbfile_path: Path):
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    ImportedPseudoEMG().make(key={"nwb_file_name": nwb_copy_file_name})
 
 def insert_sorting(nwbfile_path: Path):
     """Insert spike sorting data and unit annotations into SpyGlass database.
@@ -96,6 +105,7 @@ def insert_session(nwbfile_path: Path, rollback_on_fail: bool = True, raise_err:
     sgi.insert_sessions(str(nwbfile_path), rollback_on_fail=rollback_on_fail, raise_err=raise_err)
     insert_sleep(nwbfile_path)
     insert_sorting(nwbfile_path)
+    insert_pseudo_emg(nwbfile_path)
 
 def insert_sleep(nwbfile_path: Path):
     nwb_copy_filename = get_nwb_copy_filename(nwbfile_path.name)
@@ -132,6 +142,10 @@ def print_tables(nwbfile_path: Path, table_path: Path = Path("tables.txt")):
         print(sgc.TaskEpoch & {"nwb_file_name": nwb_copy_file_name}, file=f)
         print("=== Sleep NREM Valid Times ===", file=f)
         print((sgc.IntervalList & {"nwb_file_name": nwb_copy_file_name, "interval_list_name": "sleep_nrem"}).fetch1("valid_times"), file=f)
+
+        # PseudoEMG table
+        print("=== ImportedPseudoEMG ===", file=f)
+        print(ImportedPseudoEMG & {"nwb_file_name": nwb_copy_file_name}, file=f)
 
         # TODO: Fix Video insert for juvenile sessions
         # Video and Camera tables
