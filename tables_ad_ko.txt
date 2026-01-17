@@ -13,8 +13,8 @@ H4817-220828_. H4817          University of  Wood/Dudchenko 220828         Explo
 === Subject ===
 *subject_id    age      description    genotype     sex     species       
 +------------+ +------+ +------------+ +----------+ +-----+ +------------+
-H3016          P22D     All experiment KO           M       Rattus norvegi
-H3022          P22D     All experiment WT           M       Rattus norvegi
+H3016          P23D     All experiment KO           M       Rattus norvegi
+H3022          P23D     All experiment WT           M       Rattus norvegi
 H4813          P65D     All experiment WT           M       Rattus norvegi
 H4817          P57D     All experiment KO           M       Rattus norvegi
  (Total: 4)
@@ -86,10 +86,10 @@ H4817-220828_. 4         wake_cue_rot   None           04             cylindrica
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
-H4817-220828_. 1         1              Basler Camera  5a526ddf-d09d-
-H4817-220828_. 2         1              Basler Camera  841a5b5e-9b4b-
-H4817-220828_. 3         1              Basler Camera  b4dadddf-4fbc-
-H4817-220828_. 4         1              Basler Camera  8ad9492c-180e-
+H4817-220828_. 1         1              Basler Camera  e16840db-6ac8-
+H4817-220828_. 2         1              Basler Camera  330451fb-4f9b-
+H4817-220828_. 3         1              Basler Camera  7aa2d4a8-36ed-
+H4817-220828_. 4         1              Basler Camera  31326482-3e1d-
  (Total: 4)
 
 === Camera Device ===
@@ -164,13 +164,13 @@ Cambridge Neur 1              11             165.0          5.0       275.0     
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H4817-220828_. raw data valid f2715806-887c- 30000.0        no comments    Acquisition tr
+H4817-220828_. raw data valid 192e8774-d857- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H4817-220828_. imported_lfp_0 imported lfp 0 1250.0         f4e7c41a-a8d4-
+H4817-220828_. imported_lfp_0 imported lfp 0 1250.0         f51ca74f-c504-
  (Total: 1)
 
 === PositionSource ===
@@ -192,10 +192,10 @@ H4817-220828_. pos 1 valid ti 1      position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H4817-220828_. pos 0 valid ti 0      03235adc-aabf-
-H4817-220828_. pos 0 valid ti 1      42f37fdc-80d3-
-H4817-220828_. pos 1 valid ti 0      504506f0-5e4b-
-H4817-220828_. pos 1 valid ti 1      7d75055d-9789-
+H4817-220828_. pos 0 valid ti 0      71644ae6-3e0f-
+H4817-220828_. pos 0 valid ti 1      55eb2a61-52cd-
+H4817-220828_. pos 1 valid ti 0      b233929f-5479-
+H4817-220828_. pos 1 valid ti 1      c9050c51-7289-
  (Total: 4)
 
 === RawPosition ===
@@ -214,3 +214,41 @@ time
 9634.010000  129.1089  580.5137   82.38695  596.2109
 
 [378679 rows x 4 columns]
+=== ImportedSpikeSorting ===
+*nwb_file_name object_id     
++------------+ +------------+
+H4817-220828_. cb375195-18b0-
+ (Total: 1)
+
+=== Annotation ===
+*nwb_file_name *id    label      annotation
++------------+ +----+ +--------+ +--------+
+H4817-220828_. 0      =BLOB=     =BLOB=    
+H4817-220828_. 1      =BLOB=     =BLOB=    
+H4817-220828_. 2      =BLOB=     =BLOB=    
+H4817-220828_. 3      =BLOB=     =BLOB=    
+H4817-220828_. 4      =BLOB=     =BLOB=    
+H4817-220828_. 5      =BLOB=     =BLOB=    
+H4817-220828_. 6      =BLOB=     =BLOB=    
+H4817-220828_. 7      =BLOB=     =BLOB=    
+H4817-220828_. 8      =BLOB=     =BLOB=    
+H4817-220828_. 9      =BLOB=     =BLOB=    
+H4817-220828_. 10     =BLOB=     =BLOB=    
+H4817-220828_. 11     =BLOB=     =BLOB=    
+   ...
+ (Total: 105)
+
+=== Example Annotation (Unit 0) ===
+{'sampling_rate': 30000, 'waveform_mean': array([[ 1.80624032,  3.93672156,  3.47935247, ..., -1.42346489,
+         0.03229788, -0.64616942],
+       [ 1.51647735,  4.89911556,  2.80857277, ..., -0.42491728,
+         1.43177617,  2.15627074],
+       [ 0.5107159 ,  1.425511  ,  3.78578997, ..., -1.10537112,
+         1.59425211,  4.63370848],
+       ...,
+       [-3.70918679,  0.39118832,  0.01571482, ..., -9.24426365,
+        -4.1644845 , -0.49820831],
+       [-3.56494927, -1.46241665,  1.65893233, ..., -8.99971485,
+        -3.44800496, -1.7067703 ],
+       [-0.78971362, -0.1270231 ,  0.04314778, ..., -5.97616673,
+        -2.20053077, -2.90333009]])}

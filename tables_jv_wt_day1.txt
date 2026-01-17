@@ -144,13 +144,13 @@ H3022-210805_. probe1_shank1  1             Cambridge Neur Electrodes fro Left
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210805_. raw data valid ed1c280b-22aa- 30000.0        no comments    Acquisition tr
+H3022-210805_. raw data valid 81856b24-d521- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210805_. imported_lfp_0 imported lfp 0 1250.0         2ca638fb-e2c7-
+H3022-210805_. imported_lfp_0 imported lfp 0 1250.0         0998f2ce-aa4d-
  (Total: 1)
 
 === PositionSource ===
@@ -172,10 +172,10 @@ H3022-210805_. pos 1 valid ti 1      item2_position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H3022-210805_. pos 0 valid ti 0      e44c3ed6-d891-
-H3022-210805_. pos 0 valid ti 1      945a5729-b7a8-
-H3022-210805_. pos 1 valid ti 0      bfa84525-e7b2-
-H3022-210805_. pos 1 valid ti 1      1dadf6b0-bad3-
+H3022-210805_. pos 0 valid ti 0      eedf8c3a-7e25-
+H3022-210805_. pos 0 valid ti 1      fd82a2ed-c1f9-
+H3022-210805_. pos 1 valid ti 0      1dd45f48-9252-
+H3022-210805_. pos 1 valid ti 1      5a08fb8f-fee3-
  (Total: 4)
 
 === RawPosition ===
@@ -194,3 +194,41 @@ time
 9216.650                             3.398010  34.729359  71.146298
 
 [147217 rows x 3 columns]
+=== ImportedSpikeSorting ===
+*nwb_file_name object_id     
++------------+ +------------+
+H3022-210805_. 254aa659-31e6-
+ (Total: 1)
+
+=== Annotation ===
+*nwb_file_name *id    label      annotation
++------------+ +----+ +--------+ +--------+
+H3022-210805_. 0      =BLOB=     =BLOB=    
+H3022-210805_. 1      =BLOB=     =BLOB=    
+H3022-210805_. 2      =BLOB=     =BLOB=    
+H3022-210805_. 3      =BLOB=     =BLOB=    
+H3022-210805_. 4      =BLOB=     =BLOB=    
+H3022-210805_. 5      =BLOB=     =BLOB=    
+H3022-210805_. 6      =BLOB=     =BLOB=    
+H3022-210805_. 7      =BLOB=     =BLOB=    
+H3022-210805_. 8      =BLOB=     =BLOB=    
+H3022-210805_. 9      =BLOB=     =BLOB=    
+H3022-210805_. 10     =BLOB=     =BLOB=    
+H3022-210805_. 11     =BLOB=     =BLOB=    
+   ...
+ (Total: 20)
+
+=== Example Annotation (Unit 0) ===
+{'sampling_rate': 30000, 'waveform_mean': array([[ 1.00087202, -2.33301592, -2.63064933, ...,  2.93383837,
+         2.28656125, -2.11685109],
+       [ 2.71041036, -0.75120193,  1.10444474, ...,  3.50844121,
+         3.48447514, -0.59073949],
+       [ 3.40594602,  2.74560905,  2.80853462, ...,  2.90704918,
+         4.47538757, -2.48062873],
+       ...,
+       [-0.95248574,  2.70138407,  4.23469877, ...,  1.73535192,
+        -3.17667699,  2.7675581 ],
+       [ 0.06105137,  4.31019878,  1.91379571, ...,  0.59495634,
+        -2.44477105, -0.59632754],
+       [-1.78341305,  2.80101061, -1.41911101, ...,  0.57556248,
+        -2.47985935, -3.27121353]])}

@@ -14,7 +14,7 @@ H3022-210806_. H3022          University of  Wood/Dudchenko 210806         Explo
 *subject_id    age      description    genotype     sex     species       
 +------------+ +------+ +------------+ +----------+ +-----+ +------------+
 H3016          P22D     All experiment KO           M       Rattus norvegi
-H3022          P22D     All experiment WT           M       Rattus norvegi
+H3022          P23D     All experiment WT           M       Rattus norvegi
 H4813          P65D     All experiment WT           M       Rattus norvegi
 H4817          P57D     All experiment KO           M       Rattus norvegi
  (Total: 4)
@@ -148,13 +148,13 @@ H3022-210806_. probe1_shank1  1             Cambridge Neur Electrodes fro Left
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210806_. raw data valid 9ad8942b-2c58- 30000.0        no comments    Acquisition tr
+H3022-210806_. raw data valid 973e9034-36c9- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210806_. imported_lfp_0 imported lfp 0 1250.0         264b36dc-5dcc-
+H3022-210806_. imported_lfp_0 imported lfp 0 1250.0         661d6479-f750-
  (Total: 1)
 
 === PositionSource ===
@@ -176,10 +176,10 @@ H3022-210806_. pos 1 valid ti 1      item2_position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H3022-210806_. pos 0 valid ti 0      f0198be4-d115-
-H3022-210806_. pos 0 valid ti 1      7f083774-cbf1-
-H3022-210806_. pos 1 valid ti 0      4a25c605-79e6-
-H3022-210806_. pos 1 valid ti 1      1bb228ce-72b0-
+H3022-210806_. pos 0 valid ti 0      6c11e8fa-8b78-
+H3022-210806_. pos 0 valid ti 1      f9441f45-480f-
+H3022-210806_. pos 1 valid ti 0      340987c9-5801-
+H3022-210806_. pos 1 valid ti 1      56448c75-d6b5-
  (Total: 4)
 
 === RawPosition ===
@@ -198,3 +198,41 @@ time
 9345.275                             2.685021  36.994911   6.337510
 
 [154094 rows x 3 columns]
+=== ImportedSpikeSorting ===
+*nwb_file_name object_id     
++------------+ +------------+
+H3022-210806_. 61e43e4a-0e74-
+ (Total: 1)
+
+=== Annotation ===
+*nwb_file_name *id    label      annotation
++------------+ +----+ +--------+ +--------+
+H3022-210806_. 0      =BLOB=     =BLOB=    
+H3022-210806_. 1      =BLOB=     =BLOB=    
+H3022-210806_. 2      =BLOB=     =BLOB=    
+H3022-210806_. 3      =BLOB=     =BLOB=    
+H3022-210806_. 4      =BLOB=     =BLOB=    
+H3022-210806_. 5      =BLOB=     =BLOB=    
+H3022-210806_. 6      =BLOB=     =BLOB=    
+H3022-210806_. 7      =BLOB=     =BLOB=    
+H3022-210806_. 8      =BLOB=     =BLOB=    
+H3022-210806_. 9      =BLOB=     =BLOB=    
+H3022-210806_. 10     =BLOB=     =BLOB=    
+H3022-210806_. 11     =BLOB=     =BLOB=    
+   ...
+ (Total: 31)
+
+=== Example Annotation (Unit 0) ===
+{'sampling_rate': 30000, 'waveform_mean': array([[ 3.49883962e+00,  8.84432316e+00,  8.23258972e+00, ...,
+                    nan,  3.02518964e+00, -5.13274097e+00],
+       [ 6.21499395e+00,  9.05538082e+00,  8.41523170e+00, ...,
+                    nan, -4.34346776e-03, -2.04437709e+00],
+       [ 8.10215569e+00,  8.54242706e+00,  1.07068920e+01, ...,
+                    nan, -2.03987312e+00, -9.87011075e-01],
+       ...,
+       [-3.13906026e+00, -1.37185812e+00, -1.57903099e+00, ...,
+                    nan, -2.92712736e+00, -2.54284954e+00],
+       [-3.69989896e+00, -3.08580875e+00, -3.33377928e-01, ...,
+                    nan, -1.82365882e+00, -2.23948550e+00],
+       [-2.47274137e+00, -3.24375868e+00,  1.88427746e+00, ...,
+                    nan, -2.36118960e+00, -3.15511751e+00]])}

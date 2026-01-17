@@ -95,7 +95,7 @@ def insert_session(nwbfile_path: Path, rollback_on_fail: bool = True, raise_err:
     """
     sgi.insert_sessions(str(nwbfile_path), rollback_on_fail=rollback_on_fail, raise_err=raise_err)
     insert_sleep(nwbfile_path)
-    # insert_sorting(nwbfile_path) # TODO: Figure out how to accommodate waveform_means with different numbers of channels for each shank
+    insert_sorting(nwbfile_path)
 
 def insert_sleep(nwbfile_path: Path):
     nwb_copy_filename = get_nwb_copy_filename(nwbfile_path.name)
@@ -171,14 +171,13 @@ def print_tables(nwbfile_path: Path, table_path: Path = Path("tables.txt")):
         print((sgc.RawPosition & {"nwb_file_name": nwb_copy_file_name, "interval_list_name": "pos 0 valid times"}).fetch1_dataframe(), file=f)
         
         # Spike Sorting tables
-        # TODO: Uncomment once insert_sorting is functional
-        # print("=== ImportedSpikeSorting ===", file=f)
-        # print(sgs.ImportedSpikeSorting & {"nwb_file_name": nwb_copy_file_name}, file=f)
-        # merge_id = str((SpikeSortingOutput.ImportedSpikeSorting & {"nwb_file_name": nwb_copy_file_name}).fetch1("merge_id"))
-        # print("=== Annotation ===", file=f)
-        # print(sgs.ImportedSpikeSorting.Annotations & {"nwb_file_name": nwb_copy_file_name}, file=f)
-        # print("=== Example Annotation (Unit 0) ===", file=f)
-        # print((sgs.ImportedSpikeSorting.Annotations & {"nwb_file_name": nwb_copy_file_name, "id": 0}).fetch1("annotations"), file=f)
+        print("=== ImportedSpikeSorting ===", file=f)
+        print(sgs.ImportedSpikeSorting & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        merge_id = str((SpikeSortingOutput.ImportedSpikeSorting & {"nwb_file_name": nwb_copy_file_name}).fetch1("merge_id"))
+        print("=== Annotation ===", file=f)
+        print(sgs.ImportedSpikeSorting.Annotations & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== Example Annotation (Unit 0) ===", file=f)
+        print((sgs.ImportedSpikeSorting.Annotations & {"nwb_file_name": nwb_copy_file_name, "id": 0}).fetch1("annotations"), file=f)
 
 
 def main():
@@ -201,6 +200,10 @@ def main():
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
     print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
+    # TODO: Fix duplicate subject issue
+    # datajoint.errors.DuplicateError: Attempted entry in Subject already exists with different values for age: P23D != P22D
+    (sgc.Subject & {"subject_id": "H3022"}).delete()
+
     # Example Juvenile WT Day 2 Session
     nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3022-210806.nwb")
     table_path = Path("tables_jv_wt_day2.txt")
@@ -219,6 +222,10 @@ def main():
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
     print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+
+    # TODO: Fix duplicate subject issue
+    # datajoint.errors.DuplicateError: Attempted entry in Subject already exists with different values for age: P23D != P22D
+    (sgc.Subject & {"subject_id": "H3016"}).delete()
 
     # Example Juvenile KO Day 2 Session
     nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3016-210423.nwb")
