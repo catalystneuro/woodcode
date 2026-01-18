@@ -7,14 +7,17 @@ H3022-210805_. =BLOB=
 === Session ===
 *nwb_file_name subject_id     institution_na lab_name       session_id     session_descri session_start_ timestamps_ref experiment_des
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210805_. H3022          University of  Wood/Dudchenko 210805         Exploration, s 2021-08-05 00: 2021-08-05 00: Basic properti
+H3022-210805_. H3022          University of  Wood/Dudchenko 210805         Exploration, s 2021-08-05 17: 2021-08-05 17: Basic properti
  (Total: 1)
 
 === Subject ===
-*subject_id    age     description    genotype     sex     species       
-+------------+ +-----+ +------------+ +----------+ +-----+ +------------+
-H3022          P0D     All experiment WT           U       Rattus norvegi
- (Total: 1)
+*subject_id    age      description    genotype     sex     species       
++------------+ +------+ +------------+ +----------+ +-----+ +------------+
+H3016          P23D     All experiment KO           M       Rattus norvegi
+H3022          P22D     All experiment WT           M       Rattus norvegi
+H4813          P65D     All experiment WT           M       Rattus norvegi
+H4817          P57D     All experiment KO           M       Rattus norvegi
+ (Total: 4)
 
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline      
@@ -24,12 +27,14 @@ H3022-210805_. 02             =BLOB=
 H3022-210805_. 03             =BLOB=                   
 H3022-210805_. 04             =BLOB=                   
 H3022-210805_. imported lfp 0 =BLOB=     imported_lfp  
+H3022-210805_. imported pseud =BLOB=     imported_pseud
 H3022-210805_. pos 0 valid ti =BLOB=     position      
+H3022-210805_. pos 1 valid ti =BLOB=     position      
 H3022-210805_. raw data valid =BLOB=                   
 H3022-210805_. sleep_nrem     =BLOB=                   
 H3022-210805_. sleep_rem      =BLOB=                   
 H3022-210805_. sleep_wake     =BLOB=                   
- (Total: 10)
+ (Total: 12)
 
 === Task ===
 *task_name     task_descripti task_type     task_subtype  
@@ -49,34 +54,40 @@ H3022-210805_. 4         wake_cue_rot   None           04             cylindrica
  (Total: 4)
 
 === Sleep NREM Valid Times ===
-[[ 457.  496.]
- [ 553.  578.]
- [ 707.  727.]
- [ 943.  953.]
- [1017. 1029.]
- [1227. 1279.]
- [1292. 1304.]
- [1605. 2051.]
- [2072. 2332.]
- [2379. 2407.]
- [2425. 2957.]
- [3027. 3036.]
- [3060. 3484.]
- [3803. 4063.]
- [4319. 4344.]
- [4365. 4768.]
- [5073. 5351.]
- [5504. 5511.]
- [5755. 6308.]
- [6355. 6373.]
- [6531. 6539.]
- [6563. 6770.]
- [6967. 6976.]
- [7185. 7207.]
- [7656. 7665.]
- [7690. 7697.]
- [7708. 7742.]
- [7940. 7976.]]
+[[ 457.00076667  496.00076667]
+ [ 553.00076667  578.00076667]
+ [ 707.00076667  727.00076667]
+ [ 943.00076667  953.00076667]
+ [1017.00076667 1029.00076667]
+ [1227.00076667 1319.69623333]
+ [1332.69623333 1344.69623333]
+ [1645.69623333 2091.69623333]
+ [2112.69623333 2372.69623333]
+ [2419.69623333 2447.69623333]
+ [2465.69623333 2997.69623333]
+ [3067.69623333 3076.69623333]
+ [3100.69623333 3524.69623333]
+ [3843.69623333 4103.69623333]
+ [4359.69623333 4384.69623333]
+ [4405.69623333 4808.69623333]
+ [5113.69623333 5391.69623333]
+ [5544.69623333 5551.69623333]
+ [5795.69623333 6348.69623333]
+ [6395.69623333 6413.69623333]
+ [6571.69623333 6579.69623333]
+ [6603.69623333 6865.6509    ]
+ [7062.6509     7071.6509    ]
+ [7280.6509     7302.6509    ]
+ [7751.6509     7760.6509    ]
+ [7785.6509     7792.6509    ]
+ [7803.6509     7837.6509    ]
+ [8035.6509     8071.6509    ]]
+=== ImportedPseudoEMG ===
+*nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
++------------+ +------------+ +------------+ +------------+
+H3022-210805_. imported pseud 19e04ea6-7880- 2.0           
+ (Total: 1)
+
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
@@ -86,7 +97,7 @@ H3022-210805_. 4         wake_cue_rot   None           04             cylindrica
 === Camera Device ===
 *camera_name   meters_per_pix manufacturer   model     lens         camera_id    
 +------------+ +------------+ +------------+ +-------+ +----------+ +-----------+
-Logitech Camer 0.0016                        C930e     built-in     0            
+Logitech Camer 0.00265        Logitech       C930e     built-in     0            
  (Total: 1)
 
 === Data Acquisition Device ===
@@ -140,34 +151,39 @@ H3022-210805_. probe1_shank1  1             Cambridge Neur Electrodes fro Left
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210805_. raw data valid f0ba7844-7710- 30000.0        no comments    Acquisition tr
+H3022-210805_. raw data valid 81856b24-d521- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210805_. imported_lfp_0 imported lfp 0 1250.0         db6e9220-8867-
+H3022-210805_. imported_lfp_0 imported lfp 0 1250.0         0998f2ce-aa4d-
  (Total: 1)
 
 === PositionSource ===
 *nwb_file_name *interval_list source       import_file_na
 +------------+ +------------+ +----------+ +------------+
 H3022-210805_. pos 0 valid ti imported                   
- (Total: 1)
+H3022-210805_. pos 1 valid ti imported                   
+ (Total: 2)
 
 === PositionSource.SpatialSeries ===
 *nwb_file_name *interval_list *id    name          
 +------------+ +------------+ +----+ +------------+
 H3022-210805_. pos 0 valid ti 0      head-direction
 H3022-210805_. pos 0 valid ti 1      position      
- (Total: 2)
+H3022-210805_. pos 1 valid ti 0      item1_position
+H3022-210805_. pos 1 valid ti 1      item2_position
+ (Total: 4)
 
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H3022-210805_. pos 0 valid ti 0      1f3d4347-e891-
-H3022-210805_. pos 0 valid ti 1      8732edd7-533b-
- (Total: 2)
+H3022-210805_. pos 0 valid ti 0      eedf8c3a-7e25-
+H3022-210805_. pos 0 valid ti 1      fd82a2ed-c1f9-
+H3022-210805_. pos 1 valid ti 0      1dd45f48-9252-
+H3022-210805_. pos 1 valid ti 1      5a08fb8f-fee3-
+ (Total: 4)
 
 === RawPosition ===
           Horizontal angle of the head (yaw)1          x          y
@@ -185,3 +201,41 @@ time
 9216.650                             3.398010  34.729359  71.146298
 
 [147217 rows x 3 columns]
+=== ImportedSpikeSorting ===
+*nwb_file_name object_id     
++------------+ +------------+
+H3022-210805_. 254aa659-31e6-
+ (Total: 1)
+
+=== Annotation ===
+*nwb_file_name *id    label      annotation
++------------+ +----+ +--------+ +--------+
+H3022-210805_. 0      =BLOB=     =BLOB=    
+H3022-210805_. 1      =BLOB=     =BLOB=    
+H3022-210805_. 2      =BLOB=     =BLOB=    
+H3022-210805_. 3      =BLOB=     =BLOB=    
+H3022-210805_. 4      =BLOB=     =BLOB=    
+H3022-210805_. 5      =BLOB=     =BLOB=    
+H3022-210805_. 6      =BLOB=     =BLOB=    
+H3022-210805_. 7      =BLOB=     =BLOB=    
+H3022-210805_. 8      =BLOB=     =BLOB=    
+H3022-210805_. 9      =BLOB=     =BLOB=    
+H3022-210805_. 10     =BLOB=     =BLOB=    
+H3022-210805_. 11     =BLOB=     =BLOB=    
+   ...
+ (Total: 20)
+
+=== Example Annotation (Unit 0) ===
+{'sampling_rate': 30000, 'waveform_mean': array([[ 1.00087202, -2.33301592, -2.63064933, ...,  2.93383837,
+         2.28656125, -2.11685109],
+       [ 2.71041036, -0.75120193,  1.10444474, ...,  3.50844121,
+         3.48447514, -0.59073949],
+       [ 3.40594602,  2.74560905,  2.80853462, ...,  2.90704918,
+         4.47538757, -2.48062873],
+       ...,
+       [-0.95248574,  2.70138407,  4.23469877, ...,  1.73535192,
+        -3.17667699,  2.7675581 ],
+       [ 0.06105137,  4.31019878,  1.91379571, ...,  0.59495634,
+        -2.44477105, -0.59632754],
+       [-1.78341305,  2.80101061, -1.41911101, ...,  0.57556248,
+        -2.47985935, -3.27121353]])}

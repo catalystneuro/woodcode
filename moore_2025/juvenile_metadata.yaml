@@ -22,7 +22,7 @@ Video:
   CameraDevice:
     name: camera_device 0
     description: For the juvenile recordings, images were acquired through a Logitech C930e camera.
-    meters_per_pixel: 0.0016 # TODO: update this value
+    meters_per_pixel: 0.00265
     manufacturer: Logitech
     model: C930e
     lens: built-in
@@ -30,7 +30,6 @@ Video:
 
 probe:
   - name: probe_1
-    coordinates: [-6.3, 1.6, -3.1] # mm AP, DV, ML from Bregma, BUT Ventral aka down is positive (also note ML is negative here for left hemisphere)
     reference: A silver ground wire was placed directly above the cerebellum as the reference.
     data_acquisition_description: For recording, the implanted silicon probe was connected to an Intan RHD headstage (Intan technologies). The headstage was connected to an Intan RHD standard SPI cable, which was connected to a 3D-printed commutator in the ceiling (custom-made in house). Signals were acquired at 30kHz with an OpenEphys data acquisition system.
     data_acquisition_system: OpenEphys

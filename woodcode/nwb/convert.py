@@ -189,8 +189,12 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
     for probe_metadata in metadata["probe"]:
         probe_id = probe_metadata["id"]
         nshanks = probe_metadata["nshanks"]
+        ap_mm = probe_metadata["AP_mm"] # Posterior is positive
+        dv_mm = np.abs(probe_metadata["DV_mm"]) # Ventral aka down is positive
+        ml_mm = probe_metadata["ML_mm"] # Right is positive
+        coordinates = [ap_mm, dv_mm, ml_mm]
         for _ in range(nshanks):
-            shank_assignments.append((probe_id, global_shank_id, probe_metadata["location"], probe_metadata["step"], probe_metadata["coordinates"], probe_metadata["reference"]))
+            shank_assignments.append((probe_id, global_shank_id, probe_metadata["location"], probe_metadata["step"], coordinates, probe_metadata["reference"]))
             global_shank_id += 1
 
     # Ensure number of shanks in metadata matches xmldata
@@ -476,6 +480,7 @@ def add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate):
     emg = spio.loadmat(emg_file, simplify_cells=True)
 
     # Temporally align pseudo-EMG timestamps to LFP timestamps
+    # TODO: Double-check temporal alignment method here
     unaligned_emg_timestamps = emg['EMGFromLFP']['timestamps']
     aligned_emg_timestamps = np.interp(x=unaligned_emg_timestamps, xp=unaligned_lfp_timestamps, fp=aligned_lfp_timestamps)
 
@@ -611,7 +616,7 @@ def add_lfp(nwbfile, lfp_path, xml_data, raw_eseries, stub_test=False):
 
     lfp_sampling_rate = float(xml_data['eeg_sampling_rate'])
     downsample_factor = int(raw_sampling_rate / lfp_sampling_rate)
-    lfp_timestamps = raw_timestamps[::downsample_factor]
+    lfp_timestamps = raw_timestamps[downsample_factor-1::downsample_factor]
 
     all_table_region = nwbfile.create_electrode_table_region(
         region=list(range(len(nwbfile.electrodes))),
@@ -811,6 +816,7 @@ def add_video(
         name=camera_device_metadata["name"],
         description=camera_device_metadata["description"],
         meters_per_pixel=camera_device_metadata["meters_per_pixel"],
+        manufacturer=camera_device_metadata["manufacturer"],
         model=camera_device_metadata["model"],
         lens=camera_device_metadata["lens"],
         camera_name=camera_device_metadata["camera_name"],

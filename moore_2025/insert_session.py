@@ -27,6 +27,15 @@ from spyglass.spikesorting.analysis.v1.group import UnitSelectionParams
 from spyglass.spikesorting.analysis.v1.unit_annotation import UnitAnnotation
 from tqdm import tqdm
 
+# Custom Table Imports
+sys.path.append(
+    "/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/spyglass_extensions"
+)
+from imported_pseudo_emg import ImportedPseudoEMG
+
+def insert_pseudo_emg(nwbfile_path: Path):
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    ImportedPseudoEMG().make(key={"nwb_file_name": nwb_copy_file_name})
 
 def insert_sorting(nwbfile_path: Path):
     """Insert spike sorting data and unit annotations into SpyGlass database.
@@ -95,7 +104,8 @@ def insert_session(nwbfile_path: Path, rollback_on_fail: bool = True, raise_err:
     """
     sgi.insert_sessions(str(nwbfile_path), rollback_on_fail=rollback_on_fail, raise_err=raise_err)
     insert_sleep(nwbfile_path)
-    # insert_sorting(nwbfile_path) # TODO: Figure out how to accommodate waveform_means with different numbers of channels for each shank
+    insert_sorting(nwbfile_path)
+    insert_pseudo_emg(nwbfile_path)
 
 def insert_sleep(nwbfile_path: Path):
     nwb_copy_filename = get_nwb_copy_filename(nwbfile_path.name)
@@ -133,6 +143,11 @@ def print_tables(nwbfile_path: Path, table_path: Path = Path("tables.txt")):
         print("=== Sleep NREM Valid Times ===", file=f)
         print((sgc.IntervalList & {"nwb_file_name": nwb_copy_file_name, "interval_list_name": "sleep_nrem"}).fetch1("valid_times"), file=f)
 
+        # PseudoEMG table
+        print("=== ImportedPseudoEMG ===", file=f)
+        print(ImportedPseudoEMG & {"nwb_file_name": nwb_copy_file_name}, file=f)
+
+        # TODO: Fix Video insert for juvenile sessions
         # Video and Camera tables
         print("=== Video File ===", file=f)
         print(sgc.VideoFile & {"nwb_file_name": nwb_copy_file_name}, file=f)
@@ -167,17 +182,16 @@ def print_tables(nwbfile_path: Path, table_path: Path = Path("tables.txt")):
         print("=== RawPosition.PosObject ===", file=f)
         print(sgc.RawPosition.PosObject & {"nwb_file_name": nwb_copy_file_name}, file=f)
         print("=== RawPosition ===", file=f)
-        print((sgc.RawPosition & {"nwb_file_name": nwb_copy_file_name}).fetch1_dataframe(), file=f)
+        print((sgc.RawPosition & {"nwb_file_name": nwb_copy_file_name, "interval_list_name": "pos 0 valid times"}).fetch1_dataframe(), file=f)
         
         # Spike Sorting tables
-        # TODO: Uncomment once insert_sorting is functional
-        # print("=== ImportedSpikeSorting ===", file=f)
-        # print(sgs.ImportedSpikeSorting & {"nwb_file_name": nwb_copy_file_name}, file=f)
-        # merge_id = str((SpikeSortingOutput.ImportedSpikeSorting & {"nwb_file_name": nwb_copy_file_name}).fetch1("merge_id"))
-        # print("=== Annotation ===", file=f)
-        # print(sgs.ImportedSpikeSorting.Annotations & {"nwb_file_name": nwb_copy_file_name}, file=f)
-        # print("=== Example Annotation (Unit 0) ===", file=f)
-        # print((sgs.ImportedSpikeSorting.Annotations & {"nwb_file_name": nwb_copy_file_name, "id": 0}).fetch1("annotations"), file=f)
+        print("=== ImportedSpikeSorting ===", file=f)
+        print(sgs.ImportedSpikeSorting & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        merge_id = str((SpikeSortingOutput.ImportedSpikeSorting & {"nwb_file_name": nwb_copy_file_name}).fetch1("merge_id"))
+        print("=== Annotation ===", file=f)
+        print(sgs.ImportedSpikeSorting.Annotations & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== Example Annotation (Unit 0) ===", file=f)
+        print((sgs.ImportedSpikeSorting.Annotations & {"nwb_file_name": nwb_copy_file_name, "id": 0}).fetch1("annotations"), file=f)
 
 
 def main():
@@ -185,23 +199,53 @@ def main():
     (sgc.ProbeType & {"probe_type": "Cambridge Neurotech H6b probe"}).delete()
     (sgc.ProbeType & {"probe_type": "Cambridge Neurotech H7 probe"}).delete()
     (sgc.DataAcquisitionDevice & {"name": "data_acquisition_device"}).delete()
+    (sgc.CameraDevice & {"camera_name": "Basler Camera"}).delete()
+    (sgc.CameraDevice & {"camera_name": "Logitech Camera"}).delete()
     sgc.Task().delete()
 
-    # Example Juvenile WT Session
+    # Example Juvenile WT
+    (sgc.Subject & {"subject_id": "H3022"}).delete()
+
+    # Example Juvenile WT Day 1 Session
     nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3022-210805.nwb")
-    table_path = Path("tables_jv_wt.txt")
+    table_path = Path("tables_jv_wt_day1.txt")
     nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    (sgc.Subject & {"subject_id": "H3022"}).delete()
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
     print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
-    # Example Juvenile KO Session
-    nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3016-210423.nwb")
-    table_path = Path("tables_jv_ko.txt")
+    # TODO: Fix duplicate subject issue
+    # datajoint.errors.DuplicateError: Attempted entry in Subject already exists with different values for age: P23D != P22D
+    (sgc.Subject & {"subject_id": "H3022"}).delete()
+
+    # Example Juvenile WT Day 2 Session
+    nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3022-210806.nwb")
+    table_path = Path("tables_jv_wt_day2.txt")
     nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+
+    # Example Juvenile KO
     (sgc.Subject & {"subject_id": "H3016"}).delete()
+
+    # Example Juvenile KO Day 1 Session
+    nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3016-210422.nwb")
+    table_path = Path("tables_jv_ko_day1.txt")
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+
+    # TODO: Fix duplicate subject issue
+    # datajoint.errors.DuplicateError: Attempted entry in Subject already exists with different values for age: P23D != P22D
+    (sgc.Subject & {"subject_id": "H3016"}).delete()
+
+    # Example Juvenile KO Day 2 Session
+    nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3016-210423.nwb")
+    table_path = Path("tables_jv_ko_day2.txt")
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
     print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
