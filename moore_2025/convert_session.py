@@ -190,7 +190,7 @@ def session_to_nwb(
 
 def main():
     """Define paths and convert example sessions to NWB."""
-    stub_test = True
+    stub_test = False
     dataset_path = Path('/Volumes/T7/CatalystNeuro/Dudchenko/251104_MooreDataset')
     output_folder_path = Path('/Volumes/T7/CatalystNeuro/Spyglass/raw')
     if output_folder_path.exists():

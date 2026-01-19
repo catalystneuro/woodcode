@@ -32,10 +32,15 @@ sys.path.append(
     "/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/spyglass_extensions"
 )
 from imported_pseudo_emg import ImportedPseudoEMG
+from imported_histology_images import ImportedHistologyImages
 
 def insert_pseudo_emg(nwbfile_path: Path):
     nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
     ImportedPseudoEMG().make(key={"nwb_file_name": nwb_copy_file_name})
+
+def insert_histology_images(nwbfile_path: Path):
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    ImportedHistologyImages().make(key={"nwb_file_name": nwb_copy_file_name})
 
 def insert_sorting(nwbfile_path: Path):
     """Insert spike sorting data and unit annotations into SpyGlass database.
@@ -106,6 +111,7 @@ def insert_session(nwbfile_path: Path, rollback_on_fail: bool = True, raise_err:
     insert_sleep(nwbfile_path)
     insert_sorting(nwbfile_path)
     insert_pseudo_emg(nwbfile_path)
+    insert_histology_images(nwbfile_path)
 
 def insert_sleep(nwbfile_path: Path):
     nwb_copy_filename = get_nwb_copy_filename(nwbfile_path.name)
@@ -193,6 +199,10 @@ def print_tables(nwbfile_path: Path, table_path: Path = Path("tables.txt")):
         print("=== Example Annotation (Unit 0) ===", file=f)
         print((sgs.ImportedSpikeSorting.Annotations & {"nwb_file_name": nwb_copy_file_name, "id": 0}).fetch1("annotations"), file=f)
 
+        # Custom Histology Images table
+        print("=== ImportedHistologyImages ===", file=f)
+        print(ImportedHistologyImages & {"nwb_file_name": nwb_copy_file_name}, file=f)
+
 
 def main():
     # Clear existing data for a clean insertion
@@ -213,6 +223,7 @@ def main():
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
     print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+    return
 
     # TODO: Fix duplicate subject issue
     # datajoint.errors.DuplicateError: Attempted entry in Subject already exists with different values for age: P23D != P22D
