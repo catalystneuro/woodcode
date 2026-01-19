@@ -13,8 +13,10 @@ import numpy as np
 import pandas as pd
 import warnings
 import pynapple as nap
+from PIL import Image
 from ndx_franklab_novela import CameraDevice, DataAcqDevice, Probe, Shank, ShanksElectrode, NwbElectrodeGroup
-from pynwb.image import ImageSeries
+from pynwb.image import ImageSeries, RGBImage
+from pynwb.base import Images
 from neuroconv.utils import calculate_regular_series_rate
 
 def create_nwb_file(metadata, start_time):
@@ -949,3 +951,38 @@ def _report_variable_offset(recording) -> None:
     message = "\n".join(message_lines)
 
     raise ValueError(message)
+
+
+def add_histology(nwbfile, histology_folder_path: Path):
+    print('Adding histology to NWB file...')
+
+    subject_id = nwbfile.subject.subject_id
+    histology_jpg_paths = sorted(histology_folder_path.glob(f'*{subject_id}*.[jJ][pP][gG]'))
+    histology_png_paths = sorted(histology_folder_path.glob(f'*{subject_id}*.[pP][nN][gG]'))
+    histology_image_paths = histology_jpg_paths + histology_png_paths
+    histology_image_paths = [p for p in histology_jpg_paths + histology_png_paths if not p.name.startswith('._')]
+
+    images_to_add = []
+
+    for img_path in histology_image_paths:
+        img = Image.open(img_path).convert("RGB")  # Ensure RGB mode
+        img_data = np.array(img)
+        hist_image = RGBImage(
+            name=img_path.stem,
+            data=img_data,
+            description=f'Histology RGB image from {img_path.name}',
+        )
+        images_to_add.append(hist_image)
+
+    if images_to_add:
+        images_container = Images(
+            name='histology_images',
+            images=images_to_add,
+            description=f'Histology images for subject {subject_id}',
+        )
+        nwbfile.add_acquisition(images_container)
+        print(f"Added {len(images_to_add)} histology RGB images to NWB file.")
+    else:
+        print("No histology images found to add.")
+
+    return nwbfile
