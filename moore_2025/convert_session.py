@@ -242,7 +242,6 @@ def main():
         stub_test=stub_test,
         is_adult=False,
     )
-    return
 
     # Day 2
     folder_name = 'H3022-210806'
@@ -274,6 +273,7 @@ def main():
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
         metadata_file_path=metadata_file_path,
+        histology_folder_path=juvenile_histology_folder_path,
         stub_test=stub_test,
         is_adult=False,
     )
@@ -311,6 +311,7 @@ def main():
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
         metadata_file_path=metadata_file_path,
+        histology_folder_path=juvenile_histology_folder_path,
         stub_test=stub_test,
         is_adult=False,
     )
@@ -346,6 +347,7 @@ def main():
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
         metadata_file_path=metadata_file_path,
+        histology_folder_path=juvenile_histology_folder_path,
         stub_test=stub_test,
         is_adult=False,
     )
@@ -353,6 +355,7 @@ def main():
     # Example Adult Sessions
     adult_folder_path = dataset_path / "H4800_Adults"
     metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/adult_metadata.yaml")
+    adult_histology_folder_path = histology_folder_path / "H4800"
 
     # Example Adult WT session
     adult_wt_folder_path = adult_folder_path / "WT"
@@ -394,6 +397,7 @@ def main():
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
         metadata_file_path=metadata_file_path,
+        histology_folder_path=adult_histology_folder_path,
         stub_test=stub_test,
         is_adult=True,
     )
@@ -438,6 +442,7 @@ def main():
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
         metadata_file_path=metadata_file_path,
+        histology_folder_path=adult_histology_folder_path,
         stub_test=stub_test,
         is_adult=True,
     )

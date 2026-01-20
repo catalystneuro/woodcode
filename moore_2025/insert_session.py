@@ -223,7 +223,6 @@ def main():
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
     print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
-    return
 
     # TODO: Fix duplicate subject issue
     # datajoint.errors.DuplicateError: Attempted entry in Subject already exists with different values for age: P23D != P22D
