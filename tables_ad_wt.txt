@@ -87,16 +87,16 @@ H4813-220728_. 4         wake_cue_rot   None           04             cylindrica
 === ImportedPseudoEMG ===
 *nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
 +------------+ +------------+ +------------+ +------------+
-H4813-220728_. imported pseud cbb2c1aa-11e9- 2.0           
+H4813-220728_. imported pseud a31bd8b3-113b- 2.0           
  (Total: 1)
 
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
-H4813-220728_. 1         1              Basler Camera  e6a2aa21-9d5e-
-H4813-220728_. 2         1              Basler Camera  19876b85-36fc-
-H4813-220728_. 3         1              Basler Camera  9a86df5c-c785-
-H4813-220728_. 4         1              Basler Camera  d423f8a2-74b0-
+H4813-220728_. 1         1              Basler Camera  4f29edb6-e4d3-
+H4813-220728_. 2         1              Basler Camera  9396060d-3d36-
+H4813-220728_. 3         1              Basler Camera  3b124fb5-c63f-
+H4813-220728_. 4         1              Basler Camera  b9864149-4042-
  (Total: 4)
 
 === Camera Device ===
@@ -171,13 +171,13 @@ Cambridge Neur 1              11             165.0          5.0       275.0     
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H4813-220728_. raw data valid 760fee36-11a9- 30000.0        no comments    Acquisition tr
+H4813-220728_. raw data valid e9f3f029-530f- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H4813-220728_. imported_lfp_0 imported lfp 0 1250.0         d7b1232d-e90d-
+H4813-220728_. imported_lfp_0 imported lfp 0 1250.0         a0854ed1-f4ac-
  (Total: 1)
 
 === PositionSource ===
@@ -199,10 +199,10 @@ H4813-220728_. pos 1 valid ti 1      item2_position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H4813-220728_. pos 0 valid ti 0      f8d67e8b-c425-
-H4813-220728_. pos 0 valid ti 1      b7fb4e59-faee-
-H4813-220728_. pos 1 valid ti 0      d25392a1-e464-
-H4813-220728_. pos 1 valid ti 1      56a5b171-f5b6-
+H4813-220728_. pos 0 valid ti 0      6e51f3e4-3b6b-
+H4813-220728_. pos 0 valid ti 1      4d8c2ded-9fb1-
+H4813-220728_. pos 1 valid ti 0      d600d7ba-7396-
+H4813-220728_. pos 1 valid ti 1      9ff3a3fb-3caa-
  (Total: 4)
 
 === RawPosition ===
@@ -224,7 +224,7 @@ time
 === ImportedSpikeSorting ===
 *nwb_file_name object_id     
 +------------+ +------------+
-H4813-220728_. f4874400-f265-
+H4813-220728_. 2e8b99d8-2514-
  (Total: 1)
 
 === Annotation ===
@@ -259,3 +259,11 @@ H4813-220728_. 11     =BLOB=     =BLOB=
         -3.55762458e+00, -5.08962202e+00, -5.09534597e+00],
        [-2.26998878e+00,  1.40993643e+00, -3.36326599e-01, ...,
         -6.09746838e+00, -6.97159910e+00, -6.69063187e+00]])}
+=== ImportedHistologyImages ===
+*nwb_file_name *image_name    histology_imag
++------------+ +------------+ +------------+
+H4813-220728_. H4813_C3       913d84fb-0107-
+H4813-220728_. H4813_C4       83f29584-ddc0-
+H4813-220728_. H4813_C5       cc269afb-b6e2-
+ (Total: 3)
+

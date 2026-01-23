@@ -107,7 +107,7 @@ H3016-210423_. 4         wake_cue_rot   None           04             cylindrica
 === ImportedPseudoEMG ===
 *nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
 +------------+ +------------+ +------------+ +------------+
-H3016-210423_. imported pseud e023df36-213f- 2.0           
+H3016-210423_. imported pseud 9e96270f-ba7f- 2.0           
  (Total: 1)
 
 === Video File ===
@@ -173,13 +173,13 @@ H3016-210423_. probe1_shank1  1             Cambridge Neur Electrodes fro Left
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3016-210423_. raw data valid 043556f4-979e- 30000.0        no comments    Acquisition tr
+H3016-210423_. raw data valid 66a719c1-5794- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H3016-210423_. imported_lfp_0 imported lfp 0 1250.0         7754fd24-ef08-
+H3016-210423_. imported_lfp_0 imported lfp 0 1250.0         40c40c78-7acb-
  (Total: 1)
 
 === PositionSource ===
@@ -201,10 +201,10 @@ H3016-210423_. pos 1 valid ti 1      item2_position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H3016-210423_. pos 0 valid ti 0      55a8b37f-9bff-
-H3016-210423_. pos 0 valid ti 1      fbe71dc2-e82b-
-H3016-210423_. pos 1 valid ti 0      3b1aef36-20fb-
-H3016-210423_. pos 1 valid ti 1      b080fdea-c4e6-
+H3016-210423_. pos 0 valid ti 0      37701150-5a06-
+H3016-210423_. pos 0 valid ti 1      713a0dd5-66a5-
+H3016-210423_. pos 1 valid ti 0      fb64d764-8669-
+H3016-210423_. pos 1 valid ti 1      d932d621-3fbb-
  (Total: 4)
 
 === RawPosition ===
@@ -226,7 +226,7 @@ time
 === ImportedSpikeSorting ===
 *nwb_file_name object_id     
 +------------+ +------------+
-H3016-210423_. 96afe6a9-51cf-
+H3016-210423_. 09efc182-3af9-
  (Total: 1)
 
 === Annotation ===
@@ -261,3 +261,10 @@ H3016-210423_. 11     =BLOB=     =BLOB=
          3.29597569, -1.35045004],
        [-4.911973  ,  6.38968325,  1.17783403, ...,  3.52862525,
          3.99186182, -1.37821388]])}
+=== ImportedHistologyImages ===
+*nwb_file_name *image_name    histology_imag
++------------+ +------------+ +------------+
+H3016-210423_. H3016_C5       2c26765e-9a60-
+H3016-210423_. H3016_C6       06fc8fc9-5236-
+ (Total: 2)
+

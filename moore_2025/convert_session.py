@@ -94,6 +94,7 @@ def session_to_nwb(
     raw_ephys_folder_path: Path,
     save_path: Path,
     metadata_file_path: Path,
+    histology_folder_path: Path,
     stub_test: bool = False,
     is_adult: bool = True,
 ):
@@ -181,6 +182,7 @@ def session_to_nwb(
     epochs = nwb.convert.get_epochs_from_eseries(eseries=nwbfile.acquisition['e-series'])
     nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
     nwbfile = nwb.convert.add_units(nwbfile, raw_xml_data, processed_xml_data, spikes, waveforms, shank_id, lfp_eseries, lfp_sampling_rate)  # get shank names from NWB file
+    nwbfile = nwb.convert.add_histology(nwbfile, histology_folder_path)
 
     # save NWB file
     nwb.convert.save_nwb_file(nwbfile, save_path, folder_name)
@@ -195,10 +197,12 @@ def main():
         shutil.rmtree(output_folder_path)
     meta_path = dataset_path / 'MooreDataset_Metadata.xlsx'  # path to metadata file
     save_path = output_folder_path
+    histology_folder_path = dataset_path / "Histology"
 
     # Example Juvenile Sessions
     juvenile_folder_path = dataset_path / "H3000_Juveniles"
     metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/juvenile_metadata.yaml")
+    juvenile_histology_folder_path = histology_folder_path / "H3000"
 
     # Example Juvenile WT sessions
     jv_wt_folder_path = juvenile_folder_path / "WT"
@@ -234,6 +238,7 @@ def main():
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
         metadata_file_path=metadata_file_path,
+        histology_folder_path=juvenile_histology_folder_path,
         stub_test=stub_test,
         is_adult=False,
     )
@@ -268,6 +273,7 @@ def main():
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
         metadata_file_path=metadata_file_path,
+        histology_folder_path=juvenile_histology_folder_path,
         stub_test=stub_test,
         is_adult=False,
     )
@@ -305,6 +311,7 @@ def main():
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
         metadata_file_path=metadata_file_path,
+        histology_folder_path=juvenile_histology_folder_path,
         stub_test=stub_test,
         is_adult=False,
     )
@@ -340,6 +347,7 @@ def main():
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
         metadata_file_path=metadata_file_path,
+        histology_folder_path=juvenile_histology_folder_path,
         stub_test=stub_test,
         is_adult=False,
     )
@@ -347,6 +355,7 @@ def main():
     # Example Adult Sessions
     adult_folder_path = dataset_path / "H4800_Adults"
     metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/adult_metadata.yaml")
+    adult_histology_folder_path = histology_folder_path / "H4800"
 
     # Example Adult WT session
     adult_wt_folder_path = adult_folder_path / "WT"
@@ -388,6 +397,7 @@ def main():
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
         metadata_file_path=metadata_file_path,
+        histology_folder_path=adult_histology_folder_path,
         stub_test=stub_test,
         is_adult=True,
     )
@@ -432,6 +442,7 @@ def main():
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
         metadata_file_path=metadata_file_path,
+        histology_folder_path=adult_histology_folder_path,
         stub_test=stub_test,
         is_adult=True,
     )

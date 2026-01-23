@@ -85,7 +85,7 @@ H3022-210805_. 4         wake_cue_rot   None           04             cylindrica
 === ImportedPseudoEMG ===
 *nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
 +------------+ +------------+ +------------+ +------------+
-H3022-210805_. imported pseud 19e04ea6-7880- 2.0           
+H3022-210805_. imported pseud 94a1f614-f5fd- 2.0           
  (Total: 1)
 
 === Video File ===
@@ -151,13 +151,13 @@ H3022-210805_. probe1_shank1  1             Cambridge Neur Electrodes fro Left
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210805_. raw data valid 81856b24-d521- 30000.0        no comments    Acquisition tr
+H3022-210805_. raw data valid 80b28bea-8fcf- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210805_. imported_lfp_0 imported lfp 0 1250.0         0998f2ce-aa4d-
+H3022-210805_. imported_lfp_0 imported lfp 0 1250.0         dc16167e-bee7-
  (Total: 1)
 
 === PositionSource ===
@@ -179,10 +179,10 @@ H3022-210805_. pos 1 valid ti 1      item2_position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H3022-210805_. pos 0 valid ti 0      eedf8c3a-7e25-
-H3022-210805_. pos 0 valid ti 1      fd82a2ed-c1f9-
-H3022-210805_. pos 1 valid ti 0      1dd45f48-9252-
-H3022-210805_. pos 1 valid ti 1      5a08fb8f-fee3-
+H3022-210805_. pos 0 valid ti 0      8b0225ba-9221-
+H3022-210805_. pos 0 valid ti 1      743db2d8-6525-
+H3022-210805_. pos 1 valid ti 0      07663c86-27f2-
+H3022-210805_. pos 1 valid ti 1      3af841d8-bd52-
  (Total: 4)
 
 === RawPosition ===
@@ -204,7 +204,7 @@ time
 === ImportedSpikeSorting ===
 *nwb_file_name object_id     
 +------------+ +------------+
-H3022-210805_. 254aa659-31e6-
+H3022-210805_. d295283e-6ad4-
  (Total: 1)
 
 === Annotation ===
@@ -239,3 +239,11 @@ H3022-210805_. 11     =BLOB=     =BLOB=
         -2.44477105, -0.59632754],
        [-1.78341305,  2.80101061, -1.41911101, ...,  0.57556248,
         -2.47985935, -3.27121353]])}
+=== ImportedHistologyImages ===
+*nwb_file_name *image_name    histology_imag
++------------+ +------------+ +------------+
+H3022-210805_. H3022_B3       18986999-d821-
+H3022-210805_. H3022_B4       d3d5eda2-1ad5-
+H3022-210805_. H3022(DAPI)    8e021e3d-95ce-
+ (Total: 3)
+
