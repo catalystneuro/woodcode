@@ -215,52 +215,51 @@ def main():
     (sgc.CameraDevice & {"camera_name": "Logitech Camera"}).delete()
     sgc.Task().delete()
 
-    # Example Juvenile WT
-    (sgc.Subject & {"subject_id": "H3022"}).delete()
+    # # Example Juvenile WT
+    # (sgc.Subject & {"subject_id": "H3022"}).delete()
 
-    # Example Juvenile WT Day 1 Session
-    nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3022-210805.nwb")
-    table_path = Path("tables_jv_wt_day1.txt")
-    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
-    return
+    # # Example Juvenile WT Day 1 Session
+    # nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3022-210805.nwb")
+    # table_path = Path("tables_jv_wt_day1.txt")
+    # nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    # (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    # insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    # print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
-    # TODO: Fix duplicate subject issue
-    # datajoint.errors.DuplicateError: Attempted entry in Subject already exists with different values for age: P23D != P22D
-    (sgc.Subject & {"subject_id": "H3022"}).delete()
+    # # TODO: Fix duplicate subject issue
+    # # datajoint.errors.DuplicateError: Attempted entry in Subject already exists with different values for age: P23D != P22D
+    # (sgc.Subject & {"subject_id": "H3022"}).delete()
 
-    # Example Juvenile WT Day 2 Session
-    nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3022-210806.nwb")
-    table_path = Path("tables_jv_wt_day2.txt")
-    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+    # # Example Juvenile WT Day 2 Session
+    # nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3022-210806.nwb")
+    # table_path = Path("tables_jv_wt_day2.txt")
+    # nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    # (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    # insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    # print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
-    # Example Juvenile KO
-    (sgc.Subject & {"subject_id": "H3016"}).delete()
+    # # Example Juvenile KO
+    # (sgc.Subject & {"subject_id": "H3016"}).delete()
 
-    # Example Juvenile KO Day 1 Session
-    nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3016-210422.nwb")
-    table_path = Path("tables_jv_ko_day1.txt")
-    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+    # # Example Juvenile KO Day 1 Session
+    # nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3016-210422.nwb")
+    # table_path = Path("tables_jv_ko_day1.txt")
+    # nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    # (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    # insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    # print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
-    # TODO: Fix duplicate subject issue
-    # datajoint.errors.DuplicateError: Attempted entry in Subject already exists with different values for age: P23D != P22D
-    (sgc.Subject & {"subject_id": "H3016"}).delete()
+    # # TODO: Fix duplicate subject issue
+    # # datajoint.errors.DuplicateError: Attempted entry in Subject already exists with different values for age: P23D != P22D
+    # (sgc.Subject & {"subject_id": "H3016"}).delete()
 
-    # Example Juvenile KO Day 2 Session
-    nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3016-210423.nwb")
-    table_path = Path("tables_jv_ko_day2.txt")
-    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+    # # Example Juvenile KO Day 2 Session
+    # nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3016-210423.nwb")
+    # table_path = Path("tables_jv_ko_day2.txt")
+    # nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    # (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    # insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    # print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
     # Example Adult WT Session
     nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H4813-220728.nwb")
@@ -270,6 +269,8 @@ def main():
     (sgc.Subject & {"subject_id": "H4813"}).delete()
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
     print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+
+    return
 
     # Example Adult KO Session
     nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H4817-220828.nwb")

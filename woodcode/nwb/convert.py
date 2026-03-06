@@ -225,7 +225,6 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
 
     # Build Shank objects with ShanksElectrode objects, organized by probe
     probe_id_to_shanks = {}  # Maps probe_id -> list of Shank objects
-    electrode_counter = 0  # Global electrode counter across all shanks and probes
     for probe_id, shank_id, probe_location, probe_step, probe_coordinates, probe_reference in shank_assignments:
         shank_info = probe_info[probe_id][shank_id]
         electrode_coordinates = shank_info['electrode_coordinates']
@@ -238,13 +237,12 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
         shanks_electrodes = []
         for ielec in range(num_electrodes):
             shanks_electrode = ShanksElectrode(
-                name=str(electrode_counter),
+                name=str(ielec),
                 rel_x=electrode_coordinates[ielec][0],
                 rel_y=electrode_coordinates[ielec][1],
                 rel_z=electrode_coordinates[ielec][2],
             )
             shanks_electrodes.append(shanks_electrode)
-            electrode_counter += 1
         
         # Create Shank object and add to probe
         shank = Shank(
@@ -308,7 +306,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
                 group=electrode_group,
                 location=electrode_group.location,
                 probe_shank=shank_id,
-                probe_electrode=electrode_counter,
+                probe_electrode=ielec,
                 bad_channel=is_bad_channel,
                 ref_elect_id=-1, # Spyglass requires this field to be specified as an integer even when none of the probe electrodes served as the original reference.
                 reference=probe_reference,
