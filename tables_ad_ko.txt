@@ -17,7 +17,8 @@ H3016          P23D     All experiment KO           M       Rattus norvegi
 H3022          P23D     All experiment WT           M       Rattus norvegi
 H4813          P65D     All experiment WT           M       Rattus norvegi
 H4817          P57D     All experiment KO           M       Rattus norvegi
- (Total: 4)
+subject        P50D     this is a mock None         F       None          
+ (Total: 5)
 
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline      
@@ -87,16 +88,16 @@ H4817-220828_. 4         wake_cue_rot   None           04             cylindrica
 === ImportedPseudoEMG ===
 *nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
 +------------+ +------------+ +------------+ +------------+
-H4817-220828_. imported pseud 82b92e3f-bf13- 2.0           
+H4817-220828_. imported pseud 7169ed80-499c- 2.0           
  (Total: 1)
 
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
-H4817-220828_. 1         1              Basler Camera  e4de534f-cb4b-
-H4817-220828_. 2         1              Basler Camera  feb16489-c650-
-H4817-220828_. 3         1              Basler Camera  e192dfba-9b6d-
-H4817-220828_. 4         1              Basler Camera  100b1b37-6f0f-
+H4817-220828_. 1         1              Basler Camera  88a2d4b4-fddb-
+H4817-220828_. 2         1              Basler Camera  7545e90d-963a-
+H4817-220828_. 3         1              Basler Camera  bfd5d7d2-1ac9-
+H4817-220828_. 4         1              Basler Camera  88f48418-4d2e-
  (Total: 4)
 
 === Camera Device ===
@@ -171,13 +172,13 @@ Cambridge Neur 1              11             165.0          5.0       275.0     
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H4817-220828_. raw data valid 73b5bc12-0c70- 30000.0        no comments    Acquisition tr
+H4817-220828_. raw data valid de411382-741d- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H4817-220828_. imported_lfp_0 imported lfp 0 1250.0         7504af21-0c58-
+H4817-220828_. imported_lfp_0 imported lfp 0 1250.0         3632fc76-5a01-
  (Total: 1)
 
 === PositionSource ===
@@ -199,10 +200,10 @@ H4817-220828_. pos 1 valid ti 1      position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H4817-220828_. pos 0 valid ti 0      1ac54f1c-7131-
-H4817-220828_. pos 0 valid ti 1      9dfe76b5-56da-
-H4817-220828_. pos 1 valid ti 0      b3d027c1-3222-
-H4817-220828_. pos 1 valid ti 1      f8478e4a-b34d-
+H4817-220828_. pos 0 valid ti 0      d17f143e-3c16-
+H4817-220828_. pos 0 valid ti 1      ac8c1758-8524-
+H4817-220828_. pos 1 valid ti 0      d53a31dc-bd0e-
+H4817-220828_. pos 1 valid ti 1      a8ee7249-e63b-
  (Total: 4)
 
 === RawPosition ===
@@ -224,7 +225,7 @@ time
 === ImportedSpikeSorting ===
 *nwb_file_name object_id     
 +------------+ +------------+
-H4817-220828_. 80aa9e85-98fa-
+H4817-220828_. 59095442-0719-
  (Total: 1)
 
 === Annotation ===
@@ -246,7 +247,7 @@ H4817-220828_. 11     =BLOB=     =BLOB=
  (Total: 105)
 
 === Example Annotation (Unit 0) ===
-{'sampling_rate': 30000, 'waveform_mean': array([[ 1.80624032,  3.93672156,  3.47935247, ..., -1.42346489,
+{'sampling_rate': np.int64(30000), 'waveform_mean': array([[ 1.80624032,  3.93672156,  3.47935247, ..., -1.42346489,
          0.03229788, -0.64616942],
        [ 1.51647735,  4.89911556,  2.80857277, ..., -0.42491728,
          1.43177617,  2.15627074],
@@ -258,11 +259,11 @@ H4817-220828_. 11     =BLOB=     =BLOB=
        [-3.56494927, -1.46241665,  1.65893233, ..., -8.99971485,
         -3.44800496, -1.7067703 ],
        [-0.78971362, -0.1270231 ,  0.04314778, ..., -5.97616673,
-        -2.20053077, -2.90333009]])}
+        -2.20053077, -2.90333009]], shape=(60, 32))}
 === ImportedHistologyImages ===
 *nwb_file_name *image_name    histology_imag
 +------------+ +------------+ +------------+
-H4817-220828_. H4817_C5       04ea7743-93db-
-H4817-220828_. H4817_D1       adfc11b5-aac4-
+H4817-220828_. H4817_C5       85c43ce5-406e-
+H4817-220828_. H4817_D1       4d41d3b5-9549-
  (Total: 2)
 

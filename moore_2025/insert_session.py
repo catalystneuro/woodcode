@@ -189,6 +189,8 @@ def print_tables(nwbfile_path: Path, table_path: Path = Path("tables.txt")):
         print(sgc.RawPosition.PosObject & {"nwb_file_name": nwb_copy_file_name}, file=f)
         print("=== RawPosition ===", file=f)
         print((sgc.RawPosition & {"nwb_file_name": nwb_copy_file_name, "interval_list_name": "pos 0 valid times"}).fetch1_dataframe(), file=f)
+        print("=== RawCompassDirection ===", file=f)
+        print((sgc.RawCompassDirection & {"nwb_file_name": nwb_copy_file_name}), file=f)
         
         # Spike Sorting tables
         print("=== ImportedSpikeSorting ===", file=f)
@@ -223,6 +225,7 @@ def main():
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
     print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+    return
 
     # TODO: Fix duplicate subject issue
     # datajoint.errors.DuplicateError: Attempted entry in Subject already exists with different values for age: P23D != P22D

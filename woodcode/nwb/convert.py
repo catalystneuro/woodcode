@@ -353,22 +353,24 @@ def add_tracking(nwbfile, pos, ang=None):
         comments=comments,
     )
     position_obj = Position(spatial_series=spatial_series_obj)
+    behavior_module.add(position_obj)
 
     # Add head-direction data only if ang is provided
     if ang is not None:
-        data = ang.values[:, np.newaxis]  # Spyglass requires 2D array for all SpatialSeries
+        # data = ang.values[:, np.newaxis]  # Spyglass requires 2D array for all SpatialSeries
+        data = ang.values
         spatial_series_obj = SpatialSeries(
             name='head-direction',
             description='Horizontal angle of the head (yaw)',
             data=data,
             timestamps=ang.index.to_numpy(),
-            reference_frame='',
+            reference_frame='', # TODO: add reference frame info once shared
             unit='radians',
             comments=comments,
         )
-        position_obj.add_spatial_series(spatial_series_obj)
+        direction_obj = CompassDirection(spatial_series=spatial_series_obj)
+        behavior_module.add(direction_obj)
 
-    behavior_module.add(position_obj)
     return nwbfile
 
 

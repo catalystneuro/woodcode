@@ -17,7 +17,8 @@ H3016          P23D     All experiment KO           M       Rattus norvegi
 H3022          P23D     All experiment WT           M       Rattus norvegi
 H4813          P65D     All experiment WT           M       Rattus norvegi
 H4817          P57D     All experiment KO           M       Rattus norvegi
- (Total: 4)
+subject        P50D     this is a mock None         F       None          
+ (Total: 5)
 
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline      
@@ -107,7 +108,7 @@ H3016-210423_. 4         wake_cue_rot   None           04             cylindrica
 === ImportedPseudoEMG ===
 *nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
 +------------+ +------------+ +------------+ +------------+
-H3016-210423_. imported pseud 9e96270f-ba7f- 2.0           
+H3016-210423_. imported pseud 0c8506ce-3518- 2.0           
  (Total: 1)
 
 === Video File ===
@@ -173,13 +174,13 @@ H3016-210423_. probe1_shank1  1             Cambridge Neur Electrodes fro Left
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3016-210423_. raw data valid 66a719c1-5794- 30000.0        no comments    Acquisition tr
+H3016-210423_. raw data valid dc018038-59c1- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H3016-210423_. imported_lfp_0 imported lfp 0 1250.0         40c40c78-7acb-
+H3016-210423_. imported_lfp_0 imported lfp 0 1250.0         dfdcb5bc-e3f1-
  (Total: 1)
 
 === PositionSource ===
@@ -201,10 +202,10 @@ H3016-210423_. pos 1 valid ti 1      item2_position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H3016-210423_. pos 0 valid ti 0      37701150-5a06-
-H3016-210423_. pos 0 valid ti 1      713a0dd5-66a5-
-H3016-210423_. pos 1 valid ti 0      fb64d764-8669-
-H3016-210423_. pos 1 valid ti 1      d932d621-3fbb-
+H3016-210423_. pos 0 valid ti 0      65f87072-1ce9-
+H3016-210423_. pos 0 valid ti 1      4aa366b9-ef54-
+H3016-210423_. pos 1 valid ti 0      8f9bd51b-7e3f-
+H3016-210423_. pos 1 valid ti 1      454e1174-3e4e-
  (Total: 4)
 
 === RawPosition ===
@@ -226,7 +227,7 @@ time
 === ImportedSpikeSorting ===
 *nwb_file_name object_id     
 +------------+ +------------+
-H3016-210423_. 09efc182-3af9-
+H3016-210423_. f73b9389-0449-
  (Total: 1)
 
 === Annotation ===
@@ -248,7 +249,7 @@ H3016-210423_. 11     =BLOB=     =BLOB=
  (Total: 46)
 
 === Example Annotation (Unit 0) ===
-{'sampling_rate': 30000, 'waveform_mean': array([[ 8.01322174,  6.05423975,  9.42175579, ...,  2.15577531,
+{'sampling_rate': np.int64(30000), 'waveform_mean': array([[ 8.01322174,  6.05423975,  9.42175579, ...,  2.15577531,
          2.68539214, -0.19412623],
        [ 5.51728678,  3.59038615,  7.01105976, ...,  2.81562066,
          0.11428292, -0.81889004],
@@ -260,11 +261,11 @@ H3016-210423_. 11     =BLOB=     =BLOB=
        [-3.650038  ,  3.40754151,  2.10652494, ...,  1.57977951,
          3.29597569, -1.35045004],
        [-4.911973  ,  6.38968325,  1.17783403, ...,  3.52862525,
-         3.99186182, -1.37821388]])}
+         3.99186182, -1.37821388]], shape=(60, 32))}
 === ImportedHistologyImages ===
 *nwb_file_name *image_name    histology_imag
 +------------+ +------------+ +------------+
-H3016-210423_. H3016_C5       2c26765e-9a60-
-H3016-210423_. H3016_C6       06fc8fc9-5236-
+H3016-210423_. H3016_C5       bf8dce52-72db-
+H3016-210423_. H3016_C6       aca51ded-5280-
  (Total: 2)
 

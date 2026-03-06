@@ -242,6 +242,7 @@ def main():
         stub_test=stub_test,
         is_adult=False,
     )
+    return
 
     # Day 2
     folder_name = 'H3022-210806'
