@@ -87,23 +87,23 @@ H3022-210805_. 4         wake_cue_rot   None           04             cylindrica
 === ImportedPseudoEMG ===
 *nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
 +------------+ +------------+ +------------+ +------------+
-H3022-210805_. imported pseud 4cd60b36-7e3d- 2.0           
+H3022-210805_. imported pseud b85aef74-dc9a- 2.0           
  (Total: 1)
 
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
-H3022-210805_. 1         0              Logitech Camer 4eb1f8f3-0be8-
-H3022-210805_. 2         0              Logitech Camer 4eb1f8f3-0be8-
-H3022-210805_. 3         0              Logitech Camer 4eb1f8f3-0be8-
-H3022-210805_. 4         0              Logitech Camer 4eb1f8f3-0be8-
+H3022-210805_. 1         0              Logitech Camer ea16eb7a-e9ad-
+H3022-210805_. 2         0              Logitech Camer ea16eb7a-e9ad-
+H3022-210805_. 3         0              Logitech Camer ea16eb7a-e9ad-
+H3022-210805_. 4         0              Logitech Camer ea16eb7a-e9ad-
  (Total: 4)
 
 === Camera Device ===
 *camera_name   meters_per_pix manufacturer   model          lens          camera_id    
 +------------+ +------------+ +------------+ +------------+ +-----------+ +-----------+
 camera_device  0.001          Test Manufactu Test Camera Mo Test Lens     0            
-Logitech Camer 0.00265        Logitech       C930e          built-in      0            
+Logitech Camer 0.00265        Logitech       CameraDeviceMo built-in      0            
  (Total: 2)
 
 === Data Acquisition Device ===
@@ -157,13 +157,13 @@ H3022-210805_. probe1_shank1  1             Cambridge Neur Electrodes fro Left
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210805_. raw data valid 94516e7a-1d5f- 30000.0        no comments    Acquisition tr
+H3022-210805_. raw data valid be7a4e96-c98b- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210805_. imported_lfp_0 imported lfp 0 1250.0         c2fe8fc1-48bf-
+H3022-210805_. imported_lfp_0 imported lfp 0 1250.0         7d070f9d-2b3b-
  (Total: 1)
 
 === PositionSource ===
@@ -184,9 +184,9 @@ H3022-210805_. pos 1 valid ti 1      item2_position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H3022-210805_. pos 0 valid ti 0      e71b6596-a6ec-
-H3022-210805_. pos 1 valid ti 0      91c83a3b-7ad6-
-H3022-210805_. pos 1 valid ti 1      67dc18de-8f4a-
+H3022-210805_. pos 0 valid ti 0      4b3eaf24-0e53-
+H3022-210805_. pos 1 valid ti 0      42ad9681-69a6-
+H3022-210805_. pos 1 valid ti 1      57f75fd1-f30c-
  (Total: 3)
 
 === RawPosition ===
@@ -208,13 +208,13 @@ time
 === RawCompassDirection ===
 *nwb_file_name *interval_list compass_object name          
 +------------+ +------------+ +------------+ +------------+
-H3022-210805_. compass 1 vali 1373db21-ce4c- head-direction
+H3022-210805_. compass 1 vali 5de1c3a1-a85d- head-direction
  (Total: 1)
 
 === ImportedSpikeSorting ===
 *nwb_file_name object_id     
 +------------+ +------------+
-H3022-210805_. 22308eae-7bb4-
+H3022-210805_. 6bb41338-03d8-
  (Total: 1)
 
 === Annotation ===
@@ -252,8 +252,8 @@ H3022-210805_. 11     =BLOB=     =BLOB=
 === ImportedHistologyImages ===
 *nwb_file_name *image_name    histology_imag
 +------------+ +------------+ +------------+
-H3022-210805_. H3022_B3       b1aeff83-6244-
-H3022-210805_. H3022_B4       74f242a9-f630-
-H3022-210805_. H3022(DAPI)    f1b1c2ec-40c1-
+H3022-210805_. H3022_B3       8576383f-1615-
+H3022-210805_. H3022_B4       953a98ae-b85d-
+H3022-210805_. H3022(DAPI)    683d6428-29f3-
  (Total: 3)
 

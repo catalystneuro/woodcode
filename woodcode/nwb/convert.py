@@ -17,6 +17,7 @@ from PIL import Image
 from ndx_franklab_novela import CameraDevice, DataAcqDevice, Probe, Shank, ShanksElectrode, NwbElectrodeGroup
 from pynwb.image import ImageSeries, RGBImage
 from pynwb.base import Images
+from pynwb.device import DeviceModel
 from neuroconv.utils import calculate_regular_series_rate
 
 def create_nwb_file(metadata, start_time):
@@ -812,16 +813,25 @@ def add_video(
 ) -> NWBFile:
     print("Adding video to NWB file...")
 
+    # Add camera device model
+    camera_device_model_metadata = metadata["Video"]["CameraDevice"]["model"]
+    camera_device_model = DeviceModel(
+        name=camera_device_model_metadata["name"],
+        description=camera_device_model_metadata["description"],
+        manufacturer=camera_device_model_metadata["manufacturer"],
+        model_number=camera_device_model_metadata["model_number"]
+    )
+    nwbfile.add_device_model(camera_device_model)
+
     # Add camera device
     camera_device_metadata = metadata["Video"]["CameraDevice"]
     camera_device = CameraDevice(
         name=camera_device_metadata["name"],
         description=camera_device_metadata["description"],
         meters_per_pixel=camera_device_metadata["meters_per_pixel"],
-        manufacturer=camera_device_metadata["manufacturer"],
-        model=camera_device_metadata["model"],
         lens=camera_device_metadata["lens"],
         camera_name=camera_device_metadata["camera_name"],
+        model=camera_device_model,
     )
     nwbfile.add_device(camera_device)
 
