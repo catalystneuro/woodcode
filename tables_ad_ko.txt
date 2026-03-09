@@ -13,11 +13,12 @@ H4817-220828_. H4817          University of  Wood/Dudchenko 220828         Explo
 === Subject ===
 *subject_id    age      description    genotype     sex     species       
 +------------+ +------+ +------------+ +----------+ +-----+ +------------+
-H3016          P23D     All experiment KO           M       Rattus norvegi
-H3022          P23D     All experiment WT           M       Rattus norvegi
+H3016          P22D     All experiment KO           M       Rattus norvegi
+H3022          P22D     All experiment WT           M       Rattus norvegi
 H4813          P65D     All experiment WT           M       Rattus norvegi
 H4817          P57D     All experiment KO           M       Rattus norvegi
- (Total: 4)
+subject        P50D     this is a mock None         F       None          
+ (Total: 5)
 
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline      
@@ -26,6 +27,7 @@ H4817-220828_. 01             =BLOB=
 H4817-220828_. 02             =BLOB=                   
 H4817-220828_. 03             =BLOB=                   
 H4817-220828_. 04             =BLOB=                   
+H4817-220828_. compass 1 vali =BLOB=                   
 H4817-220828_. imported lfp 0 =BLOB=     imported_lfp  
 H4817-220828_. imported pseud =BLOB=     imported_pseud
 H4817-220828_. pos 0 valid ti =BLOB=     position      
@@ -33,8 +35,8 @@ H4817-220828_. pos 1 valid ti =BLOB=     position
 H4817-220828_. raw data valid =BLOB=                   
 H4817-220828_. sleep_nrem     =BLOB=                   
 H4817-220828_. sleep_rem      =BLOB=                   
-H4817-220828_. sleep_wake     =BLOB=                   
- (Total: 12)
+   ...
+ (Total: 13)
 
 === Task ===
 *task_name     task_descripti task_type     task_subtype  
@@ -87,24 +89,25 @@ H4817-220828_. 4         wake_cue_rot   None           04             cylindrica
 === ImportedPseudoEMG ===
 *nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
 +------------+ +------------+ +------------+ +------------+
-H4817-220828_. imported pseud 82b92e3f-bf13- 2.0           
+H4817-220828_. imported pseud 5bac7f95-050e- 2.0           
  (Total: 1)
 
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
-H4817-220828_. 1         1              Basler Camera  e4de534f-cb4b-
-H4817-220828_. 2         1              Basler Camera  feb16489-c650-
-H4817-220828_. 3         1              Basler Camera  e192dfba-9b6d-
-H4817-220828_. 4         1              Basler Camera  100b1b37-6f0f-
+H4817-220828_. 1         1              Basler Camera  e11c1f96-a81b-
+H4817-220828_. 2         1              Basler Camera  56ac03f3-b02d-
+H4817-220828_. 3         1              Basler Camera  5a7ea679-c92f-
+H4817-220828_. 4         1              Basler Camera  a196eb24-7275-
  (Total: 4)
 
 === Camera Device ===
 *camera_name   meters_per_pix manufacturer   model          lens           camera_id    
 +------------+ +------------+ +------------+ +------------+ +------------+ +-----------+
 Basler Camera  0.00265        Basler         acA1300-75gc   LMVZ4411 Kowa  1            
+camera_device  0.001          Test Manufactu Test Camera Mo Test Lens      0            
 Logitech Camer 0.00265        Logitech       C930e          built-in       0            
- (Total: 2)
+ (Total: 3)
 
 === Data Acquisition Device ===
 *data_acquisit data_acquisiti data_acquisiti adc_circuit   
@@ -171,13 +174,13 @@ Cambridge Neur 1              11             165.0          5.0       275.0     
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H4817-220828_. raw data valid 73b5bc12-0c70- 30000.0        no comments    Acquisition tr
+H4817-220828_. raw data valid 4ce36071-82f2- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H4817-220828_. imported_lfp_0 imported lfp 0 1250.0         7504af21-0c58-
+H4817-220828_. imported_lfp_0 imported lfp 0 1250.0         22b0dc4d-a065-
  (Total: 1)
 
 === PositionSource ===
@@ -192,18 +195,16 @@ H4817-220828_. pos 1 valid ti imported
 +------------+ +------------+ +----+ +------------+
 H4817-220828_. pos 0 valid ti 0      item1_position
 H4817-220828_. pos 0 valid ti 1      item2_position
-H4817-220828_. pos 1 valid ti 0      head-direction
-H4817-220828_. pos 1 valid ti 1      position      
- (Total: 4)
+H4817-220828_. pos 1 valid ti 0      position      
+ (Total: 3)
 
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H4817-220828_. pos 0 valid ti 0      1ac54f1c-7131-
-H4817-220828_. pos 0 valid ti 1      9dfe76b5-56da-
-H4817-220828_. pos 1 valid ti 0      b3d027c1-3222-
-H4817-220828_. pos 1 valid ti 1      f8478e4a-b34d-
- (Total: 4)
+H4817-220828_. pos 0 valid ti 0      54ca4ff8-169b-
+H4817-220828_. pos 0 valid ti 1      4728a086-7058-
+H4817-220828_. pos 1 valid ti 0      38fe6b3e-440b-
+ (Total: 3)
 
 === RawPosition ===
                   x_x       y_x        x_y       y_y
@@ -221,10 +222,16 @@ time
 9634.010000  129.1089  580.5137   82.38695  596.2109
 
 [378679 rows x 4 columns]
+=== RawCompassDirection ===
+*nwb_file_name *interval_list compass_object name          
++------------+ +------------+ +------------+ +------------+
+H4817-220828_. compass 1 vali 4b119b74-88ca- head-direction
+ (Total: 1)
+
 === ImportedSpikeSorting ===
 *nwb_file_name object_id     
 +------------+ +------------+
-H4817-220828_. 80aa9e85-98fa-
+H4817-220828_. 8ec83073-a72b-
  (Total: 1)
 
 === Annotation ===
@@ -246,7 +253,7 @@ H4817-220828_. 11     =BLOB=     =BLOB=
  (Total: 105)
 
 === Example Annotation (Unit 0) ===
-{'sampling_rate': 30000, 'waveform_mean': array([[ 1.80624032,  3.93672156,  3.47935247, ..., -1.42346489,
+{'sampling_rate': np.int64(30000), 'waveform_mean': array([[ 1.80624032,  3.93672156,  3.47935247, ..., -1.42346489,
          0.03229788, -0.64616942],
        [ 1.51647735,  4.89911556,  2.80857277, ..., -0.42491728,
          1.43177617,  2.15627074],
@@ -258,11 +265,11 @@ H4817-220828_. 11     =BLOB=     =BLOB=
        [-3.56494927, -1.46241665,  1.65893233, ..., -8.99971485,
         -3.44800496, -1.7067703 ],
        [-0.78971362, -0.1270231 ,  0.04314778, ..., -5.97616673,
-        -2.20053077, -2.90333009]])}
+        -2.20053077, -2.90333009]], shape=(60, 32))}
 === ImportedHistologyImages ===
 *nwb_file_name *image_name    histology_imag
 +------------+ +------------+ +------------+
-H4817-220828_. H4817_C5       04ea7743-93db-
-H4817-220828_. H4817_D1       adfc11b5-aac4-
+H4817-220828_. H4817_C5       f7ed47bd-1bcd-
+H4817-220828_. H4817_D1       08969f0e-2752-
  (Total: 2)
 

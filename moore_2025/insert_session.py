@@ -189,6 +189,8 @@ def print_tables(nwbfile_path: Path, table_path: Path = Path("tables.txt")):
         print(sgc.RawPosition.PosObject & {"nwb_file_name": nwb_copy_file_name}, file=f)
         print("=== RawPosition ===", file=f)
         print((sgc.RawPosition & {"nwb_file_name": nwb_copy_file_name, "interval_list_name": "pos 0 valid times"}).fetch1_dataframe(), file=f)
+        print("=== RawCompassDirection ===", file=f)
+        print((sgc.RawCompassDirection & {"nwb_file_name": nwb_copy_file_name}), file=f)
         
         # Spike Sorting tables
         print("=== ImportedSpikeSorting ===", file=f)
@@ -224,10 +226,6 @@ def main():
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
     print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
-    # TODO: Fix duplicate subject issue
-    # datajoint.errors.DuplicateError: Attempted entry in Subject already exists with different values for age: P23D != P22D
-    (sgc.Subject & {"subject_id": "H3022"}).delete()
-
     # Example Juvenile WT Day 2 Session
     nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3022-210806.nwb")
     table_path = Path("tables_jv_wt_day2.txt")
@@ -246,10 +244,6 @@ def main():
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
     print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
-
-    # TODO: Fix duplicate subject issue
-    # datajoint.errors.DuplicateError: Attempted entry in Subject already exists with different values for age: P23D != P22D
-    (sgc.Subject & {"subject_id": "H3016"}).delete()
 
     # Example Juvenile KO Day 2 Session
     nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3016-210423.nwb")

@@ -23,10 +23,13 @@ Video:
     name: camera_device 0
     description: For the juvenile recordings, images were acquired through a Logitech C930e camera.
     meters_per_pixel: 0.00265
-    manufacturer: Logitech
-    model: C930e
     lens: built-in
     camera_name: Logitech Camera
+    model:
+      name: CameraDeviceModel
+      description: For the juvenile recordings, images were acquired through a Logitech C930e camera.
+      manufacturer: Logitech
+      model_number: C930e
 
 probe:
   - name: probe_1

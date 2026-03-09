@@ -13,11 +13,12 @@ H3022-210806_. H3022          University of  Wood/Dudchenko 210806         Explo
 === Subject ===
 *subject_id    age      description    genotype     sex     species       
 +------------+ +------+ +------------+ +----------+ +-----+ +------------+
-H3016          P23D     All experiment KO           M       Rattus norvegi
-H3022          P23D     All experiment WT           M       Rattus norvegi
+H3016          P22D     All experiment KO           M       Rattus norvegi
+H3022          P22D     All experiment WT           M       Rattus norvegi
 H4813          P65D     All experiment WT           M       Rattus norvegi
 H4817          P57D     All experiment KO           M       Rattus norvegi
- (Total: 4)
+subject        P50D     this is a mock None         F       None          
+ (Total: 5)
 
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline      
@@ -26,6 +27,7 @@ H3022-210806_. 01             =BLOB=
 H3022-210806_. 02             =BLOB=                   
 H3022-210806_. 03             =BLOB=                   
 H3022-210806_. 04             =BLOB=                   
+H3022-210806_. compass 1 vali =BLOB=                   
 H3022-210806_. imported lfp 0 =BLOB=     imported_lfp  
 H3022-210806_. imported pseud =BLOB=     imported_pseud
 H3022-210806_. pos 0 valid ti =BLOB=     position      
@@ -33,8 +35,8 @@ H3022-210806_. pos 1 valid ti =BLOB=     position
 H3022-210806_. raw data valid =BLOB=                   
 H3022-210806_. sleep_nrem     =BLOB=                   
 H3022-210806_. sleep_rem      =BLOB=                   
-H3022-210806_. sleep_wake     =BLOB=                   
- (Total: 12)
+   ...
+ (Total: 13)
 
 === Task ===
 *task_name     task_descripti task_type     task_subtype  
@@ -89,20 +91,24 @@ H3022-210806_. 4         wake_cue_rot   None           04             cylindrica
 === ImportedPseudoEMG ===
 *nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
 +------------+ +------------+ +------------+ +------------+
-H3022-210806_. imported pseud 1e99e42d-4b5f- 2.0           
+H3022-210806_. imported pseud c77921e6-96c6- 2.0           
  (Total: 1)
 
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
-
- (Total: 0)
+H3022-210806_. 1         0              Logitech Camer 0be89457-23c9-
+H3022-210806_. 2         0              Logitech Camer 0be89457-23c9-
+H3022-210806_. 3         0              Logitech Camer 0be89457-23c9-
+H3022-210806_. 4         0              Logitech Camer 0be89457-23c9-
+ (Total: 4)
 
 === Camera Device ===
-*camera_name   meters_per_pix manufacturer   model     lens         camera_id    
-+------------+ +------------+ +------------+ +-------+ +----------+ +-----------+
-Logitech Camer 0.00265        Logitech       C930e     built-in     0            
- (Total: 1)
+*camera_name   meters_per_pix manufacturer   model          lens          camera_id    
++------------+ +------------+ +------------+ +------------+ +-----------+ +-----------+
+camera_device  0.001          Test Manufactu Test Camera Mo Test Lens     0            
+Logitech Camer 0.00265        Logitech       C930e          built-in      0            
+ (Total: 2)
 
 === Data Acquisition Device ===
 *data_acquisit data_acquisiti data_acquisiti adc_circuit   
@@ -155,13 +161,13 @@ H3022-210806_. probe1_shank1  1             Cambridge Neur Electrodes fro Left
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210806_. raw data valid 1f11deb5-ea94- 30000.0        no comments    Acquisition tr
+H3022-210806_. raw data valid f1c6b0c1-6a14- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210806_. imported_lfp_0 imported lfp 0 1250.0         67d78675-a213-
+H3022-210806_. imported_lfp_0 imported lfp 0 1250.0         8df0b650-3e5f-
  (Total: 1)
 
 === PositionSource ===
@@ -174,41 +180,45 @@ H3022-210806_. pos 1 valid ti imported
 === PositionSource.SpatialSeries ===
 *nwb_file_name *interval_list *id    name          
 +------------+ +------------+ +----+ +------------+
-H3022-210806_. pos 0 valid ti 0      head-direction
-H3022-210806_. pos 0 valid ti 1      position      
+H3022-210806_. pos 0 valid ti 0      position      
 H3022-210806_. pos 1 valid ti 0      item1_position
 H3022-210806_. pos 1 valid ti 1      item2_position
- (Total: 4)
+ (Total: 3)
 
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H3022-210806_. pos 0 valid ti 0      0a12e748-1be1-
-H3022-210806_. pos 0 valid ti 1      f82d9934-d29d-
-H3022-210806_. pos 1 valid ti 0      b1ed906a-374c-
-H3022-210806_. pos 1 valid ti 1      1d7e0b24-5262-
- (Total: 4)
+H3022-210806_. pos 0 valid ti 0      75ca8179-7011-
+H3022-210806_. pos 1 valid ti 0      251e6d31-2a7b-
+H3022-210806_. pos 1 valid ti 1      1ac5b051-25ff-
+ (Total: 3)
 
 === RawPosition ===
-          Horizontal angle of the head (yaw)1          x          y
-time                                                               
-0.000                                0.650621  51.460155  51.225198
-0.025                                0.634847  51.558870  51.207268
-0.050                                0.638556  51.734358  51.198820
-0.075                                0.644554  51.921221  51.200634
-0.100                                0.637467  52.015390  51.212125
-...                                       ...        ...        ...
-9345.175                             2.772841  36.813831   6.092362
-9345.200                             2.753289  36.808232   6.139305
-9345.225                             2.744252  36.841005   6.172632
-9345.250                             2.721193  36.930254   6.254272
-9345.275                             2.685021  36.994911   6.337510
+                  x          y
+time                          
+0.000     51.460155  51.225198
+0.025     51.558870  51.207268
+0.050     51.734358  51.198820
+0.075     51.921221  51.200634
+0.100     52.015390  51.212125
+...             ...        ...
+9345.175  36.813831   6.092362
+9345.200  36.808232   6.139305
+9345.225  36.841005   6.172632
+9345.250  36.930254   6.254272
+9345.275  36.994911   6.337510
 
-[154094 rows x 3 columns]
+[154090 rows x 2 columns]
+=== RawCompassDirection ===
+*nwb_file_name *interval_list compass_object name          
++------------+ +------------+ +------------+ +------------+
+H3022-210806_. compass 1 vali 8099732b-9bd8- head-direction
+ (Total: 1)
+
 === ImportedSpikeSorting ===
 *nwb_file_name object_id     
 +------------+ +------------+
-H3022-210806_. 71c83391-9a15-
+H3022-210806_. 0e35c6b9-067b-
  (Total: 1)
 
 === Annotation ===
@@ -230,7 +240,7 @@ H3022-210806_. 11     =BLOB=     =BLOB=
  (Total: 31)
 
 === Example Annotation (Unit 0) ===
-{'sampling_rate': 30000, 'waveform_mean': array([[ 3.49883962e+00,  8.84432316e+00,  8.23258972e+00, ...,
+{'sampling_rate': np.int64(30000), 'waveform_mean': array([[ 3.49883962e+00,  8.84432316e+00,  8.23258972e+00, ...,
                     nan,  3.02518964e+00, -5.13274097e+00],
        [ 6.21499395e+00,  9.05538082e+00,  8.41523170e+00, ...,
                     nan, -4.34346776e-03, -2.04437709e+00],
@@ -242,12 +252,13 @@ H3022-210806_. 11     =BLOB=     =BLOB=
        [-3.69989896e+00, -3.08580875e+00, -3.33377928e-01, ...,
                     nan, -1.82365882e+00, -2.23948550e+00],
        [-2.47274137e+00, -3.24375868e+00,  1.88427746e+00, ...,
-                    nan, -2.36118960e+00, -3.15511751e+00]])}
+                    nan, -2.36118960e+00, -3.15511751e+00]],
+      shape=(60, 32))}
 === ImportedHistologyImages ===
 *nwb_file_name *image_name    histology_imag
 +------------+ +------------+ +------------+
-H3022-210806_. H3022_B3       84fefcc1-757a-
-H3022-210806_. H3022_B4       71f0c93d-ff00-
-H3022-210806_. H3022(DAPI)    cced1b6f-beb8-
+H3022-210806_. H3022_B3       e9c6a78a-acfc-
+H3022-210806_. H3022_B4       a11c669b-c97a-
+H3022-210806_. H3022(DAPI)    b450500d-2974-
  (Total: 3)
 

@@ -13,11 +13,12 @@ H4813-220728_. H4813          University of  Wood/Dudchenko 220728         Explo
 === Subject ===
 *subject_id    age      description    genotype     sex     species       
 +------------+ +------+ +------------+ +----------+ +-----+ +------------+
-H3016          P23D     All experiment KO           M       Rattus norvegi
-H3022          P23D     All experiment WT           M       Rattus norvegi
+H3016          P22D     All experiment KO           M       Rattus norvegi
+H3022          P22D     All experiment WT           M       Rattus norvegi
 H4813          P65D     All experiment WT           M       Rattus norvegi
 H4817          P57D     All experiment KO           M       Rattus norvegi
- (Total: 4)
+subject        P50D     this is a mock None         F       None          
+ (Total: 5)
 
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline      
@@ -26,6 +27,7 @@ H4813-220728_. 01             =BLOB=
 H4813-220728_. 02             =BLOB=                   
 H4813-220728_. 03             =BLOB=                   
 H4813-220728_. 04             =BLOB=                   
+H4813-220728_. compass 1 vali =BLOB=                   
 H4813-220728_. imported lfp 0 =BLOB=     imported_lfp  
 H4813-220728_. imported pseud =BLOB=     imported_pseud
 H4813-220728_. pos 0 valid ti =BLOB=     position      
@@ -33,8 +35,8 @@ H4813-220728_. pos 1 valid ti =BLOB=     position
 H4813-220728_. raw data valid =BLOB=                   
 H4813-220728_. sleep_nrem     =BLOB=                   
 H4813-220728_. sleep_rem      =BLOB=                   
-H4813-220728_. sleep_wake     =BLOB=                   
- (Total: 12)
+   ...
+ (Total: 13)
 
 === Task ===
 *task_name     task_descripti task_type     task_subtype  
@@ -87,24 +89,25 @@ H4813-220728_. 4         wake_cue_rot   None           04             cylindrica
 === ImportedPseudoEMG ===
 *nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
 +------------+ +------------+ +------------+ +------------+
-H4813-220728_. imported pseud a31bd8b3-113b- 2.0           
+H4813-220728_. imported pseud e193e568-aba0- 2.0           
  (Total: 1)
 
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
-H4813-220728_. 1         1              Basler Camera  4f29edb6-e4d3-
-H4813-220728_. 2         1              Basler Camera  9396060d-3d36-
-H4813-220728_. 3         1              Basler Camera  3b124fb5-c63f-
-H4813-220728_. 4         1              Basler Camera  b9864149-4042-
+H4813-220728_. 1         1              Basler Camera  73397d80-c3f7-
+H4813-220728_. 2         1              Basler Camera  8b1e9c3c-dc67-
+H4813-220728_. 3         1              Basler Camera  b58762fa-9d2d-
+H4813-220728_. 4         1              Basler Camera  9987d3ac-7b08-
  (Total: 4)
 
 === Camera Device ===
 *camera_name   meters_per_pix manufacturer   model          lens           camera_id    
 +------------+ +------------+ +------------+ +------------+ +------------+ +-----------+
 Basler Camera  0.00265        Basler         acA1300-75gc   LMVZ4411 Kowa  1            
+camera_device  0.001          Test Manufactu Test Camera Mo Test Lens      0            
 Logitech Camer 0.00265        Logitech       C930e          built-in       0            
- (Total: 2)
+ (Total: 3)
 
 === Data Acquisition Device ===
 *data_acquisit data_acquisiti data_acquisiti adc_circuit   
@@ -171,13 +174,13 @@ Cambridge Neur 1              11             165.0          5.0       275.0     
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H4813-220728_. raw data valid e9f3f029-530f- 30000.0        no comments    Acquisition tr
+H4813-220728_. raw data valid 626cf43e-5114- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H4813-220728_. imported_lfp_0 imported lfp 0 1250.0         a0854ed1-f4ac-
+H4813-220728_. imported_lfp_0 imported lfp 0 1250.0         2a83d765-6694-
  (Total: 1)
 
 === PositionSource ===
@@ -190,41 +193,45 @@ H4813-220728_. pos 1 valid ti imported
 === PositionSource.SpatialSeries ===
 *nwb_file_name *interval_list *id    name          
 +------------+ +------------+ +----+ +------------+
-H4813-220728_. pos 0 valid ti 0      head-direction
-H4813-220728_. pos 0 valid ti 1      position      
+H4813-220728_. pos 0 valid ti 0      position      
 H4813-220728_. pos 1 valid ti 0      item1_position
 H4813-220728_. pos 1 valid ti 1      item2_position
- (Total: 4)
+ (Total: 3)
 
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H4813-220728_. pos 0 valid ti 0      6e51f3e4-3b6b-
-H4813-220728_. pos 0 valid ti 1      4d8c2ded-9fb1-
-H4813-220728_. pos 1 valid ti 0      d600d7ba-7396-
-H4813-220728_. pos 1 valid ti 1      9ff3a3fb-3caa-
- (Total: 4)
+H4813-220728_. pos 0 valid ti 0      a6d186d9-0622-
+H4813-220728_. pos 1 valid ti 0      c62fbc41-0350-
+H4813-220728_. pos 1 valid ti 1      07b7ef73-5cea-
+ (Total: 3)
 
 === RawPosition ===
-             Horizontal angle of the head (yaw)1          x          y
-time                                                                  
-4.456133                                0.477087  74.462103  28.642540
-4.480700                                0.476957  74.527532  28.578138
-4.505233                                0.453364  74.660242  28.510724
-4.529800                                0.450264  74.666465  28.591985
-4.554367                                0.412655  74.705508  28.653165
-...                                          ...        ...        ...
-9229.190200                             3.977871  21.346073  51.401472
-9229.214733                             3.999118  21.330261  51.395044
-9229.239300                             3.986245  21.342535  51.381928
-9229.263833                             3.996519  21.345032  51.436409
-9229.288400                             3.986491  21.323757  51.422813
+                     x          y
+time                             
+4.456133     74.462103  28.642540
+4.480700     74.527532  28.578138
+4.505233     74.660242  28.510724
+4.529800     74.666465  28.591985
+4.554367     74.705508  28.653165
+...                ...        ...
+9229.190200  21.346073  51.401472
+9229.214733  21.330261  51.395044
+9229.239300  21.342535  51.381928
+9229.263833  21.345032  51.436409
+9229.288400  21.323757  51.422813
 
-[152052 rows x 3 columns]
+[152052 rows x 2 columns]
+=== RawCompassDirection ===
+*nwb_file_name *interval_list compass_object name          
++------------+ +------------+ +------------+ +------------+
+H4813-220728_. compass 1 vali bd9e0a2c-37f3- head-direction
+ (Total: 1)
+
 === ImportedSpikeSorting ===
 *nwb_file_name object_id     
 +------------+ +------------+
-H4813-220728_. 2e8b99d8-2514-
+H4813-220728_. 11d979a6-123c-
  (Total: 1)
 
 === Annotation ===
@@ -246,7 +253,7 @@ H4813-220728_. 11     =BLOB=     =BLOB=
  (Total: 70)
 
 === Example Annotation (Unit 0) ===
-{'sampling_rate': 30000, 'waveform_mean': array([[ 1.86695552e+00,  1.20966578e+00, -7.98430517e-02, ...,
+{'sampling_rate': np.int64(30000), 'waveform_mean': array([[ 1.86695552e+00,  1.20966578e+00, -7.98430517e-02, ...,
         -9.63670158e+00, -6.43390179e+00, -6.68459797e+00],
        [ 1.48167396e+00,  1.54059970e+00,  1.11575735e+00, ...,
         -9.02354050e+00, -7.46088505e+00, -6.29788923e+00],
@@ -258,12 +265,13 @@ H4813-220728_. 11     =BLOB=     =BLOB=
        [ 2.72298127e-01,  6.37998641e-01, -1.13392901e+00, ...,
         -3.55762458e+00, -5.08962202e+00, -5.09534597e+00],
        [-2.26998878e+00,  1.40993643e+00, -3.36326599e-01, ...,
-        -6.09746838e+00, -6.97159910e+00, -6.69063187e+00]])}
+        -6.09746838e+00, -6.97159910e+00, -6.69063187e+00]],
+      shape=(60, 32))}
 === ImportedHistologyImages ===
 *nwb_file_name *image_name    histology_imag
 +------------+ +------------+ +------------+
-H4813-220728_. H4813_C3       913d84fb-0107-
-H4813-220728_. H4813_C4       83f29584-ddc0-
-H4813-220728_. H4813_C5       cc269afb-b6e2-
+H4813-220728_. H4813_C3       fc1d1360-85d4-
+H4813-220728_. H4813_C4       524c4d0d-7b99-
+H4813-220728_. H4813_C5       be7be12b-84a4-
  (Total: 3)
 

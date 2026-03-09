@@ -17,6 +17,7 @@ from PIL import Image
 from ndx_franklab_novela import CameraDevice, DataAcqDevice, Probe, Shank, ShanksElectrode, NwbElectrodeGroup
 from pynwb.image import ImageSeries, RGBImage
 from pynwb.base import Images
+from pynwb.device import DeviceModel
 from neuroconv.utils import calculate_regular_series_rate
 
 def create_nwb_file(metadata, start_time):
@@ -225,7 +226,6 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
 
     # Build Shank objects with ShanksElectrode objects, organized by probe
     probe_id_to_shanks = {}  # Maps probe_id -> list of Shank objects
-    electrode_counter = 0  # Global electrode counter across all shanks and probes
     for probe_id, shank_id, probe_location, probe_step, probe_coordinates, probe_reference in shank_assignments:
         shank_info = probe_info[probe_id][shank_id]
         electrode_coordinates = shank_info['electrode_coordinates']
@@ -238,13 +238,12 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
         shanks_electrodes = []
         for ielec in range(num_electrodes):
             shanks_electrode = ShanksElectrode(
-                name=str(electrode_counter),
+                name=str(ielec),
                 rel_x=electrode_coordinates[ielec][0],
                 rel_y=electrode_coordinates[ielec][1],
                 rel_z=electrode_coordinates[ielec][2],
             )
             shanks_electrodes.append(shanks_electrode)
-            electrode_counter += 1
         
         # Create Shank object and add to probe
         shank = Shank(
@@ -308,7 +307,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
                 group=electrode_group,
                 location=electrode_group.location,
                 probe_shank=shank_id,
-                probe_electrode=electrode_counter,
+                probe_electrode=ielec,
                 bad_channel=is_bad_channel,
                 ref_elect_id=-1, # Spyglass requires this field to be specified as an integer even when none of the probe electrodes served as the original reference.
                 reference=probe_reference,
@@ -353,22 +352,24 @@ def add_tracking(nwbfile, pos, ang=None):
         comments=comments,
     )
     position_obj = Position(spatial_series=spatial_series_obj)
+    behavior_module.add(position_obj)
 
     # Add head-direction data only if ang is provided
     if ang is not None:
-        data = ang.values[:, np.newaxis]  # Spyglass requires 2D array for all SpatialSeries
+        # data = ang.values[:, np.newaxis]  # Spyglass requires 2D array for all SpatialSeries
+        data = ang.values
         spatial_series_obj = SpatialSeries(
             name='head-direction',
             description='Horizontal angle of the head (yaw)',
             data=data,
             timestamps=ang.index.to_numpy(),
-            reference_frame='',
+            reference_frame='', # TODO: add reference frame info once shared
             unit='radians',
             comments=comments,
         )
-        position_obj.add_spatial_series(spatial_series_obj)
+        direction_obj = CompassDirection(spatial_series=spatial_series_obj)
+        behavior_module.add(direction_obj)
 
-    behavior_module.add(position_obj)
     return nwbfile
 
 
@@ -812,16 +813,25 @@ def add_video(
 ) -> NWBFile:
     print("Adding video to NWB file...")
 
+    # Add camera device model
+    camera_device_model_metadata = metadata["Video"]["CameraDevice"]["model"]
+    camera_device_model = DeviceModel(
+        name=camera_device_model_metadata["name"],
+        description=camera_device_model_metadata["description"],
+        manufacturer=camera_device_model_metadata["manufacturer"],
+        model_number=camera_device_model_metadata["model_number"]
+    )
+    nwbfile.add_device_model(camera_device_model)
+
     # Add camera device
     camera_device_metadata = metadata["Video"]["CameraDevice"]
     camera_device = CameraDevice(
         name=camera_device_metadata["name"],
         description=camera_device_metadata["description"],
         meters_per_pixel=camera_device_metadata["meters_per_pixel"],
-        manufacturer=camera_device_metadata["manufacturer"],
-        model=camera_device_metadata["model"],
         lens=camera_device_metadata["lens"],
         camera_name=camera_device_metadata["camera_name"],
+        model=camera_device_model,
     )
     nwbfile.add_device(camera_device)
 
