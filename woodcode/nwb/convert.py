@@ -62,6 +62,12 @@ def create_nwb_file(metadata, start_time):
         strain=metadata['subject']['strain'],
     )
 
+    # Create behavior module
+    behavior_module = nwbfile.create_processing_module(
+        name='behavior',
+        description='Behavioral data'
+    )
+
     return nwbfile
 
 def load_nwb_file(file_path, file_name):
@@ -317,55 +323,45 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
     return nwbfile
 
 
-def add_tracking(nwbfile, pos, ang=None):
-    comments = """
-        WARNING: These timestamps use a different alignment method than other temporally aligned data in this file.
-
-        This time series uses a cross-correlation-based alignment method:
-        1. OpenEphys LED TTL channel (30 kHz) was downsampled to 1 kHz
-        2. Bonsai tracking data and LED signal (30Hz) were upsampled to 1 kHz via interpolation
-        3. For each recording epoch, the two LED signals were cross-correlated to find the temporal offset
-        4. Bonsai data was shifted by the calculated offset for each epoch
-        5. Aligned data was downsampled back to 30 Hz
-        6. New timestamps were assigned assuming regular 30 Hz spacing: epoch_start + (0:nFrames-1)/30
-
-        All other data in this file were temporally aligned to a common time basis using a different method.
-    """
-
+def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None):
     # to do: add units as input
     print('Adding tracking to NWB file...')
 
-    # Create behavior module
-    behavior_module = nwbfile.create_processing_module(
-        name='behavior',
-        description='Behavioral data'
-    )
+    # Temporally align processed tracking to LFP timestamps
+    unaligned_lfp_timestamps = np.arange(0, lfp_eseries.data.shape[0]) / lfp_sampling_rate
+    aligned_lfp_timestamps = lfp_eseries.timestamps[:]
+    unaligned_position_timestamps = pos.index.to_numpy()
+    aligned_position_timestamps = np.interp(x=unaligned_position_timestamps, xp=unaligned_lfp_timestamps, fp=aligned_lfp_timestamps)
+
+    behavior_module = nwbfile.processing['behavior']
 
     # Create the spatial series for position
     spatial_series_obj = SpatialSeries(
         name='position',
         description='(x,y) position',
         data=pos.values,
-        timestamps=pos.index.to_numpy(),
+        timestamps=aligned_position_timestamps,
         reference_frame='', # TODO: add reference frame info once shared
         unit='centimeters',
-        comments=comments,
     )
     position_obj = Position(spatial_series=spatial_series_obj)
     behavior_module.add(position_obj)
 
     # Add head-direction data only if ang is provided
     if ang is not None:
+        # Temporally align head-direction data to LFP timestamps
+        unaligned_ang_timestamps = ang.index.to_numpy()
+        aligned_ang_timestamps = np.interp(x=unaligned_ang_timestamps, xp=unaligned_lfp_timestamps, fp=aligned_lfp_timestamps)
+
         # data = ang.values[:, np.newaxis]  # Spyglass requires 2D array for all SpatialSeries
         data = ang.values
         spatial_series_obj = SpatialSeries(
             name='head-direction',
             description='Horizontal angle of the head (yaw)',
             data=data,
-            timestamps=ang.index.to_numpy(),
+            timestamps=aligned_ang_timestamps,
             reference_frame='', # TODO: add reference frame info once shared
             unit='radians',
-            comments=comments,
         )
         direction_obj = CompassDirection(spatial_series=spatial_series_obj)
         behavior_module.add(direction_obj)
@@ -483,7 +479,6 @@ def add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate):
     emg = spio.loadmat(emg_file, simplify_cells=True)
 
     # Temporally align pseudo-EMG timestamps to LFP timestamps
-    # TODO: Double-check temporal alignment method here
     unaligned_emg_timestamps = emg['EMGFromLFP']['timestamps']
     aligned_emg_timestamps = np.interp(x=unaligned_emg_timestamps, xp=unaligned_lfp_timestamps, fp=aligned_lfp_timestamps)
 
