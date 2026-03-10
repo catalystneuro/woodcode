@@ -4,7 +4,6 @@ from pynwb.ecephys import ElectricalSeries, LFP, TimeSeries
 from pynwb.behavior import SpatialSeries, Position, CompassDirection
 from pynwb.epoch import TimeIntervals
 from pynwb.file import Subject
-from hdmf.backends.hdf5.h5_utils import H5DataIO
 from hdmf.common.table import DynamicTable
 import scipy.io as spio
 from datetime import datetime
@@ -19,6 +18,7 @@ from pynwb.image import ImageSeries, RGBImage
 from pynwb.base import Images
 from pynwb.device import DeviceModel
 from neuroconv.utils import calculate_regular_series_rate
+from neuroconv.tools.nwb_helpers import configure_and_write_nwbfile
 
 def create_nwb_file(metadata, start_time):
     # get info from folder name
@@ -83,8 +83,8 @@ def save_nwb_file(nwbfile, file_path, file_name):
         print(f'Created directory: {file_path}')
 
     # Save the NWB file
-    with NWBHDF5IO(file_path / (file_name + '.nwb'), 'w') as io:
-        io.write(nwbfile)
+    nwbfile_path = file_path / (file_name + '.nwb')
+    configure_and_write_nwbfile(nwbfile=nwbfile, nwbfile_path=nwbfile_path)
 
     print('Done!')
 
@@ -642,7 +642,7 @@ def add_lfp(nwbfile, lfp_path, xml_data, raw_eseries, stub_test=False):
     # create ElectricalSeries
     lfp_elec_series = ElectricalSeries(
         name='LFP',
-        data=H5DataIO(lfp_data, compression=True),  # use this function to compress
+        data=lfp_data,
         timestamps=lfp_timestamps,
         description='Local field potential (downsampled DAT file)',
         electrodes=all_table_region,
