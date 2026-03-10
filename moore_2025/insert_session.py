@@ -224,7 +224,6 @@ def main():
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
     print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
-    return
 
     # Example Juvenile WT Day 2 Session
     nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3022-210806.nwb")
