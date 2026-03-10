@@ -153,7 +153,6 @@ def print_tables(nwbfile_path: Path, table_path: Path = Path("tables.txt")):
         print("=== ImportedPseudoEMG ===", file=f)
         print(ImportedPseudoEMG & {"nwb_file_name": nwb_copy_file_name}, file=f)
 
-        # TODO: Fix Video insert for juvenile sessions
         # Video and Camera tables
         print("=== Video File ===", file=f)
         print(sgc.VideoFile & {"nwb_file_name": nwb_copy_file_name}, file=f)
