@@ -83,16 +83,16 @@ H3022-210805_. 4         wake_cue_rot   None           04             cylindrica
 === ImportedPseudoEMG ===
 *nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
 +------------+ +------------+ +------------+ +------------+
-H3022-210805_. imported pseud d2535de8-9db7- 2.0           
+H3022-210805_. imported pseud 62586c30-c1c5- 2.0           
  (Total: 1)
 
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
-H3022-210805_. 1         0              Logitech Camer ac7dae49-d910-
-H3022-210805_. 2         0              Logitech Camer ac7dae49-d910-
-H3022-210805_. 3         0              Logitech Camer ac7dae49-d910-
-H3022-210805_. 4         0              Logitech Camer ac7dae49-d910-
+H3022-210805_. 1         0              Logitech Camer 1328325d-b02c-
+H3022-210805_. 2         0              Logitech Camer 1328325d-b02c-
+H3022-210805_. 3         0              Logitech Camer 1328325d-b02c-
+H3022-210805_. 4         0              Logitech Camer 1328325d-b02c-
  (Total: 4)
 
 === Camera Device ===
@@ -152,13 +152,13 @@ H3022-210805_. probe1_shank1  1             Cambridge Neur Electrodes fro Left
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210805_. raw data valid fdffa134-07be- 30000.0        no comments    Acquisition tr
+H3022-210805_. raw data valid e178c514-975c- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210805_. imported_lfp_0 imported lfp 0 1250.0         9af6012b-e41e-
+H3022-210805_. imported_lfp_0 imported lfp 0 1250.0         d5884465-4b41-
  (Total: 1)
 
 === PositionSource ===
@@ -179,9 +179,9 @@ H3022-210805_. pos 1 valid ti 1      item2_position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H3022-210805_. pos 0 valid ti 0      02e34276-ae1d-
-H3022-210805_. pos 1 valid ti 0      949ca2e3-4bae-
-H3022-210805_. pos 1 valid ti 1      9b9ce21b-15a0-
+H3022-210805_. pos 0 valid ti 0      5b21cf46-af89-
+H3022-210805_. pos 1 valid ti 0      da1546e5-6b75-
+H3022-210805_. pos 1 valid ti 1      09b8b678-4acd-
  (Total: 3)
 
 === RawPosition ===
@@ -203,13 +203,13 @@ time
 === RawCompassDirection ===
 *nwb_file_name *interval_list compass_object name          
 +------------+ +------------+ +------------+ +------------+
-H3022-210805_. compass 1 vali 677fba75-3ab4- head-direction
+H3022-210805_. compass 1 vali b6dd831d-ea89- head-direction
  (Total: 1)
 
 === ImportedSpikeSorting ===
 *nwb_file_name object_id     
 +------------+ +------------+
-H3022-210805_. f0d14c3c-f9b9-
+H3022-210805_. 25928ef0-0c9d-
  (Total: 1)
 
 === Annotation ===
@@ -247,8 +247,8 @@ H3022-210805_. 11     =BLOB=     =BLOB=
 === ImportedHistologyImages ===
 *nwb_file_name *image_name    histology_imag
 +------------+ +------------+ +------------+
-H3022-210805_. H3022_B3       8308aec8-8c0d-
-H3022-210805_. H3022_B4       82586346-3416-
-H3022-210805_. H3022(DAPI)    de22064f-98ce-
+H3022-210805_. H3022_B3       d39f7858-b549-
+H3022-210805_. H3022_B4       41675a61-adce-
+H3022-210805_. H3022(DAPI)    3bf4e95d-50d7-
  (Total: 3)
 

@@ -17,8 +17,7 @@ H3016          P22D     All experiment KO           M       Rattus norvegi
 H3022          P22D     All experiment WT           M       Rattus norvegi
 H4813          P65D     All experiment WT           M       Rattus norvegi
 H4817          P57D     All experiment KO           M       Rattus norvegi
-subject        P50D     this is a mock None         F       None          
- (Total: 5)
+ (Total: 4)
 
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline      
@@ -89,25 +88,24 @@ H4817-220828_. 4         wake_cue_rot   None           04             cylindrica
 === ImportedPseudoEMG ===
 *nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
 +------------+ +------------+ +------------+ +------------+
-H4817-220828_. imported pseud 5bac7f95-050e- 2.0           
+H4817-220828_. imported pseud af2005bd-0254- 2.0           
  (Total: 1)
 
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
-H4817-220828_. 1         1              Basler Camera  e11c1f96-a81b-
-H4817-220828_. 2         1              Basler Camera  56ac03f3-b02d-
-H4817-220828_. 3         1              Basler Camera  5a7ea679-c92f-
-H4817-220828_. 4         1              Basler Camera  a196eb24-7275-
+H4817-220828_. 1         1              Basler Camera  6bdde5f1-e273-
+H4817-220828_. 2         1              Basler Camera  629ecb52-1c3c-
+H4817-220828_. 3         1              Basler Camera  9d0ec99f-fa38-
+H4817-220828_. 4         1              Basler Camera  8f2073de-9fad-
  (Total: 4)
 
 === Camera Device ===
 *camera_name   meters_per_pix manufacturer   model          lens           camera_id    
 +------------+ +------------+ +------------+ +------------+ +------------+ +-----------+
-Basler Camera  0.00265        Basler         acA1300-75gc   LMVZ4411 Kowa  1            
-camera_device  0.001          Test Manufactu Test Camera Mo Test Lens      0            
-Logitech Camer 0.00265        Logitech       C930e          built-in       0            
- (Total: 3)
+Basler Camera  0.00265        Basler         CameraDeviceMo LMVZ4411 Kowa  1            
+Logitech Camer 0.00265        Logitech       CameraDeviceMo built-in       0            
+ (Total: 2)
 
 === Data Acquisition Device ===
 *data_acquisit data_acquisiti data_acquisiti adc_circuit   
@@ -174,13 +172,13 @@ Cambridge Neur 1              11             165.0          5.0       275.0     
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H4817-220828_. raw data valid 4ce36071-82f2- 30000.0        no comments    Acquisition tr
+H4817-220828_. raw data valid 10fdf73d-0c57- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H4817-220828_. imported_lfp_0 imported lfp 0 1250.0         22b0dc4d-a065-
+H4817-220828_. imported_lfp_0 imported lfp 0 1250.0         5281e5b8-b1f4-
  (Total: 1)
 
 === PositionSource ===
@@ -201,9 +199,9 @@ H4817-220828_. pos 1 valid ti 0      position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H4817-220828_. pos 0 valid ti 0      54ca4ff8-169b-
-H4817-220828_. pos 0 valid ti 1      4728a086-7058-
-H4817-220828_. pos 1 valid ti 0      38fe6b3e-440b-
+H4817-220828_. pos 0 valid ti 0      f558e552-933e-
+H4817-220828_. pos 0 valid ti 1      4e87ae78-94d5-
+H4817-220828_. pos 1 valid ti 0      b96120df-44bb-
  (Total: 3)
 
 === RawPosition ===
@@ -225,13 +223,13 @@ time
 === RawCompassDirection ===
 *nwb_file_name *interval_list compass_object name          
 +------------+ +------------+ +------------+ +------------+
-H4817-220828_. compass 1 vali 4b119b74-88ca- head-direction
+H4817-220828_. compass 1 vali 790d67c0-a930- head-direction
  (Total: 1)
 
 === ImportedSpikeSorting ===
 *nwb_file_name object_id     
 +------------+ +------------+
-H4817-220828_. 8ec83073-a72b-
+H4817-220828_. 39533fab-51a5-
  (Total: 1)
 
 === Annotation ===
@@ -269,7 +267,7 @@ H4817-220828_. 11     =BLOB=     =BLOB=
 === ImportedHistologyImages ===
 *nwb_file_name *image_name    histology_imag
 +------------+ +------------+ +------------+
-H4817-220828_. H4817_C5       f7ed47bd-1bcd-
-H4817-220828_. H4817_D1       08969f0e-2752-
+H4817-220828_. H4817_C5       0f8f7573-6c2b-
+H4817-220828_. H4817_D1       13ccee59-2de4-
  (Total: 2)
 
