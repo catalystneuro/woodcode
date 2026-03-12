@@ -80,7 +80,6 @@ def get_probe_info_adults() -> dict:
 
 def session_to_nwb(
     *,
-    dataset_path: Path,
     folder_name: str,
     raw_xml_path: Path,
     processed_xml_path: Path,
@@ -102,8 +101,6 @@ def session_to_nwb(
     
     Parameters
     ----------
-    dataset_path : Path
-        Path to the dataset directory
     folder_name : str
         Name of the session folder
     xml_path : Path
@@ -224,7 +221,6 @@ def main():
     raw_ephys_folder_path = jv_wt_folder_path / folder_name / "Raw"
 
     session_to_nwb(
-        dataset_path=dataset_path,
         folder_name=folder_name,
         raw_xml_path=raw_xml_path,
         processed_xml_path=processed_xml_path,
@@ -259,7 +255,6 @@ def main():
     lfp_file_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
     raw_ephys_folder_path = jv_wt_folder_path / folder_name / "Raw"
     session_to_nwb(
-        dataset_path=dataset_path,
         folder_name=folder_name,
         raw_xml_path=raw_xml_path,
         processed_xml_path=processed_xml_path,
@@ -297,7 +292,6 @@ def main():
     lfp_file_path = jv_ko_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
     raw_ephys_folder_path = jv_ko_folder_path / folder_name / "Raw"
     session_to_nwb(
-        dataset_path=dataset_path,
         folder_name=folder_name,
         raw_xml_path=raw_xml_path,
         processed_xml_path=processed_xml_path,
@@ -333,7 +327,6 @@ def main():
     lfp_file_path = jv_ko_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
     raw_ephys_folder_path = jv_ko_folder_path / folder_name / "Raw"
     session_to_nwb(
-        dataset_path=dataset_path,
         folder_name=folder_name,
         raw_xml_path=raw_xml_path,
         processed_xml_path=processed_xml_path,
@@ -383,7 +376,6 @@ def main():
     raw_ephys_folder_path = adult_wt_folder_path / folder_name / "Raw"
     save_path = output_folder_path
     session_to_nwb(
-        dataset_path=dataset_path,
         folder_name=folder_name,
         raw_xml_path=raw_xml_path,
         processed_xml_path=processed_xml_path,
@@ -428,7 +420,6 @@ def main():
     raw_ephys_folder_path = adult_ko_folder_path / folder_name / "Raw"
     save_path = output_folder_path
     session_to_nwb(
-        dataset_path=dataset_path,
         folder_name=folder_name,
         raw_xml_path=raw_xml_path,
         processed_xml_path=processed_xml_path,
