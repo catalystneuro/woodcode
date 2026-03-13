@@ -205,7 +205,9 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
 
     # Ensure number of shanks in metadata matches xmldata
     if len(shank_assignments) != len(xmldata["spike_groups"]):
-        raise ValueError("Mismatch between shank count in metadata and xmldata['spike_groups']")
+        warnings.warn("Mismatch between shank count in metadata and xmldata['spike_groups']. Truncating xmldata['spike_groups'] to match metadata.", UserWarning)
+        assert len(shank_assignments) <= len(xmldata["spike_groups"]), "Metadata specifies more shanks than present in xmldata['spike_groups']"
+        xmldata["spike_groups"] = xmldata["spike_groups"][:len(shank_assignments)] # Truncate to match metadata
 
     shank_id_to_num_electrodes = {}
     for (_, shank_id, _, _, _, _), electrodes in zip(shank_assignments, xmldata["spike_groups"]):
@@ -317,7 +319,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
             )
             electrode_counter += 1
 
-    return nwbfile
+    return nwbfile, xmldata
 
 
 def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None):
@@ -860,6 +862,8 @@ def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, xml_data: dict, stream_na
     eseries_kwargs = dict(name="e-series", description="Acquisition traces for the ElectricalSeries.")
 
     channel_ids = recording.get_channel_ids()
+    channel_ids = [chan_id for chan_id in channel_ids if not "AUX" in chan_id] # Skip AUX channels
+    recording = recording.select_channels(channel_ids=channel_ids)
     region = list(range(len(channel_ids)))
     electrode_table_region = nwbfile.create_electrode_table_region(
         region=region,
