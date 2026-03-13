@@ -958,6 +958,9 @@ def _report_variable_offset(recording) -> None:
 
     raise ValueError(message)
 
+def add_raw_ephys_from_dat(nwbfile: NWBFile, dat_file_path: Path, xml_data: dict, stub_test: bool = False) -> NWBFile:
+    pass
+
 
 def add_histology(nwbfile, histology_folder_path: Path):
     print('Adding histology to NWB file...')

@@ -6,7 +6,7 @@ import woodcode.nwb as nwb
 import probeinterface as pbi
 import numpy as np
 
-from moore_2025.temporal_alignment import get_aligned_video_timestamps_juveniles, get_aligned_video_timestamps_adults, get_start_time
+from moore_2025.temporal_alignment import get_aligned_video_timestamps_juveniles, get_aligned_video_timestamps_adults, get_start_time, get_unaligned_video_timestamps_juveniles
 
 def get_probe_info_juveniles() -> dict:
     manufacturer = 'cambridgeneurotech'
@@ -89,10 +89,11 @@ def session_to_nwb(
     sleep_path: Path,
     timestamps_file_paths: list[Path],
     lfp_file_path: Path,
-    raw_ephys_folder_path: Path,
     save_path: Path,
     metadata_file_path: Path,
     histology_folder_path: Path,
+    raw_ephys_folder_path: Path | None = None,
+    raw_ephys_dat_file_path: Path | None = None,
     video_file_paths: list[Path] | None = None,
     stub_test: bool = False,
     is_adult: bool = True,
@@ -117,8 +118,10 @@ def session_to_nwb(
         List of paths to timestamp CSV files
     lfp_file_path : Path
         Path to the LFP file
-    raw_ephys_folder_path : Path
+    raw_ephys_folder_path : Path | None
         Path to the raw ephys OpenEphys record node folder
+    raw_ephys_dat_file_path : Path | None
+        Path to the raw ephys .dat file
     save_path : Path
         Path to save the NWB file
     metadata_file_path : Path
@@ -131,6 +134,11 @@ def session_to_nwb(
         Whether the subject is an adult or a juvenile, by default True
     """
     has_video = video_file_paths is not None
+    has_open_ephys_output = raw_ephys_folder_path is not None
+    if has_open_ephys_output:
+        assert raw_ephys_dat_file_path is None, "Cannot provide both raw_ephys_folder_path and raw_ephys_dat_file_path"
+    else:
+        assert raw_ephys_dat_file_path is not None, "Must provide either raw_ephys_folder_path or raw_ephys_dat_file_path"
     if is_adult:
         stream_name = "Rhythm_FPGA-103.0"
         probe_info = get_probe_info_adults()
@@ -143,11 +151,15 @@ def session_to_nwb(
         stream_name = "Rhythm_FPGA-100.0"
         probe_info = get_probe_info_juveniles()
         if has_video:
-            aligned_video_timestamps = get_aligned_video_timestamps_juveniles(
-                timestamp_file_path=timestamps_file_paths[0],
-                ephys_folder_path=raw_ephys_folder_path,
-            )
-            all_aligned_video_timestamps = [aligned_video_timestamps]
+            if has_open_ephys_output:
+                aligned_video_timestamps = get_aligned_video_timestamps_juveniles(
+                    timestamp_file_path=timestamps_file_paths[0],
+                    ephys_folder_path=raw_ephys_folder_path,
+                )
+                all_aligned_video_timestamps = [aligned_video_timestamps]
+            else:
+                unaligned_video_timestamps = get_unaligned_video_timestamps_juveniles(timestamp_file_path=timestamps_file_paths[0])
+                all_aligned_video_timestamps = [unaligned_video_timestamps]
 
     save_path.mkdir(parents=True, exist_ok=True)
 
@@ -158,7 +170,7 @@ def session_to_nwb(
     lfp_sampling_rate = float(raw_xml_data['eeg_sampling_rate'])
     nrs_data = nwb.io.read_nrs(nrs_path)  # load faulty channel info from the nrs file (i.e. channels not shown in Neuroscope)
     metadata = nwb.io.read_metadata(meta_path, folder_name, print_output=True)  # Load all metadata from the xlsx file
-    start_time = get_start_time(timestamps_file_paths[0])  # load start time from the first timestamps CSV file
+    start_time = get_start_time(timestamps_file_paths[0], video_file_paths[0])  # load start time from the first timestamps CSV file
 
     # Load tracking, epochs and spikes from Matlab files (mostly loaded as pynapple objects)
     pos = nwb.io.get_matlab_position(mat_path / 'TrackingProcessed_Final.mat', vbl_name='pos')
@@ -172,7 +184,10 @@ def session_to_nwb(
     # CONSTRUCT NWB FILE
     nwbfile = nwb.convert.create_nwb_file(metadata, start_time)
     nwbfile, raw_xml_data = nwb.convert.add_probes(nwbfile, metadata, raw_xml_data, nrs_data, probe_info)
-    nwbfile = nwb.convert.add_raw_ephys(nwbfile=nwbfile, folder_path=raw_ephys_folder_path, xml_data=raw_xml_data, stream_name=stream_name, stub_test=stub_test)
+    if has_open_ephys_output:
+        nwbfile = nwb.convert.add_raw_ephys(nwbfile=nwbfile, folder_path=raw_ephys_folder_path, xml_data=raw_xml_data, stream_name=stream_name, stub_test=stub_test)
+    else:
+        nwbfile = nwb.convert.add_raw_ephys_from_dat(nwbfile=nwbfile, dat_file_path=raw_ephys_dat_file_path, xml_data=raw_xml_data, stub_test=stub_test)
     nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=raw_xml_data, raw_eseries=nwbfile.acquisition['e-series'], stub_test=stub_test)
     lfp_eseries = nwbfile.processing["ecephys"].data_interfaces["LFP"].electrical_series["LFP"]
     nwbfile = nwb.convert.add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=hd)
@@ -199,7 +214,7 @@ def main():
     juvenile_metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/juvenile_metadata.yaml")
     adult_metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/adult_metadata.yaml")
 
-    stub_test = False
+    stub_test = True
     if output_folder_path.exists():
         shutil.rmtree(output_folder_path)
     save_path = output_folder_path
@@ -441,19 +456,56 @@ def main():
 
     # Edge Case Sessions
     # Example Session without videos
+    # jv_wt_folder_path = juvenile_folder_path / "WT"
+    # juvenile_histology_folder_path = histology_folder_path / "H3000"
+    # folder_name = 'H3001-200202'
+    # raw_xml_path = jv_wt_folder_path / folder_name / "Raw" / "H3001-200202" / "experiment1" / "recording1" / "continuous" / "Rhythm_FPGA-100.0" / "continuous.xml"
+    # processed_xml_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.xml')  # path to xml file
+    # nrs_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
+    # mat_path = jv_wt_folder_path / folder_name / "Processed" / 'Analysis'
+    # sleep_path = jv_wt_folder_path / folder_name / "Processed" / 'Sleep'
+    # timestamps_file_paths = [
+    #     jv_wt_folder_path / folder_name / "Raw" / "H3001-200202" / "experiment1" / "Bonsai testing2020-02-02T18_27_37.csv",
+    # ]
+    # lfp_file_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
+    # raw_ephys_folder_path = jv_wt_folder_path / folder_name / "Raw" / "H3001-200202"
+    # save_path = output_folder_path
+    # session_to_nwb(
+    #     folder_name=folder_name,
+    #     raw_xml_path=raw_xml_path,
+    #     processed_xml_path=processed_xml_path,
+    #     nrs_path=nrs_path,
+    #     meta_path=meta_path,
+    #     mat_path=mat_path,
+    #     sleep_path=sleep_path,
+    #     timestamps_file_paths=timestamps_file_paths,
+    #     lfp_file_path=lfp_file_path,
+    #     raw_ephys_folder_path=raw_ephys_folder_path,
+    #     save_path=save_path,
+    #     metadata_file_path=juvenile_metadata_file_path,
+    #     histology_folder_path=juvenile_histology_folder_path,
+    #     stub_test=stub_test,
+    #     is_adult=False,
+    # )
+
+    # Example Session without raw data
+    # TODO: add a comment warning about unaligned timestamps for sessions without raw OpenEphys output.
     jv_wt_folder_path = juvenile_folder_path / "WT"
     juvenile_histology_folder_path = histology_folder_path / "H3000"
-    folder_name = 'H3001-200202'
-    raw_xml_path = jv_wt_folder_path / folder_name / "Raw" / "H3001-200202" / "experiment1" / "recording1" / "continuous" / "Rhythm_FPGA-100.0" / "continuous.xml"
+    folder_name = 'H3023-210812'
     processed_xml_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.xml')  # path to xml file
+    raw_xml_path = processed_xml_path  # Raw data for this session is missing, so using the Processed XML instead
     nrs_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
     mat_path = jv_wt_folder_path / folder_name / "Processed" / 'Analysis'
     sleep_path = jv_wt_folder_path / folder_name / "Processed" / 'Sleep'
+    video_file_paths = [
+        jv_wt_folder_path / folder_name / "Processed" / "BonsaiCaptureALL2021-08-12T19_44_12.avi",
+    ]
     timestamps_file_paths = [
-        jv_wt_folder_path / folder_name / "Raw" / "H3001-200202" / "experiment1" / "Bonsai testing2020-02-02T18_27_37.csv",
+        jv_wt_folder_path / folder_name / "Processed" / "BonsaiTracking.csv",
     ]
     lfp_file_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
-    raw_ephys_folder_path = jv_wt_folder_path / folder_name / "Raw" / "H3001-200202"
+    raw_ephys_dat_file_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.dat')  # Raw .dat file for this session since raw OpenEphys folder is missing
     save_path = output_folder_path
     session_to_nwb(
         folder_name=folder_name,
@@ -463,9 +515,10 @@ def main():
         meta_path=meta_path,
         mat_path=mat_path,
         sleep_path=sleep_path,
+        video_file_paths=video_file_paths,
         timestamps_file_paths=timestamps_file_paths,
         lfp_file_path=lfp_file_path,
-        raw_ephys_folder_path=raw_ephys_folder_path,
+        raw_ephys_dat_file_path=raw_ephys_dat_file_path,
         save_path=save_path,
         metadata_file_path=juvenile_metadata_file_path,
         histology_folder_path=juvenile_histology_folder_path,

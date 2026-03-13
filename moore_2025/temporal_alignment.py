@@ -7,7 +7,7 @@ import pytz
 from spikeinterface.extractors import OpenEphysBinaryRecordingExtractor
 from time import time
 
-def get_start_time(timestamps_file_path: Path) -> str:
+def get_start_time(timestamps_file_path: Path, video_file_path: Path) -> str:
     """
     Get the session start datetime from the name of the timestamps CSV file.
     
@@ -15,6 +15,8 @@ def get_start_time(timestamps_file_path: Path) -> str:
     ----------
     timestamps_file_path : Path
         Path to the timestamps CSV file.
+    video_file_path : Path
+        Path to the video file, used as a fallback if the datetime cannot be extracted from the timestamps file name.
     
     Returns
     -------
@@ -26,7 +28,10 @@ def get_start_time(timestamps_file_path: Path) -> str:
     pattern = r'(\d{4}-\d{2}-\d{2}T\d{2}_\d{2}_\d{2})'
     match = re.search(pattern, filename)
     if not match:
-        raise ValueError(f"Could not extract datetime from filename: {filename}")
+        video_file_name = video_file_path.stem  # Ex. 'BonsaiCaptureALL2021-08-12T19_44_12'
+        match = re.search(pattern, video_file_name)
+        if not match:
+            raise ValueError(f"Could not extract datetime from filename: {filename} or video file: {video_file_name}")
     
     start_time = match.group(1)
     start_time = datetime.strptime(start_time, '%Y-%m-%dT%H_%M_%S')
@@ -404,3 +409,25 @@ def get_aligned_video_timestamps_adults(
         all_aligned_video_timestamps.append(single_segment_ttl_timestamps)
 
     return all_aligned_video_timestamps
+
+
+def get_unaligned_video_timestamps_juveniles(*,timestamp_file_path: Path) -> np.ndarray:
+    """
+    Get unaligned video timestamps for juvenile sessions.
+
+    Parameters
+    ----------
+    timestamp_file_path : Path
+        Path to the video timestamps CSV file.
+
+    Returns
+    -------
+    np.ndarray
+        The unaligned video timestamps.
+    """
+    timestamp_column_name = "Item4.Timestamp"
+    timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
+    unaligned_timestamps = timestamps_df[timestamp_column_name].values
+    unaligned_timestamps = (unaligned_timestamps - unaligned_timestamps[0]) / np.timedelta64(1, 's') # Convert to seconds relative to the first timestamp
+
+    return unaligned_timestamps
