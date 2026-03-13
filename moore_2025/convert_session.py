@@ -187,18 +187,20 @@ def session_to_nwb(
 
 def main():
     """Define paths and convert example sessions to NWB."""
-    stub_test = False
-    dataset_path = Path('/Volumes/T7/CatalystNeuro/Dudchenko/251104_MooreDataset')
+    juvenile_folder_path = Path("/Volumes/SamsungSSD/CatalystNeuro/Dudchenko/251104_MooreDataset/H3000_Juveniles")
+    adult_folder_path = Path("/Volumes/T7/CatalystNeuro/Dudchenko/251104_MooreDataset/H4800_Adults")
+    meta_path = Path("/Volumes/T7/CatalystNeuro/Dudchenko/251104_MooreDataset/MooreDataset_Metadata.xlsx")
+    histology_folder_path = Path("/Volumes/T7/CatalystNeuro/Dudchenko/251104_MooreDataset/Histology")
     output_folder_path = Path('/Volumes/T7/CatalystNeuro/Spyglass/raw')
+    juvenile_metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/juvenile_metadata.yaml")
+    adult_metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/adult_metadata.yaml")
+
+    stub_test = False
     if output_folder_path.exists():
         shutil.rmtree(output_folder_path)
-    meta_path = dataset_path / 'MooreDataset_Metadata.xlsx'  # path to metadata file
     save_path = output_folder_path
-    histology_folder_path = dataset_path / "Histology"
 
     # Example Juvenile Sessions
-    juvenile_folder_path = dataset_path / "H3000_Juveniles"
-    metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/juvenile_metadata.yaml")
     juvenile_histology_folder_path = histology_folder_path / "H3000"
 
     # Example Juvenile WT sessions
@@ -233,7 +235,7 @@ def main():
         lfp_file_path=lfp_file_path,
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
-        metadata_file_path=metadata_file_path,
+        metadata_file_path=juvenile_metadata_file_path,
         histology_folder_path=juvenile_histology_folder_path,
         stub_test=stub_test,
         is_adult=False,
@@ -267,7 +269,7 @@ def main():
         lfp_file_path=lfp_file_path,
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
-        metadata_file_path=metadata_file_path,
+        metadata_file_path=juvenile_metadata_file_path,
         histology_folder_path=juvenile_histology_folder_path,
         stub_test=stub_test,
         is_adult=False,
@@ -304,7 +306,7 @@ def main():
         lfp_file_path=lfp_file_path,
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
-        metadata_file_path=metadata_file_path,
+        metadata_file_path=juvenile_metadata_file_path,
         histology_folder_path=juvenile_histology_folder_path,
         stub_test=stub_test,
         is_adult=False,
@@ -315,7 +317,6 @@ def main():
     raw_xml_path = jv_ko_folder_path / folder_name / "Raw" / "experiment1" / "recording1" / "continuous" / "Rhythm_FPGA-100.0" / "continuous.xml"
     processed_xml_path = jv_ko_folder_path / folder_name / "Processed" / (folder_name + '.xml')
     nrs_path = jv_ko_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
-    meta_path = dataset_path / 'MooreDataset_Metadata.xlsx'  # path to metadata file
     mat_path = jv_ko_folder_path / folder_name / "Processed" / 'Analysis'
     sleep_path = jv_ko_folder_path / folder_name / "Processed" / 'Sleep'
     video_file_paths = [
@@ -339,15 +340,13 @@ def main():
         lfp_file_path=lfp_file_path,
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
-        metadata_file_path=metadata_file_path,
+        metadata_file_path=juvenile_metadata_file_path,
         histology_folder_path=juvenile_histology_folder_path,
         stub_test=stub_test,
         is_adult=False,
     )
 
     # Example Adult Sessions
-    adult_folder_path = dataset_path / "H4800_Adults"
-    metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/adult_metadata.yaml")
     adult_histology_folder_path = histology_folder_path / "H4800"
 
     # Example Adult WT session
@@ -357,7 +356,6 @@ def main():
     processed_xml_path = adult_wt_folder_path / folder_name / "Processed" / (folder_name + '.xml')  # path to xml file
     raw_xml_path = adult_wt_folder_path / folder_name / "Raw" / "experiment1" / "recording1" / "continuous" / "Rhythm_FPGA-103.0" / "continuous.xml"
     nrs_path = adult_wt_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
-    meta_path = dataset_path / 'MooreDataset_Metadata.xlsx'  # path to metadata file
     mat_path = adult_wt_folder_path / folder_name / "Processed" / 'Analysis'
     sleep_path = adult_wt_folder_path / folder_name / "Processed" / 'Sleep'
     video_file_paths = [
@@ -388,7 +386,7 @@ def main():
         lfp_file_path=lfp_file_path,
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
-        metadata_file_path=metadata_file_path,
+        metadata_file_path=adult_metadata_file_path,
         histology_folder_path=adult_histology_folder_path,
         stub_test=stub_test,
         is_adult=True,
@@ -401,7 +399,6 @@ def main():
     processed_xml_path = adult_ko_folder_path / folder_name / "Processed" / (folder_name + '.xml')  # path to xml file
     raw_xml_path = processed_xml_path
     nrs_path = adult_ko_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
-    meta_path = dataset_path / 'MooreDataset_Metadata.xlsx'  # path to metadata file
     mat_path = adult_ko_folder_path / folder_name / "Processed" / 'Analysis'
     sleep_path = adult_ko_folder_path / folder_name / "Processed" / 'Sleep'
     video_file_paths = [
@@ -432,7 +429,7 @@ def main():
         lfp_file_path=lfp_file_path,
         raw_ephys_folder_path=raw_ephys_folder_path,
         save_path=save_path,
-        metadata_file_path=metadata_file_path,
+        metadata_file_path=adult_metadata_file_path,
         histology_folder_path=adult_histology_folder_path,
         stub_test=stub_test,
         is_adult=True,
