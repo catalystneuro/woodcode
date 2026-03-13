@@ -443,17 +443,17 @@ def main():
     # Example Session without videos
     jv_wt_folder_path = juvenile_folder_path / "WT"
     juvenile_histology_folder_path = histology_folder_path / "H3000"
-    folder_name = 'H3001-200201'
-    raw_xml_path = jv_wt_folder_path / folder_name / "Raw" / "H3001-200201_02" / "experiment1" / "recording1" / "continuous" / "Rhythm_FPGA-100.0" / "continuous.xml"
+    folder_name = 'H3001-200202'
+    raw_xml_path = jv_wt_folder_path / folder_name / "Raw" / "H3001-200202" / "experiment1" / "recording1" / "continuous" / "Rhythm_FPGA-100.0" / "continuous.xml"
     processed_xml_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.xml')  # path to xml file
     nrs_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
     mat_path = jv_wt_folder_path / folder_name / "Processed" / 'Analysis'
     sleep_path = jv_wt_folder_path / folder_name / "Processed" / 'Sleep'
     timestamps_file_paths = [
-        jv_wt_folder_path / folder_name / "Raw" / "H3001-200201_02" / "experiment1" / "Bonsai testing2020-02-01T20_05_52.csv",
+        jv_wt_folder_path / folder_name / "Raw" / "H3001-200202" / "experiment1" / "Bonsai testing2020-02-02T18_27_37.csv",
     ]
     lfp_file_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
-    raw_ephys_folder_path = jv_wt_folder_path / folder_name / "Raw" / "H3001-200201_02"
+    raw_ephys_folder_path = jv_wt_folder_path / folder_name / "Raw" / "H3001-200202"
     save_path = output_folder_path
     session_to_nwb(
         folder_name=folder_name,
@@ -471,8 +471,7 @@ def main():
         histology_folder_path=juvenile_histology_folder_path,
         stub_test=stub_test,
         is_adult=False,
-        )
-
+    )
 
 if __name__ == "__main__":
     main()
