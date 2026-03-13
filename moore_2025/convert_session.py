@@ -76,7 +76,18 @@ def get_probe_info_adults() -> dict:
         },
     }
     return probe_info
-    
+
+
+DAT_FILE_TEMPORAL_ALIGNMENT_WARNING = (
+    "WARNING: Ephys data was loaded from a raw .dat file because the Open Ephys output folder "
+    "is unavailable for this session. Two temporal alignment issues apply to all time series in "
+    "this file: (1) The ephys time basis is NOT aligned to the behavioral time basis — ephys and "
+    "behavioral timestamps cannot be used to cross-reference signals. (2) The recording consists "
+    "of multiple segments that were separated by real-world gaps (on the order of 5-10 minutes); "
+    "those gaps are NOT represented in the timestamps — the segments are simply concatenated, so "
+    "timestamps are discontinuous at segment boundaries without any indication of where breaks occur."
+)
+
 
 def session_to_nwb(
     *,
@@ -182,19 +193,20 @@ def session_to_nwb(
     metadata = dict_deep_update(metadata, metadata_from_yaml)
 
     # CONSTRUCT NWB FILE
+    dat_file_comments = DAT_FILE_TEMPORAL_ALIGNMENT_WARNING if not has_open_ephys_output else None
     nwbfile = nwb.convert.create_nwb_file(metadata, start_time)
     nwbfile, raw_xml_data = nwb.convert.add_probes(nwbfile, metadata, raw_xml_data, nrs_data, probe_info)
     if has_open_ephys_output:
         nwbfile = nwb.convert.add_raw_ephys(nwbfile=nwbfile, folder_path=raw_ephys_folder_path, xml_data=raw_xml_data, stream_name=stream_name, stub_test=stub_test)
     else:
-        nwbfile = nwb.convert.add_raw_ephys_from_dat(nwbfile=nwbfile, dat_file_path=raw_ephys_dat_file_path, xml_data=raw_xml_data, stub_test=stub_test)
-    nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=raw_xml_data, raw_eseries=nwbfile.acquisition['e-series'], stub_test=stub_test)
+        nwbfile = nwb.convert.add_raw_ephys_from_dat(nwbfile=nwbfile, dat_file_path=raw_ephys_dat_file_path, xml_data=raw_xml_data, stub_test=stub_test, comments=dat_file_comments)
+    nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=raw_xml_data, raw_eseries=nwbfile.acquisition['e-series'], stub_test=stub_test, comments=dat_file_comments)
     lfp_eseries = nwbfile.processing["ecephys"].data_interfaces["LFP"].electrical_series["LFP"]
-    nwbfile = nwb.convert.add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=hd)
+    nwbfile = nwb.convert.add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=hd, comments=dat_file_comments)
     if has_video:
-        nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, all_aligned_video_timestamps=all_aligned_video_timestamps, metadata=metadata)
-        nwbfile = nwb.convert.add_raw_tracking(nwbfile=nwbfile, file_paths=timestamps_file_paths, all_aligned_timestamps=all_aligned_video_timestamps, is_adult=is_adult)
-    nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate)
+        nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, all_aligned_video_timestamps=all_aligned_video_timestamps, metadata=metadata, comments=dat_file_comments)
+        nwbfile = nwb.convert.add_raw_tracking(nwbfile=nwbfile, file_paths=timestamps_file_paths, all_aligned_timestamps=all_aligned_video_timestamps, is_adult=is_adult, comments=dat_file_comments)
+    nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate, comments=dat_file_comments)
     epochs = nwb.convert.get_epochs_from_eseries(eseries=nwbfile.acquisition['e-series'])
     nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
     nwbfile = nwb.convert.add_units(nwbfile, raw_xml_data, processed_xml_data, spikes, waveforms, shank_id, lfp_eseries, lfp_sampling_rate)  # get shank names from NWB file
@@ -214,7 +226,7 @@ def main():
     juvenile_metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/juvenile_metadata.yaml")
     adult_metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/adult_metadata.yaml")
 
-    stub_test = False
+    stub_test = True
     if output_folder_path.exists():
         shutil.rmtree(output_folder_path)
     save_path = output_folder_path
@@ -489,7 +501,6 @@ def main():
     # )
 
     # Example Session without raw data
-    # TODO: add a comment warning about unaligned timestamps for sessions without raw OpenEphys output.
     jv_wt_folder_path = juvenile_folder_path / "WT"
     juvenile_histology_folder_path = histology_folder_path / "H3000"
     folder_name = 'H3023-210812'

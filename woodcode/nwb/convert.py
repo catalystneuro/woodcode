@@ -323,7 +323,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
     return nwbfile, xmldata
 
 
-def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None):
+def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None, comments: str | None = None):
     # to do: add units as input
     print('Adding tracking to NWB file...')
 
@@ -339,6 +339,7 @@ def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None):
     spatial_series_obj = SpatialSeries(
         name='position',
         description='(x,y) position',
+        comments=comments,
         data=pos.values,
         timestamps=aligned_position_timestamps,
         reference_frame='', # TODO: add reference frame info once shared
@@ -358,6 +359,7 @@ def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None):
         spatial_series_obj = SpatialSeries(
             name='head-direction',
             description='Horizontal angle of the head (yaw)',
+            comments=comments,
             data=data,
             timestamps=aligned_ang_timestamps,
             reference_frame='', # TODO: add reference frame info once shared
@@ -369,7 +371,7 @@ def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None):
     return nwbfile
 
 
-def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: list[np.ndarray], is_adult: bool):
+def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: list[np.ndarray], is_adult: bool, comments: str | None = None):
     print('Adding raw tracking to NWB file...')
 
     item1_pos, item_2_pos, full_aligned_timestamps = [], [], []
@@ -393,6 +395,7 @@ def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: li
     spatial_series_1 = SpatialSeries(
         name='item1_position',
         description="Raw (x,y) position of Item 1 from Bonsai tracking data. Item 1 is an LED or marker placed on the animal's head.",
+        comments=comments,
         data=item1_pos,
         timestamps=full_aligned_timestamps,
         reference_frame='', # TODO: add reference frame info once shared
@@ -401,6 +404,7 @@ def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: li
     spatial_series_2 = SpatialSeries(
         name='item2_position',
         description="Raw (x,y) position of Item 2 from Bonsai tracking data. Item 2 is an LED or marker placed on the animal's head.",
+        comments=comments,
         data=item_2_pos,
         timestamps=full_aligned_timestamps,
         reference_frame='', # TODO: add reference frame info once shared
@@ -417,7 +421,7 @@ def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: li
     return nwbfile
 
 
-def add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate):
+def add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate, comments: str | None = None):
 
     sleep_file = sleep_path / (folder_name + '.SleepState.states.mat')
     emg_file = sleep_path / (folder_name + '.EMGFromLFP.LFP.mat')
@@ -493,6 +497,7 @@ def add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate):
     emg = TimeSeries(
         name="pseudoEMG",
         description="Pseudo EMG from correlated high-frequency LFP",
+        comments=comments,
         data=emg['EMGFromLFP']['data'],
         unit="a.u.",
         timestamps=timestamps,
@@ -603,7 +608,7 @@ def add_epochs(nwbfile, epochs, metadata):
 
 
 
-def add_lfp(nwbfile, lfp_path, xml_data, raw_eseries, stub_test=False):
+def add_lfp(nwbfile, lfp_path, xml_data, raw_eseries, stub_test=False, comments: str | None = None):
 
     print('Adding LFP to the NWB file...')
 
@@ -640,6 +645,7 @@ def add_lfp(nwbfile, lfp_path, xml_data, raw_eseries, stub_test=False):
         data=lfp_data,
         timestamps=lfp_timestamps,
         description='Local field potential (downsampled DAT file)',
+        comments=comments,
         electrodes=all_table_region,
         conversion=raw_conversion,
         offset=raw_offset,
@@ -805,6 +811,7 @@ def add_video(
     video_file_paths: list[Path],
     all_aligned_video_timestamps: list[np.ndarray],
     metadata: dict,
+    comments: str | None = None,
 ) -> NWBFile:
     print("Adding video to NWB file...")
 
@@ -836,6 +843,7 @@ def add_video(
         image_series = ImageSeries(
             name=meta["name"],
             description=meta["description"],
+            comments=comments,
             external_file=[file_path],
             format="external",
             timestamps=timestamps,
@@ -959,7 +967,7 @@ def _report_variable_offset(recording) -> None:
 
     raise ValueError(message)
 
-def add_raw_ephys_from_dat(nwbfile: NWBFile, dat_file_path: Path, xml_data: dict, stub_test: bool = False) -> NWBFile:
+def add_raw_ephys_from_dat(nwbfile: NWBFile, dat_file_path: Path, xml_data: dict, stub_test: bool = False, comments: str | None = None) -> NWBFile:
     print("Adding raw ephys from DAT file to NWB file...")
 
     chan_order = np.concatenate(xml_data['spike_groups'])
@@ -998,6 +1006,7 @@ def add_raw_ephys_from_dat(nwbfile: NWBFile, dat_file_path: Path, xml_data: dict
     eseries = ElectricalSeries(
         name='e-series',
         description='Acquisition traces for the ElectricalSeries.',
+        comments=comments,
         data=ephys_data_iterator,
         timestamps=timestamps,
         electrodes=all_table_region,
