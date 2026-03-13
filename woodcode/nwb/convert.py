@@ -19,6 +19,7 @@ from pynwb.base import Images
 from pynwb.device import DeviceModel
 from neuroconv.utils import calculate_regular_series_rate
 from neuroconv.tools.nwb_helpers import configure_and_write_nwbfile
+from .dat_file_data_chunk_iterator import DatFileDataChunkIterator
 
 def create_nwb_file(metadata, start_time):
     # get info from folder name
@@ -959,7 +960,53 @@ def _report_variable_offset(recording) -> None:
     raise ValueError(message)
 
 def add_raw_ephys_from_dat(nwbfile: NWBFile, dat_file_path: Path, xml_data: dict, stub_test: bool = False) -> NWBFile:
-    pass
+    print("Adding raw ephys from DAT file to NWB file...")
+
+    chan_order = np.concatenate(xml_data['spike_groups'])
+    sampling_rate = float(xml_data['dat_sampling_rate'])
+
+    # Load DAT file using pynapple (same approach as add_lfp).
+    # Do NOT apply chan_order here — that would force the full 20GB file into memory.
+    # Channel reordering is handled chunk-by-chunk inside DatFileDataChunkIterator.
+    raw_data = nap.load_eeg(
+        filepath=dat_file_path,
+        channel=None,
+        n_channels=xml_data['n_channels'],
+        frequency=sampling_rate,
+        precision='int16',
+        bytes_size=2,
+    )
+
+    if stub_test:
+        raw_data = raw_data[:100, :]  # row slice — stays as a memory-mapped view
+
+    # Compute conversion: voltage_range is in V, divide by amplification and ADC range to get V/LSB
+    conversion_to_volts = (
+        xml_data['voltage_range'] / xml_data['amplification'] / (2 ** xml_data['nbits'])
+    )
+    offset_to_volts = xml_data['offset'] * conversion_to_volts
+
+    all_table_region = nwbfile.create_electrode_table_region(
+        region=list(range(len(nwbfile.electrodes))),
+        description='electrode_table_region',
+    )
+
+    ephys_data_iterator = DatFileDataChunkIterator(raw_data=raw_data, chan_order=chan_order)
+    timestamps = np.arange(raw_data.shape[0]) / sampling_rate
+
+    # NOTE: Spyglass requires raw electrical series to be named "e-series"
+    eseries = ElectricalSeries(
+        name='e-series',
+        description='Acquisition traces for the ElectricalSeries.',
+        data=ephys_data_iterator,
+        timestamps=timestamps,
+        electrodes=all_table_region,
+        conversion=conversion_to_volts,
+        offset=offset_to_volts,
+    )
+
+    nwbfile.add_acquisition(eseries)
+    return nwbfile
 
 
 def add_histology(nwbfile, histology_folder_path: Path):
