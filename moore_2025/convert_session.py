@@ -226,7 +226,7 @@ def main():
     juvenile_metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/juvenile_metadata.yaml")
     adult_metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/adult_metadata.yaml")
 
-    stub_test = True
+    stub_test = False
     if output_folder_path.exists():
         shutil.rmtree(output_folder_path)
     save_path = output_folder_path
