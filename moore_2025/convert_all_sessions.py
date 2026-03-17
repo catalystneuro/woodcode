@@ -45,7 +45,7 @@ def detect_raw_ephys_paths(raw_folder_path: Path) -> tuple[Path, Path]:
     tuple[Path, Path]
         (raw_ephys_folder_path, continuous_xml_path)
     """
-    raw_ephys_folder_path = next(raw_folder_path.rglob("settings.xml")).parent
+    raw_ephys_folder_path = next(raw_folder_path.rglob("experiment*")).parent
     continuous_xml_path = next(raw_folder_path.rglob("continuous.xml"))
     return raw_ephys_folder_path, continuous_xml_path
 
@@ -83,36 +83,21 @@ def detect_processed_paths(
     return processed_xml_path, nrs_path, lfp_file_path, mat_path, sleep_path
 
 
-def detect_video_and_timestamp_paths(
-    raw_folder_path: Path, is_adult: bool
-) -> tuple[list[Path] | None, list[Path]]:
+def detect_video_and_timestamp_paths(raw_folder_path: Path) -> tuple[list[Path] | None, list[Path]]:
     """Detect video and timestamp files in a Raw directory.
 
     Parameters
     ----------
     raw_folder_path : Path
         The session's Raw directory (or subfolder containing Bonsai files).
-    is_adult : bool
-        Whether the session is from an adult subject.
 
     Returns
     -------
     tuple[list[Path] | None, list[Path]]
         (video_file_paths, timestamps_file_paths). video_file_paths is None if no videos found.
     """
-    if is_adult:
-        video_file_paths = sorted(raw_folder_path.rglob("BonsaiVideo*.avi"))
-        timestamps_file_paths = sorted(raw_folder_path.rglob("BonsaiTracking*.csv"))
-    else:
-        video_file_paths = sorted(
-            list(raw_folder_path.rglob("BonsaiCapture*.avi"))
-            + list(raw_folder_path.rglob("BonsaiVideo*.avi"))
-        )
-        timestamps_file_paths = sorted(
-            list(raw_folder_path.rglob("Bonsai testing*.csv"))
-            + list(raw_folder_path.rglob("BonsaiTracking*.csv"))
-        )
-
+    video_file_paths = sorted(raw_folder_path.rglob("Bonsai*.avi"))
+    timestamps_file_paths = sorted(raw_folder_path.rglob("Bonsai*.csv"))
     if not video_file_paths:
         video_file_paths = None
     return video_file_paths, timestamps_file_paths
@@ -152,6 +137,7 @@ def get_session_to_nwb_kwargs(
     dict[str, Any]
         Kwargs to pass to session_to_nwb (excluding save_path and stub_test).
     """
+    print(f"Collecting session_to_nwb kwargs for session {folder_name}...")
     raw_folder_path = session_folder_path / "Raw"
     processed_xml_path, nrs_path, lfp_file_path, mat_path, sleep_path = detect_processed_paths(
         session_folder_path, folder_name
@@ -200,9 +186,7 @@ def get_session_to_nwb_kwargs(
         raw_ephys_folder_path, raw_xml_path = detect_raw_ephys_paths(ephys_search_root)
         stream_name = STREAM_NAME_PER_SESSION[folder_name]
         ttl_stream_name = f"{stream_name}_ADC"
-        video_file_paths, timestamps_file_paths = detect_video_and_timestamp_paths(
-            ephys_search_root, is_adult=True
-        )
+        video_file_paths, timestamps_file_paths = detect_video_and_timestamp_paths(ephys_search_root)
         is_adult = True  # adult-style temporal alignment despite being a juvenile
 
     elif folder_name == "H4817-220828":
@@ -211,17 +195,13 @@ def get_session_to_nwb_kwargs(
         raw_xml_path = processed_xml_path
         stream_name = STREAM_NAME_PER_SESSION[folder_name]
         ttl_stream_name = f"{stream_name}_ADC"
-        video_file_paths, timestamps_file_paths = detect_video_and_timestamp_paths(
-            raw_folder_path, is_adult
-        )
+        video_file_paths, timestamps_file_paths = detect_video_and_timestamp_paths(raw_folder_path)
 
     else:
         raw_ephys_folder_path, raw_xml_path = detect_raw_ephys_paths(raw_folder_path)
         stream_name = STREAM_NAME_PER_SESSION[folder_name]
         ttl_stream_name = f"{stream_name}_ADC"
-        video_file_paths, timestamps_file_paths = detect_video_and_timestamp_paths(
-            raw_folder_path, is_adult
-        )
+        video_file_paths, timestamps_file_paths = detect_video_and_timestamp_paths(raw_folder_path)
 
     return dict(
         folder_name=folder_name,
