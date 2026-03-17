@@ -361,7 +361,6 @@ def dataset_to_nwb(
         metadata_file_path=adult_metadata_file_path,
     )
     print(f"Collected session_to_nwb kwargs for {len(session_to_nwb_kwargs_per_session)} sessions.")
-    return
 
     futures = []
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
@@ -390,7 +389,7 @@ if __name__ == "__main__":
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw")
     juvenile_metadata_file_path = Path(__file__).parent / "juvenile_metadata.yaml"
     adult_metadata_file_path = Path(__file__).parent / "adult_metadata.yaml"
-    stub_test = False
+    stub_test = True
     max_workers = 10
 
     dataset_to_nwb(
