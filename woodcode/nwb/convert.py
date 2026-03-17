@@ -323,7 +323,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
     return nwbfile, xmldata
 
 
-def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None, comments: str | None = None):
+def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None, comments: str = "no comments"):
     # to do: add units as input
     print('Adding tracking to NWB file...')
 
@@ -371,7 +371,7 @@ def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None, comment
     return nwbfile
 
 
-def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: list[np.ndarray], is_adult: bool, comments: str | None = None):
+def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: list[np.ndarray], is_adult: bool, comments: str = "no comments"):
     print('Adding raw tracking to NWB file...')
 
     item1_pos, item_2_pos, full_aligned_timestamps = [], [], []
@@ -421,7 +421,7 @@ def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: li
     return nwbfile
 
 
-def add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate, comments: str | None = None):
+def add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate, comments: str = "no comments"):
 
     sleep_file = sleep_path / (folder_name + '.SleepState.states.mat')
     emg_file = sleep_path / (folder_name + '.EMGFromLFP.LFP.mat')
@@ -608,7 +608,7 @@ def add_epochs(nwbfile, epochs, metadata):
 
 
 
-def add_lfp(nwbfile, lfp_path, xml_data, raw_eseries, stub_test=False, comments: str | None = None):
+def add_lfp(nwbfile, lfp_path, xml_data, raw_eseries, stub_test=False, comments: str = "no comments"):
 
     print('Adding LFP to the NWB file...')
 
@@ -811,7 +811,7 @@ def add_video(
     video_file_paths: list[Path],
     all_aligned_video_timestamps: list[np.ndarray],
     metadata: dict,
-    comments: str | None = None,
+    comments: str = "no comments",
 ) -> NWBFile:
     print("Adding video to NWB file...")
 
@@ -967,7 +967,7 @@ def _report_variable_offset(recording) -> None:
 
     raise ValueError(message)
 
-def add_raw_ephys_from_dat(nwbfile: NWBFile, dat_file_path: Path, xml_data: dict, stub_test: bool = False, comments: str | None = None) -> NWBFile:
+def add_raw_ephys_from_dat(nwbfile: NWBFile, dat_file_path: Path, xml_data: dict, stub_test: bool = False, comments: str = "no comments") -> NWBFile:
     print("Adding raw ephys from DAT file to NWB file...")
 
     chan_order = np.concatenate(xml_data['spike_groups'])
