@@ -50,9 +50,9 @@ STREAM_NAME_PER_SESSION: dict[str, str | None] = {
     "H4822-221023": "Rhythm_FPGA-103.0",
     "H4823-221108": None,    # raw data and video missing
     "H4824-221117": "Rhythm_FPGA-103.0",
-    "H4825-221124": "Rhythm_FPGA-103.0",
-    "H4826-221203": "Rhythm_FPGA-103.0",
-    "H4827-221210": "Rhythm_FPGA-103.0",
+    "H4825-221124": "Record Node 101#Acquisition_Board-100.Rhythm Data",
+    "H4826-221203": "Record Node 102#Acquisition_Board-101.Rhythm Data",
+    "H4827-221210": "Record Node 101#Acquisition_Board-100.Rhythm Data",
     "H4830-230406": "Record Node 103#Acquisition_Board-100.Rhythm Data",  # exception
 }
 
@@ -78,6 +78,14 @@ SESSIONS_WITHOUT_VIDEO: set[str] = {
 SESSIONS_TO_SKIP: set[str] = {
     "H3001-200201",  # Truncated LFP (~30MB, expected ~800MB); likely bad upload
     "H3029-230510",  # Missing .nrs file
+    "H3023-210813_1", # Missing .nrs file
+    "H3019-210618_1", # Missing .nrs file
+    "H3019-210617",  # Missing .nrs file
+    "H3015-210417", # Missing .nrs file
+    "H3015-210416_2", # Missing .nrs file
+    "H3015-210416_1", # Missing .nrs file
+    # Wait, actually some of these do have .nrs files; they're just not named the same as the folder name. 
+    # TODO: investigate further
 }
 
 
