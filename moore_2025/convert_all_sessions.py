@@ -259,66 +259,48 @@ def get_session_to_nwb_kwargs(
     has_raw_data = HAS_RAW_DATA_PER_SESSION[folder_name]
     has_video = HAS_VIDEO_PER_SESSION[folder_name]
 
+    # Defaults for optional kwargs; overridden below when applicable.
+    raw_ephys_folder_path = None
+    raw_ephys_dat_file_path = None
+    stream_name = None
+    ttl_stream_name = None
+
     if has_raw_data:
         raw_ephys_folder_path, raw_xml_path = detect_raw_ephys_paths(raw_folder_path)
         stream_name = STREAM_NAME_PER_SESSION[folder_name]
         ttl_stream_name = f"{stream_name}_ADC"
-
         if folder_name == "H4817-220828":
             raw_xml_path = processed_xml_path  # raw XML is missing a channel
-
         video_file_paths, timestamps_file_paths = detect_video_and_timestamp_paths(raw_folder_path)
-        if not has_video:
-            video_file_paths = None
-
-        return dict(
-            folder_name=folder_name,
-            raw_xml_path=raw_xml_path,
-            processed_xml_path=processed_xml_path,
-            nrs_path=nrs_path,
-            meta_path=meta_path,
-            mat_path=mat_path,
-            sleep_path=sleep_path,
-            timestamps_file_paths=timestamps_file_paths,
-            lfp_file_path=lfp_file_path,
-            metadata_file_path=metadata_file_path,
-            histology_folder_path=histology_folder_path,
-            stream_name=stream_name,
-            ttl_stream_name=ttl_stream_name,
-            raw_ephys_folder_path=raw_ephys_folder_path,
-            video_file_paths=video_file_paths,
-            is_adult=is_adult,
-        )
     else:
         # No raw Open Ephys data; use .dat file from Processed/.
         processed_root = session_folder_path / "Processed"
         raw_xml_path = processed_xml_path
-        raw_ephys_folder_path = None
         raw_ephys_dat_file_path = processed_root / f"{folder_name}.dat"
-        stream_name = None
-        ttl_stream_name = None
-
         video_file_paths, timestamps_file_paths = detect_video_and_timestamp_paths(processed_root)
-        if not has_video:
-            video_file_paths = None
 
-        return dict(
-            folder_name=folder_name,
-            raw_xml_path=raw_xml_path,
-            processed_xml_path=processed_xml_path,
-            nrs_path=nrs_path,
-            meta_path=meta_path,
-            mat_path=mat_path,
-            sleep_path=sleep_path,
-            timestamps_file_paths=timestamps_file_paths,
-            lfp_file_path=lfp_file_path,
-            metadata_file_path=metadata_file_path,
-            histology_folder_path=histology_folder_path,
-            raw_ephys_folder_path=raw_ephys_folder_path,
-            raw_ephys_dat_file_path=raw_ephys_dat_file_path,
-            video_file_paths=video_file_paths,
-            is_adult=is_adult,
-        )
+    if not has_video:
+        video_file_paths = None
+
+    return dict(
+        folder_name=folder_name,
+        raw_xml_path=raw_xml_path,
+        processed_xml_path=processed_xml_path,
+        nrs_path=nrs_path,
+        meta_path=meta_path,
+        mat_path=mat_path,
+        sleep_path=sleep_path,
+        timestamps_file_paths=timestamps_file_paths,
+        lfp_file_path=lfp_file_path,
+        metadata_file_path=metadata_file_path,
+        histology_folder_path=histology_folder_path,
+        stream_name=stream_name,
+        ttl_stream_name=ttl_stream_name,
+        raw_ephys_folder_path=raw_ephys_folder_path,
+        raw_ephys_dat_file_path=raw_ephys_dat_file_path,
+        video_file_paths=video_file_paths,
+        is_adult=is_adult,
+    )
 
 
 def collect_session_to_nwb_kwargs_per_session(
