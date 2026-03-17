@@ -193,27 +193,73 @@ def get_session_to_nwb_kwargs(
     )
 
 
-def collect_session_to_nwb_kwargs_per_session(
+def collect_juvenile_session_to_nwb_kwargs(
     *,
-    data_dir_path: Path,
+    juvenile_dir_path: Path,
     meta_path: Path,
     histology_folder_path: Path,
-    juvenile_metadata_file_path: Path,
-    adult_metadata_file_path: Path,
+    metadata_file_path: Path,
 ) -> list[dict[str, Any]]:
-    """Collect the kwargs for session_to_nwb for each session in the dataset.
+    """Collect the kwargs for session_to_nwb for each juvenile session.
 
     Parameters
     ----------
-    data_dir_path : Path
-        Root directory containing H3000_Juveniles/ and H4800_Adults/.
+    juvenile_dir_path : Path
+        Root directory containing WT/ and KO/ subdirectories for juvenile sessions.
     meta_path : Path
         Path to the shared Excel metadata file (MooreDataset_Metadata.xlsx).
     histology_folder_path : Path
-        Top-level histology folder (contains H3000/ and H4800/ subdirectories).
-    juvenile_metadata_file_path : Path
+        Histology folder for the juvenile cohort (e.g. Histology/H3000/).
+    metadata_file_path : Path
         Path to juvenile_metadata.yaml.
-    adult_metadata_file_path : Path
+
+    Returns
+    -------
+    list[dict[str, Any]]
+        A list of kwargs dicts for session_to_nwb, one per session.
+    """
+    session_to_nwb_kwargs_list = []
+    for genotype in ["WT", "KO"]:
+        genotype_folder_path = juvenile_dir_path / genotype
+        for session_folder_path in sorted(genotype_folder_path.iterdir()):
+            if session_folder_path.name.startswith("."):
+                continue
+            if not session_folder_path.is_dir():
+                continue
+            folder_name = session_folder_path.name
+            if folder_name in SESSIONS_TO_SKIP:
+                continue
+            session_to_nwb_kwargs_list.append(
+                get_session_to_nwb_kwargs(
+                    session_folder_path=session_folder_path,
+                    folder_name=folder_name,
+                    is_adult=False,
+                    meta_path=meta_path,
+                    metadata_file_path=metadata_file_path,
+                    histology_folder_path=histology_folder_path,
+                )
+            )
+    return session_to_nwb_kwargs_list
+
+
+def collect_adult_session_to_nwb_kwargs(
+    *,
+    adult_dir_path: Path,
+    meta_path: Path,
+    histology_folder_path: Path,
+    metadata_file_path: Path,
+) -> list[dict[str, Any]]:
+    """Collect the kwargs for session_to_nwb for each adult session.
+
+    Parameters
+    ----------
+    adult_dir_path : Path
+        Root directory containing WT/ and KO/ subdirectories for adult sessions.
+    meta_path : Path
+        Path to the shared Excel metadata file (MooreDataset_Metadata.xlsx).
+    histology_folder_path : Path
+        Histology folder for the adult cohort (e.g. Histology/H4800/).
+    metadata_file_path : Path
         Path to adult_metadata.yaml.
 
     Returns
@@ -221,32 +267,28 @@ def collect_session_to_nwb_kwargs_per_session(
     list[dict[str, Any]]
         A list of kwargs dicts for session_to_nwb, one per session.
     """
-    all_session_to_nwb_kwargs = []
-    cohort_folders = [("H3000_Juveniles", False), ("H4800_Adults", True)]
-    for cohort_folder_name, is_adult in cohort_folders:
-        cohort_folder_path = data_dir_path / cohort_folder_name
-        for genotype in ["WT", "KO"]:
-            genotype_folder_path = cohort_folder_path / genotype
-            for session_folder_path in sorted(genotype_folder_path.iterdir()):
-                if session_folder_path.name.startswith("."):
-                    continue
-                if not session_folder_path.is_dir():
-                    continue
-                folder_name = session_folder_path.name
-                if folder_name in SESSIONS_TO_SKIP:
-                    continue
-                metadata_file_path = adult_metadata_file_path if is_adult else juvenile_metadata_file_path
-                histology_subfolder = histology_folder_path / ("H4800" if is_adult else "H3000")
-                session_to_nwb_kwargs = get_session_to_nwb_kwargs(
+    session_to_nwb_kwargs_list = []
+    for genotype in ["WT", "KO"]:
+        genotype_folder_path = adult_dir_path / genotype
+        for session_folder_path in sorted(genotype_folder_path.iterdir()):
+            if session_folder_path.name.startswith("."):
+                continue
+            if not session_folder_path.is_dir():
+                continue
+            folder_name = session_folder_path.name
+            if folder_name in SESSIONS_TO_SKIP:
+                continue
+            session_to_nwb_kwargs_list.append(
+                get_session_to_nwb_kwargs(
                     session_folder_path=session_folder_path,
                     folder_name=folder_name,
-                    is_adult=is_adult,
+                    is_adult=True,
                     meta_path=meta_path,
                     metadata_file_path=metadata_file_path,
-                    histology_folder_path=histology_subfolder,
+                    histology_folder_path=histology_folder_path,
                 )
-                all_session_to_nwb_kwargs.append(session_to_nwb_kwargs)
-    return all_session_to_nwb_kwargs
+            )
+    return session_to_nwb_kwargs_list
 
 
 def safe_session_to_nwb(*, session_to_nwb_kwargs: dict, exception_file_path: Union[Path, str]):
@@ -270,10 +312,12 @@ def safe_session_to_nwb(*, session_to_nwb_kwargs: dict, exception_file_path: Uni
 
 def dataset_to_nwb(
     *,
-    data_dir_path: Path,
+    juvenile_dir_path: Path,
+    adult_dir_path: Path,
     output_dir_path: Path,
     meta_path: Path,
-    histology_folder_path: Path,
+    juvenile_histology_folder_path: Path,
+    adult_histology_folder_path: Path,
     juvenile_metadata_file_path: Path,
     adult_metadata_file_path: Path,
     stub_test: bool = False,
@@ -283,14 +327,18 @@ def dataset_to_nwb(
 
     Parameters
     ----------
-    data_dir_path : Path
-        Root directory containing H3000_Juveniles/ and H4800_Adults/.
+    juvenile_dir_path : Path
+        Root directory containing WT/ and KO/ subdirectories for juvenile sessions.
+    adult_dir_path : Path
+        Root directory containing WT/ and KO/ subdirectories for adult sessions.
     output_dir_path : Path
         Directory where NWB files will be saved.
     meta_path : Path
         Path to the shared Excel metadata file (MooreDataset_Metadata.xlsx).
-    histology_folder_path : Path
-        Top-level histology folder (contains H3000/ and H4800/ subdirectories).
+    juvenile_histology_folder_path : Path
+        Histology folder for the juvenile cohort (e.g. Histology/H3000/).
+    adult_histology_folder_path : Path
+        Histology folder for the adult cohort (e.g. Histology/H4800/).
     juvenile_metadata_file_path : Path
         Path to juvenile_metadata.yaml.
     adult_metadata_file_path : Path
@@ -300,12 +348,16 @@ def dataset_to_nwb(
     max_workers : int, optional
         The number of workers to use for parallel processing, by default 1.
     """
-    session_to_nwb_kwargs_per_session = collect_session_to_nwb_kwargs_per_session(
-        data_dir_path=data_dir_path,
+    session_to_nwb_kwargs_per_session = collect_juvenile_session_to_nwb_kwargs(
+        juvenile_dir_path=juvenile_dir_path,
         meta_path=meta_path,
-        histology_folder_path=histology_folder_path,
-        juvenile_metadata_file_path=juvenile_metadata_file_path,
-        adult_metadata_file_path=adult_metadata_file_path,
+        histology_folder_path=juvenile_histology_folder_path,
+        metadata_file_path=juvenile_metadata_file_path,
+    ) + collect_adult_session_to_nwb_kwargs(
+        adult_dir_path=adult_dir_path,
+        meta_path=meta_path,
+        histology_folder_path=adult_histology_folder_path,
+        metadata_file_path=adult_metadata_file_path,
     )
     print(f"Collected session_to_nwb kwargs for {len(session_to_nwb_kwargs_per_session)} sessions.")
     return
@@ -329,9 +381,11 @@ def dataset_to_nwb(
 
 
 if __name__ == "__main__":
-    data_dir_path = Path("/Volumes/T7/CatalystNeuro/Dudchenko/251104_MooreDataset")
-    meta_path = data_dir_path / "MooreDataset_Metadata.xlsx"
-    histology_folder_path = data_dir_path / "Histology"
+    juvenile_dir_path = Path("/Volumes/SamsungSSD/CatalystNeuro/Dudchenko/251104_MooreDataset/H3000_Juveniles")
+    adult_dir_path = Path("/Volumes/T7/CatalystNeuro/Dudchenko/251104_MooreDataset/H4800_Adults")
+    meta_path = Path("/Volumes/T7/CatalystNeuro/Dudchenko/251104_MooreDataset/MooreDataset_Metadata.xlsx")
+    juvenile_histology_folder_path = Path("/Volumes/T7/CatalystNeuro/Dudchenko/251104_MooreDataset/Histology/H3000")
+    adult_histology_folder_path = Path("/Volumes/T7/CatalystNeuro/Dudchenko/251104_MooreDataset/Histology/H4800")
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw")
     juvenile_metadata_file_path = Path(__file__).parent / "juvenile_metadata.yaml"
     adult_metadata_file_path = Path(__file__).parent / "adult_metadata.yaml"
@@ -339,10 +393,12 @@ if __name__ == "__main__":
     max_workers = 10
 
     dataset_to_nwb(
-        data_dir_path=data_dir_path,
+        juvenile_dir_path=juvenile_dir_path,
+        adult_dir_path=adult_dir_path,
         output_dir_path=output_dir_path,
         meta_path=meta_path,
-        histology_folder_path=histology_folder_path,
+        juvenile_histology_folder_path=juvenile_histology_folder_path,
+        adult_histology_folder_path=adult_histology_folder_path,
         juvenile_metadata_file_path=juvenile_metadata_file_path,
         adult_metadata_file_path=adult_metadata_file_path,
         stub_test=stub_test,
