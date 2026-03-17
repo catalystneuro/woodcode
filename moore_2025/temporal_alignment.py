@@ -382,6 +382,7 @@ def get_aligned_video_timestamps_adults(
     list[np.ndarray]
         The aligned video timestamps for each segment/file.
     """
+    print("Aligning adult video timestamps...")
     timestamp_column_name = "Item3.Timestamp"
     ttl_threshold = 10_000
     ttl_channel_id = 'ADC6'
@@ -393,6 +394,8 @@ def get_aligned_video_timestamps_adults(
     all_aligned_video_timestamps = []
 
     for segment_index, timestamp_file_path in enumerate(timestamp_file_paths):
+        print(f"  Aligning segment {segment_index} with timestamp file {timestamp_file_path.name}...")
+        t0 = time()
         timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
         num_frames = timestamps_df.shape[0] + 1 # + 1 bc video has one extra frame at the end
         traces = extractor.get_traces(segment_index=segment_index, channel_ids=[ttl_channel_id])
@@ -411,6 +414,7 @@ def get_aligned_video_timestamps_adults(
         single_segment_ttl_timestamps = np.delete(single_segment_ttl_timestamps, ttl_indices_to_remove)
 
         all_aligned_video_timestamps.append(single_segment_ttl_timestamps)
+        print(f"    Segment {segment_index} aligned in {time() - t0:.2f} seconds.")
 
     return all_aligned_video_timestamps
 

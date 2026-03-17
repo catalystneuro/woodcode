@@ -646,8 +646,8 @@ def main():
         save_path=save_path,
         metadata_file_path=adult_metadata_file_path,
         histology_folder_path=adult_histology_folder_path,
-        stream_name="Acquisition_Board-100.Rhythm Data",
-        ttl_stream_name="Acquisition_Board-100.Rhythm Data_ADC",
+        stream_name="Record Node 103#Acquisition_Board-100.Rhythm Data",
+        ttl_stream_name="Record Node 103#Acquisition_Board-100.Rhythm Data_ADC",
         stub_test=stub_test,
         is_adult=True,
     )
