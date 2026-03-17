@@ -332,7 +332,6 @@ def get_aligned_video_timestamps_juveniles(
     ttl_timestamps = np.ones_like(led_timestamps) * np.nan
     for segment_index in range(extractor.get_num_segments()):
         print(f"  Aligning segment {segment_index}...")
-        t0 = time()
         traces = extractor.get_traces(segment_index=segment_index, channel_ids=[ttl_channel_id])
         ephys_timestamps = extractor.get_times(segment_index=segment_index)
         single_segment_ttl_timestamps = get_ttl_timestamps(traces=traces, timestamps=ephys_timestamps, threshold=ttl_threshold, cooldown_in_seconds=cooldown_in_seconds, sampling_rate=sampling_rate)
@@ -343,7 +342,6 @@ def get_aligned_video_timestamps_juveniles(
         ttl_timestamps[segment_start_index:segment_start_index + len(single_segment_ttl_timestamps)] = single_segment_ttl_timestamps
         error = led_intervals[segment_start_index:segment_start_index + len(ttl_intervals)] - ttl_intervals
         assert np.max(np.abs(error)) < tolerance_in_seconds, f"Alignment error too large: {np.max(np.abs(error))} seconds for segment {segment_index}"
-        print(f"    Segment {segment_index} aligned in {time() - t0:.2f} seconds")
 
     # NaN values represent LED pulses that were not recorded in the ephys data (ex. between segments)
     not_nan = ~np.isnan(ttl_timestamps)
@@ -395,7 +393,6 @@ def get_aligned_video_timestamps_adults(
 
     for segment_index, timestamp_file_path in enumerate(timestamp_file_paths):
         print(f"  Aligning segment {segment_index} with timestamp file {timestamp_file_path.name}...")
-        t0 = time()
         timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
         num_frames = timestamps_df.shape[0] + 1 # + 1 bc video has one extra frame at the end
         traces = extractor.get_traces(segment_index=segment_index, channel_ids=[ttl_channel_id])
@@ -414,7 +411,6 @@ def get_aligned_video_timestamps_adults(
         single_segment_ttl_timestamps = np.delete(single_segment_ttl_timestamps, ttl_indices_to_remove)
 
         all_aligned_video_timestamps.append(single_segment_ttl_timestamps)
-        print(f"    Segment {segment_index} aligned in {time() - t0:.2f} seconds.")
 
     return all_aligned_video_timestamps
 
