@@ -13,7 +13,7 @@ from moore_2025.convert_session import session_to_nwb
 # The ttl_stream_name is always derived as f"{stream_name}_ADC".
 # Sessions that use a .dat file instead of Open Ephys output are handled as edge cases
 # in get_session_to_nwb_kwargs and their entries here are unused.
-STREAM_NAME_PER_SESSION: dict[str, str] = {
+STREAM_NAME_PER_SESSION: dict[str, str | None] = {
     # Juvenile sessions (default stream: "Rhythm_FPGA-100.0")
     "H3001-200201": "Rhythm_FPGA-100.0",
     "H3001-200202": "Rhythm_FPGA-100.0",
@@ -34,10 +34,10 @@ STREAM_NAME_PER_SESSION: dict[str, str] = {
     "H3019-210618_1": "Rhythm_FPGA-100.0",
     "H3022-210805": "Rhythm_FPGA-100.0",
     "H3022-210806": "Rhythm_FPGA-100.0",
-    "H3023-210812": "Rhythm_FPGA-100.0",  # no raw ephys; entry unused
-    "H3023-210813_1": "Rhythm_FPGA-100.0",
-    "H3026-211003": "Rhythm_FPGA-100.0",
-    "H3026-211004_2": "Rhythm_FPGA-100.0",
+    "H3023-210812": None,    # raw data missing
+    "H3023-210813_1": None,  # raw data missing
+    "H3026-211003": None,    # raw data missing
+    "H3026-211004_2": None,  # raw data missing
     "H3029-230510": "Acquisition_Board-100.Rhythm Data",  # exception
     # Adult sessions (default stream: "Rhythm_FPGA-103.0")
     "H4813-220728": "Rhythm_FPGA-103.0",
@@ -46,7 +46,7 @@ STREAM_NAME_PER_SESSION: dict[str, str] = {
     "H4819-220929": "Rhythm_FPGA-103.0",
     "H4820-221007": "Rhythm_FPGA-103.0",
     "H4822-221023": "Rhythm_FPGA-103.0",
-    "H4823-221108": "Rhythm_FPGA-103.0",
+    "H4823-221108": None,    # raw data and video missing
     "H4824-221117": "Rhythm_FPGA-103.0",
     "H4825-221124": "Rhythm_FPGA-103.0",
     "H4826-221203": "Rhythm_FPGA-103.0",
@@ -54,90 +54,21 @@ STREAM_NAME_PER_SESSION: dict[str, str] = {
     "H4830-230406": "Record Node 103#Acquisition_Board-100.Rhythm Data",  # exception
 }
 
-# Whether each session has raw Open Ephys data. False means only processed data
-# (e.g. .dat / .lfp) is available; get_session_to_nwb_kwargs uses this to switch
-# to the no-raw-data path.
-HAS_RAW_DATA_PER_SESSION: dict[str, bool] = {
-    # Juvenile sessions
-    "H3001-200201": True,
-    "H3001-200202": True,
-    "H3003-200207": True,
-    "H3003-200208": True,
-    "H3006-200314_1": True,
-    "H3006-200314_2": True,
-    "H3008-200805": True,
-    "H3008-200807": True,
-    "H3009-200812": True,
-    "H3009-200813": True,
-    "H3015-210416_1": True,
-    "H3015-210416_2": True,
-    "H3015-210417": True,
-    "H3016-210422": True,
-    "H3016-210423": True,
-    "H3019-210617": True,
-    "H3019-210618_1": True,
-    "H3022-210805": True,
-    "H3022-210806": True,
-    "H3023-210812": False,   # Raw data missing
-    "H3023-210813_1": False,  # Raw data missing
-    "H3026-211003": False,   # Raw data missing
-    "H3026-211004_2": False,  # Raw data missing
-    "H3029-230510": True,
-    # Adult sessions
-    "H4813-220728": True,
-    "H4815-220814": True,
-    "H4817-220828": True,
-    "H4819-220929": True,
-    "H4820-221007": True,
-    "H4822-221023": True,
-    "H4823-221108": False,   # Raw data and video missing
-    "H4824-221117": True,
-    "H4825-221124": True,
-    "H4826-221203": True,
-    "H4827-221210": True,
-    "H4830-230406": True,
+# Sessions missing raw Open Ephys data; only processed data (.dat / .lfp) is available.
+SESSIONS_WITHOUT_RAW_DATA: set[str] = {
+    "H3023-210812",    # Raw data missing
+    "H3023-210813_1",  # Raw data missing
+    "H3026-211003",    # Raw data missing
+    "H3026-211004_2",  # Raw data missing
+    "H4823-221108",    # Raw data and video missing
 }
 
-# Whether each session has video data recorded.
-HAS_VIDEO_PER_SESSION: dict[str, bool] = {
-    # Juvenile sessions
-    "H3001-200201": False,   # Video not recorded
-    "H3001-200202": False,   # Video not recorded
-    "H3003-200207": True,
-    "H3003-200208": True,
-    "H3006-200314_1": True,
-    "H3006-200314_2": True,
-    "H3008-200805": True,
-    "H3008-200807": True,
-    "H3009-200812": True,
-    "H3009-200813": True,
-    "H3015-210416_1": True,
-    "H3015-210416_2": True,
-    "H3015-210417": True,
-    "H3016-210422": True,
-    "H3016-210423": True,
-    "H3019-210617": True,
-    "H3019-210618_1": True,
-    "H3022-210805": True,
-    "H3022-210806": True,
-    "H3023-210812": True,
-    "H3023-210813_1": True,
-    "H3026-211003": True,
-    "H3026-211004_2": True,
-    "H3029-230510": True,
-    # Adult sessions
-    "H4813-220728": True,
-    "H4815-220814": True,
-    "H4817-220828": True,
-    "H4819-220929": True,
-    "H4820-221007": True,
-    "H4822-221023": False,   # Video missing
-    "H4823-221108": False,   # Raw data and video missing
-    "H4824-221117": True,
-    "H4825-221124": True,
-    "H4826-221203": True,
-    "H4827-221210": True,
-    "H4830-230406": True,
+# Sessions with no video recorded.
+SESSIONS_WITHOUT_VIDEO: set[str] = {
+    "H3001-200201",  # Video not recorded
+    "H3001-200202",  # Video not recorded
+    "H4822-221023",  # Video missing
+    "H4823-221108",  # Raw data and video missing
 }
 
 
@@ -256,8 +187,8 @@ def get_session_to_nwb_kwargs(
         session_folder_path, folder_name
     )
 
-    has_raw_data = HAS_RAW_DATA_PER_SESSION[folder_name]
-    has_video = HAS_VIDEO_PER_SESSION[folder_name]
+    has_raw_data = folder_name not in SESSIONS_WITHOUT_RAW_DATA
+    has_video = folder_name not in SESSIONS_WITHOUT_VIDEO
 
     # Defaults for optional kwargs; overridden below when applicable.
     raw_ephys_folder_path = None
