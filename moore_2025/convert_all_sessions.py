@@ -1,4 +1,6 @@
 """Primary script to run to convert all sessions in the Moore 2025 dataset."""
+import contextlib
+import os
 import traceback
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
@@ -303,12 +305,13 @@ def safe_session_to_nwb(*, session_to_nwb_kwargs: dict, exception_file_path: Uni
         The path to the file where the exception messages will be saved.
     """
     exception_file_path = Path(exception_file_path)
-    try:
-        session_to_nwb(**session_to_nwb_kwargs)
-    except Exception as error:
-        with open(exception_file_path, mode="w") as file:
-            file.write(f"session_to_nwb_kwargs: \n {pformat(session_to_nwb_kwargs)}\n\n")
-            file.write(traceback.format_exc())
+    with open(os.devnull, "w") as devnull, contextlib.redirect_stdout(devnull):
+        try:
+            session_to_nwb(**session_to_nwb_kwargs)
+        except Exception:
+            with open(exception_file_path, mode="w") as file:
+                file.write(f"session_to_nwb_kwargs: \n {pformat(session_to_nwb_kwargs)}\n\n")
+                file.write(traceback.format_exc())
 
 
 def dataset_to_nwb(
