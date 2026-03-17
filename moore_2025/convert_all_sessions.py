@@ -11,22 +11,47 @@ from moore_2025.convert_session import session_to_nwb
 
 # Manually specified stream names for each session.
 # The ttl_stream_name is always derived as f"{stream_name}_ADC".
-# Sessions that use a .dat file instead of Open Ephys output (e.g. H3023-210812)
-# are handled as edge cases in get_session_to_nwb_kwargs and do not need an entry here.
+# Sessions that use a .dat file instead of Open Ephys output are handled as edge cases
+# in get_session_to_nwb_kwargs and their entries here are unused.
 STREAM_NAME_PER_SESSION: dict[str, str] = {
-    # Juvenile WT sessions
+    # Juvenile sessions (default stream: "Rhythm_FPGA-100.0")
+    "H3001-200201": "Rhythm_FPGA-100.0",
     "H3001-200202": "Rhythm_FPGA-100.0",
-    "H3022-210805": "Rhythm_FPGA-100.0",
-    "H3022-210806": "Rhythm_FPGA-100.0",
-    "H3029-230510": "Acquisition_Board-100.Rhythm Data",
-    # Juvenile KO sessions
+    "H3003-200207": "Rhythm_FPGA-100.0",
+    "H3003-200208": "Rhythm_FPGA-100.0",
+    "H3006-200314_1": "Rhythm_FPGA-100.0",
+    "H3006-200314_2": "Rhythm_FPGA-100.0",
+    "H3008-200805": "Rhythm_FPGA-100.0",
+    "H3008-200807": "Rhythm_FPGA-100.0",
+    "H3009-200812": "Rhythm_FPGA-100.0",
+    "H3009-200813": "Rhythm_FPGA-100.0",
+    "H3015-210416_1": "Rhythm_FPGA-100.0",
+    "H3015-210416_2": "Rhythm_FPGA-100.0",
+    "H3015-210417": "Rhythm_FPGA-100.0",
     "H3016-210422": "Rhythm_FPGA-100.0",
     "H3016-210423": "Rhythm_FPGA-100.0",
-    # Adult WT sessions
+    "H3019-210617": "Rhythm_FPGA-100.0",
+    "H3019-210618_1": "Rhythm_FPGA-100.0",
+    "H3022-210805": "Rhythm_FPGA-100.0",
+    "H3022-210806": "Rhythm_FPGA-100.0",
+    "H3023-210812": "Rhythm_FPGA-100.0",  # no raw ephys; entry unused
+    "H3023-210813_1": "Rhythm_FPGA-100.0",
+    "H3026-211003": "Rhythm_FPGA-100.0",
+    "H3026-211004_2": "Rhythm_FPGA-100.0",
+    "H3029-230510": "Acquisition_Board-100.Rhythm Data",  # exception
+    # Adult sessions (default stream: "Rhythm_FPGA-103.0")
     "H4813-220728": "Rhythm_FPGA-103.0",
-    "H4830-230406": "Record Node 103#Acquisition_Board-100.Rhythm Data",
-    # Adult KO sessions
+    "H4815-220814": "Rhythm_FPGA-103.0",
     "H4817-220828": "Rhythm_FPGA-103.0",
+    "H4819-220929": "Rhythm_FPGA-103.0",
+    "H4820-221007": "Rhythm_FPGA-103.0",
+    "H4822-221023": "Rhythm_FPGA-103.0",
+    "H4823-221108": "Rhythm_FPGA-103.0",
+    "H4824-221117": "Rhythm_FPGA-103.0",
+    "H4825-221124": "Rhythm_FPGA-103.0",
+    "H4826-221203": "Rhythm_FPGA-103.0",
+    "H4827-221210": "Rhythm_FPGA-103.0",
+    "H4830-230406": "Record Node 103#Acquisition_Board-100.Rhythm Data",  # exception
 }
 
 
