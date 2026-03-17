@@ -104,6 +104,7 @@ def session_to_nwb(
     metadata_file_path: Path,
     histology_folder_path: Path,
     stream_name: str | None = None,
+    ttl_stream_name: str | None = None,
     raw_ephys_folder_path: Path | None = None,
     raw_ephys_dat_file_path: Path | None = None,
     video_file_paths: list[Path] | None = None,
@@ -143,6 +144,9 @@ def session_to_nwb(
     stream_name : str | None, optional
         Name of the Open Ephys stream to read raw ephys data from. Required when
         raw_ephys_folder_path is provided. By default None.
+    ttl_stream_name : str | None, optional
+        Name of the Open Ephys stream containing the TTL signal for video alignment.
+        Required when has_video and has_open_ephys_output. By default None.
     stub_test : bool, optional
         Whether to stub data for testing, by default False
     is_adult : bool, optional
@@ -160,6 +164,7 @@ def session_to_nwb(
             all_aligned_video_timestamps = get_aligned_video_timestamps_adults(
                 timestamp_file_paths=timestamps_file_paths,
                 ephys_folder_path=raw_ephys_folder_path,
+                ttl_stream_name=ttl_stream_name,
             )
     else: # juvenile
         probe_info = get_probe_info_juveniles()
@@ -168,6 +173,7 @@ def session_to_nwb(
                 aligned_video_timestamps = get_aligned_video_timestamps_juveniles(
                     timestamp_file_path=timestamps_file_paths[0],
                     ephys_folder_path=raw_ephys_folder_path,
+                    ttl_stream_name=ttl_stream_name,
                 )
                 all_aligned_video_timestamps = [aligned_video_timestamps]
             else:
@@ -271,6 +277,7 @@ def main():
         metadata_file_path=juvenile_metadata_file_path,
         histology_folder_path=juvenile_histology_folder_path,
         stream_name="Rhythm_FPGA-100.0",
+        ttl_stream_name="Rhythm_FPGA-100.0_ADC",
         stub_test=stub_test,
         is_adult=False,
     )
@@ -306,6 +313,7 @@ def main():
         metadata_file_path=juvenile_metadata_file_path,
         histology_folder_path=juvenile_histology_folder_path,
         stream_name="Rhythm_FPGA-100.0",
+        ttl_stream_name="Rhythm_FPGA-100.0_ADC",
         stub_test=stub_test,
         is_adult=False,
     )
@@ -344,6 +352,7 @@ def main():
         metadata_file_path=juvenile_metadata_file_path,
         histology_folder_path=juvenile_histology_folder_path,
         stream_name="Rhythm_FPGA-100.0",
+        ttl_stream_name="Rhythm_FPGA-100.0_ADC",
         stub_test=stub_test,
         is_adult=False,
     )
@@ -379,6 +388,7 @@ def main():
         metadata_file_path=juvenile_metadata_file_path,
         histology_folder_path=juvenile_histology_folder_path,
         stream_name="Rhythm_FPGA-100.0",
+        ttl_stream_name="Rhythm_FPGA-100.0_ADC",
         stub_test=stub_test,
         is_adult=False,
     )
@@ -426,6 +436,7 @@ def main():
         metadata_file_path=adult_metadata_file_path,
         histology_folder_path=adult_histology_folder_path,
         stream_name="Rhythm_FPGA-103.0",
+        ttl_stream_name="Rhythm_FPGA-103.0_ADC",
         stub_test=stub_test,
         is_adult=True,
     )
@@ -470,6 +481,7 @@ def main():
         metadata_file_path=adult_metadata_file_path,
         histology_folder_path=adult_histology_folder_path,
         stream_name="Rhythm_FPGA-103.0",
+        ttl_stream_name="Rhythm_FPGA-103.0_ADC",
         stub_test=stub_test,
         is_adult=True,
     )
@@ -505,6 +517,7 @@ def main():
         metadata_file_path=juvenile_metadata_file_path,
         histology_folder_path=juvenile_histology_folder_path,
         stream_name="Rhythm_FPGA-100.0",
+        ttl_stream_name="Rhythm_FPGA-100.0_ADC",
         stub_test=stub_test,
         is_adult=False,
     )
@@ -587,6 +600,7 @@ def main():
         metadata_file_path=juvenile_metadata_file_path,
         histology_folder_path=juvenile_histology_folder_path,
         stream_name="Acquisition_Board-100.Rhythm Data",
+        ttl_stream_name="Acquisition_Board-100.Rhythm Data_ADC",
         stub_test=stub_test,
         is_adult=True,
     )
@@ -632,6 +646,7 @@ def main():
         metadata_file_path=adult_metadata_file_path,
         histology_folder_path=adult_histology_folder_path,
         stream_name="Acquisition_Board-100.Rhythm Data",
+        ttl_stream_name="Acquisition_Board-100.Rhythm Data_ADC",
         stub_test=stub_test,
         is_adult=True,
     )

@@ -291,6 +291,7 @@ def get_aligned_video_timestamps_juveniles(
     *,
     timestamp_file_path: Path,
     ephys_folder_path: Path,
+    ttl_stream_name: str,
 ) -> np.ndarray:
     """
     Get aligned video timestamps for juvenile sessions.
@@ -301,6 +302,8 @@ def get_aligned_video_timestamps_juveniles(
         Path to the video timestamps CSV file.
     ephys_folder_path : Path
         Path to the ephys OpenEphys record node folder.
+    ttl_stream_name : str
+        Name of the Open Ephys stream containing the TTL signal.
 
     Returns
     -------
@@ -313,7 +316,6 @@ def get_aligned_video_timestamps_juveniles(
     timestamp_column_name = "Item4.Timestamp"
     led_column_name = "Item3.Val0"
     ttl_threshold = 20_000
-    ttl_stream_name = "Rhythm_FPGA-100.0_ADC"
     ttl_channel_id = 'ADC1'
     cooldown_in_seconds = 1.0
     min_matches = 5
@@ -361,6 +363,7 @@ def get_aligned_video_timestamps_adults(
     *,
     timestamp_file_paths: list[Path],
     ephys_folder_path: Path,
+    ttl_stream_name: str,
 ) -> list[np.ndarray]:
     """
     Get aligned video timestamps for adult sessions.
@@ -371,6 +374,8 @@ def get_aligned_video_timestamps_adults(
         List of paths to the video timestamps CSV files.
     ephys_folder_path : Path
         Path to the ephys OpenEphys record node folder.
+    ttl_stream_name : str
+        Name of the Open Ephys stream containing the TTL signal.
 
     Returns
     -------
@@ -379,7 +384,6 @@ def get_aligned_video_timestamps_adults(
     """
     timestamp_column_name = "Item3.Timestamp"
     ttl_threshold = 10_000
-    ttl_stream_name = "Rhythm_FPGA-103.0_ADC"
     ttl_channel_id = 'ADC6'
     cooldown_in_seconds = 0.0
 
