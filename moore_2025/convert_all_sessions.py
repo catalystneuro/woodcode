@@ -71,6 +71,12 @@ SESSIONS_WITHOUT_VIDEO: set[str] = {
     "H4823-221108",  # Raw data and video missing
 }
 
+# Sessions to skip entirely (not converted).
+SESSIONS_TO_SKIP: set[str] = {
+    "H3001-200201",  # Truncated LFP (~30MB, expected ~800MB); likely bad upload
+    "H3029-230510",  # Missing .nrs file
+}
+
 
 def detect_video_and_timestamp_paths(raw_folder_path: Path) -> tuple[list[Path] | None, list[Path]]:
     """Detect video and timestamp files in a Raw directory.
@@ -227,6 +233,8 @@ def collect_session_to_nwb_kwargs_per_session(
                 if not session_folder_path.is_dir():
                     continue
                 folder_name = session_folder_path.name
+                if folder_name in SESSIONS_TO_SKIP:
+                    continue
                 metadata_file_path = adult_metadata_file_path if is_adult else juvenile_metadata_file_path
                 histology_subfolder = histology_folder_path / ("H4800" if is_adult else "H3000")
                 session_to_nwb_kwargs = get_session_to_nwb_kwargs(
