@@ -72,59 +72,6 @@ SESSIONS_WITHOUT_VIDEO: set[str] = {
 }
 
 
-def detect_raw_ephys_paths(raw_folder_path: Path) -> tuple[Path, Path]:
-    """Find the Open Ephys root folder and continuous.xml path within a Raw directory.
-
-    The Open Ephys root folder is defined as the folder containing settings.xml.
-
-    Parameters
-    ----------
-    raw_folder_path : Path
-        The session's Raw directory (or any folder containing Open Ephys output).
-
-    Returns
-    -------
-    tuple[Path, Path]
-        (raw_ephys_folder_path, continuous_xml_path)
-    """
-    raw_ephys_folder_path = next(raw_folder_path.rglob("experiment*")).parent
-    continuous_xml_path = next(raw_folder_path.rglob("continuous.xml"))
-    return raw_ephys_folder_path, continuous_xml_path
-
-
-def detect_processed_paths(
-    session_folder_path: Path, folder_name: str
-) -> tuple[Path, Path, Path, Path, Path]:
-    """Detect processed file paths, handling flat and nested Processed directory layouts.
-
-    Parameters
-    ----------
-    session_folder_path : Path
-        Path to the session folder (e.g. WT/H3022-210805/).
-    folder_name : str
-        Session folder name (e.g. "H3022-210805").
-
-    Returns
-    -------
-    tuple[Path, Path, Path, Path, Path]
-        (processed_xml_path, nrs_path, lfp_file_path, mat_path, sleep_path)
-    """
-    processed_root = session_folder_path / "Processed"
-    nested_directory = processed_root / folder_name
-
-    if nested_directory.is_dir():
-        base = nested_directory
-    else:
-        base = processed_root
-
-    processed_xml_path = base / f"{folder_name}.xml"
-    nrs_path = base / f"{folder_name}.nrs"
-    lfp_file_path = base / f"{folder_name}.lfp"
-    mat_path = base / "Analysis"
-    sleep_path = base / "Sleep"
-    return processed_xml_path, nrs_path, lfp_file_path, mat_path, sleep_path
-
-
 def detect_video_and_timestamp_paths(raw_folder_path: Path) -> tuple[list[Path] | None, list[Path]]:
     """Detect video and timestamp files in a Raw directory.
 
@@ -183,9 +130,14 @@ def get_session_to_nwb_kwargs(
     if folder_name == "H3029-230510": # uses adult-style temporal alignment
         is_adult = True
     raw_folder_path = session_folder_path / "Raw"
-    processed_xml_path, nrs_path, lfp_file_path, mat_path, sleep_path = detect_processed_paths(
-        session_folder_path, folder_name
-    )
+    processed_root = session_folder_path / "Processed"
+    nested_directory = processed_root / folder_name
+    base = nested_directory if nested_directory.is_dir() else processed_root
+    processed_xml_path = base / f"{folder_name}.xml"
+    nrs_path = base / f"{folder_name}.nrs"
+    lfp_file_path = base / f"{folder_name}.lfp"
+    mat_path = base / "Analysis"
+    sleep_path = base / "Sleep"
 
     has_raw_data = folder_name not in SESSIONS_WITHOUT_RAW_DATA
     has_video = folder_name not in SESSIONS_WITHOUT_VIDEO
@@ -197,7 +149,8 @@ def get_session_to_nwb_kwargs(
     ttl_stream_name = None
 
     if has_raw_data:
-        raw_ephys_folder_path, raw_xml_path = detect_raw_ephys_paths(raw_folder_path)
+        raw_ephys_folder_path = next(raw_folder_path.rglob("experiment*")).parent
+        raw_xml_path = next(raw_folder_path.rglob("continuous.xml"))
         stream_name = STREAM_NAME_PER_SESSION[folder_name]
         ttl_stream_name = f"{stream_name}_ADC"
         if folder_name == "H4817-220828":
