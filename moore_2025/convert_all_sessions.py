@@ -9,13 +9,31 @@ from tqdm import tqdm
 
 from moore_2025.convert_session import session_to_nwb
 
+# Manually specified stream names for each session.
+# The ttl_stream_name is always derived as f"{stream_name}_ADC".
+# Sessions that use a .dat file instead of Open Ephys output (e.g. H3023-210812)
+# are handled as edge cases in get_session_to_nwb_kwargs and do not need an entry here.
+STREAM_NAME_PER_SESSION: dict[str, str] = {
+    # Juvenile WT sessions
+    "H3001-200202": "Rhythm_FPGA-100.0",
+    "H3022-210805": "Rhythm_FPGA-100.0",
+    "H3022-210806": "Rhythm_FPGA-100.0",
+    "H3029-230510": "Acquisition_Board-100.Rhythm Data",
+    # Juvenile KO sessions
+    "H3016-210422": "Rhythm_FPGA-100.0",
+    "H3016-210423": "Rhythm_FPGA-100.0",
+    # Adult WT sessions
+    "H4813-220728": "Rhythm_FPGA-103.0",
+    "H4830-230406": "Record Node 103#Acquisition_Board-100.Rhythm Data",
+    # Adult KO sessions
+    "H4817-220828": "Rhythm_FPGA-103.0",
+}
 
-def detect_open_ephys_stream(raw_folder_path: Path) -> tuple[Path, Path, str, str]:
-    """Detect the Open Ephys stream name and ephys root folder from a Raw directory.
 
-    Handles two recording software versions:
-    - Older format: Raw/experiment{N}/recording{M}/continuous/{stream}/continuous.xml
-    - Newer format: Raw/{timestamp}/Record Node {N}/experiment{N}/recording{M}/continuous/{stream}/continuous.xml
+def detect_raw_ephys_paths(raw_folder_path: Path) -> tuple[Path, Path]:
+    """Find the Open Ephys root folder and continuous.xml path within a Raw directory.
+
+    The Open Ephys root folder is defined as the folder containing settings.xml.
 
     Parameters
     ----------
@@ -24,29 +42,12 @@ def detect_open_ephys_stream(raw_folder_path: Path) -> tuple[Path, Path, str, st
 
     Returns
     -------
-    tuple[Path, Path, str, str]
-        (raw_ephys_folder_path, continuous_xml_path, stream_name, ttl_stream_name)
+    tuple[Path, Path]
+        (raw_ephys_folder_path, continuous_xml_path)
     """
+    raw_ephys_folder_path = next(raw_folder_path.rglob("settings.xml")).parent
     continuous_xml_path = next(raw_folder_path.rglob("continuous.xml"))
-
-    # Navigate up from continuous.xml:
-    # parents[0] = stream_folder (e.g. "Rhythm_FPGA-100.0")
-    # parents[1] = "continuous"
-    # parents[2] = recording_folder (e.g. "recording1")
-    # parents[3] = experiment_folder (e.g. "experiment1") OR "Record Node 103"
-    # parents[4] = potential root OR parent of "Record Node"
-    stream_folder = continuous_xml_path.parents[0]
-    potential_root = continuous_xml_path.parents[4]
-
-    if potential_root.name.startswith("Record Node"):
-        raw_ephys_folder_path = potential_root.parent
-        stream_name = f"{potential_root.name}#{stream_folder.name}"
-    else:
-        raw_ephys_folder_path = potential_root
-        stream_name = stream_folder.name
-
-    ttl_stream_name = f"{stream_name}_ADC"
-    return raw_ephys_folder_path, continuous_xml_path, stream_name, ttl_stream_name
+    return raw_ephys_folder_path, continuous_xml_path
 
 
 def detect_processed_paths(
@@ -127,8 +128,9 @@ def get_session_to_nwb_kwargs(
 ) -> dict[str, Any]:
     """Build the kwargs dict for session_to_nwb for a single session.
 
-    Handles auto-detection of stream names, file paths, and layout variations.
-    Named edge-case branches handle sessions with unusual directory structures.
+    Stream names are looked up from STREAM_NAME_PER_SESSION. File paths are
+    detected from the directory structure. Named edge-case branches handle
+    sessions with unusual directory structures.
 
     Parameters
     ----------
@@ -158,9 +160,9 @@ def get_session_to_nwb_kwargs(
     if folder_name == "H3001-200202":
         # Unusual Raw subfolder: the ephys data lives in Raw/H3001-200202/
         ephys_search_root = raw_folder_path / folder_name
-        raw_ephys_folder_path, raw_xml_path, stream_name, ttl_stream_name = detect_open_ephys_stream(
-            ephys_search_root
-        )
+        raw_ephys_folder_path, raw_xml_path = detect_raw_ephys_paths(ephys_search_root)
+        stream_name = STREAM_NAME_PER_SESSION[folder_name]
+        ttl_stream_name = f"{stream_name}_ADC"
         video_file_paths = None
         timestamps_file_paths = sorted(ephys_search_root.rglob("Bonsai testing*.csv"))
 
@@ -195,9 +197,9 @@ def get_session_to_nwb_kwargs(
     elif folder_name == "H3029-230510":
         # Unusual Raw structure: Raw/day2/experiment2/; uses adult-style temporal alignment
         ephys_search_root = raw_folder_path / "day2" / "experiment2"
-        raw_ephys_folder_path, raw_xml_path, stream_name, ttl_stream_name = detect_open_ephys_stream(
-            ephys_search_root
-        )
+        raw_ephys_folder_path, raw_xml_path = detect_raw_ephys_paths(ephys_search_root)
+        stream_name = STREAM_NAME_PER_SESSION[folder_name]
+        ttl_stream_name = f"{stream_name}_ADC"
         video_file_paths, timestamps_file_paths = detect_video_and_timestamp_paths(
             ephys_search_root, is_adult=True
         )
@@ -205,18 +207,18 @@ def get_session_to_nwb_kwargs(
 
     elif folder_name == "H4817-220828":
         # Raw XML is missing a channel; use processed XML as raw XML
-        raw_ephys_folder_path, _, stream_name, ttl_stream_name = detect_open_ephys_stream(
-            raw_folder_path
-        )
+        raw_ephys_folder_path, _ = detect_raw_ephys_paths(raw_folder_path)
         raw_xml_path = processed_xml_path
+        stream_name = STREAM_NAME_PER_SESSION[folder_name]
+        ttl_stream_name = f"{stream_name}_ADC"
         video_file_paths, timestamps_file_paths = detect_video_and_timestamp_paths(
             raw_folder_path, is_adult
         )
 
     else:
-        raw_ephys_folder_path, raw_xml_path, stream_name, ttl_stream_name = detect_open_ephys_stream(
-            raw_folder_path
-        )
+        raw_ephys_folder_path, raw_xml_path = detect_raw_ephys_paths(raw_folder_path)
+        stream_name = STREAM_NAME_PER_SESSION[folder_name]
+        ttl_stream_name = f"{stream_name}_ADC"
         video_file_paths, timestamps_file_paths = detect_video_and_timestamp_paths(
             raw_folder_path, is_adult
         )
@@ -353,6 +355,8 @@ def dataset_to_nwb(
         juvenile_metadata_file_path=juvenile_metadata_file_path,
         adult_metadata_file_path=adult_metadata_file_path,
     )
+    print(f"Collected session_to_nwb kwargs for {len(session_to_nwb_kwargs_per_session)} sessions.")
+    return
 
     futures = []
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
@@ -380,7 +384,7 @@ if __name__ == "__main__":
     juvenile_metadata_file_path = Path(__file__).parent / "juvenile_metadata.yaml"
     adult_metadata_file_path = Path(__file__).parent / "adult_metadata.yaml"
     stub_test = False
-    max_workers = 1
+    max_workers = 10
 
     dataset_to_nwb(
         data_dir_path=data_dir_path,
