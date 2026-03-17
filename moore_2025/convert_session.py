@@ -188,8 +188,9 @@ def session_to_nwb(
     processed_xml_data = nwb.io.read_xml(processed_xml_path)  # load all ephys info from the processed xml file
     lfp_sampling_rate = float(raw_xml_data['eeg_sampling_rate'])
     nrs_data = nwb.io.read_nrs(nrs_path)  # load faulty channel info from the nrs file (i.e. channels not shown in Neuroscope)
+    first_video_file_path = video_file_paths[0] if has_video else None
     metadata = nwb.io.read_metadata(meta_path, folder_name, print_output=True)  # Load all metadata from the xlsx file
-    start_time = get_start_time(timestamps_file_paths[0], video_file_paths[0])  # load start time from the first timestamps CSV file
+    start_time = get_start_time(timestamps_file_paths[0], first_video_file_path)  # load start time from the first timestamps CSV file
 
     # Load tracking, epochs and spikes from Matlab files (mostly loaded as pynapple objects)
     pos = nwb.io.get_matlab_position(mat_path / 'TrackingProcessed_Final.mat', vbl_name='pos')
