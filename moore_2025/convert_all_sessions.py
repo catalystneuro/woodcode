@@ -25,7 +25,7 @@ STREAM_NAME_PER_SESSION: dict[str, str | None] = {
     "H3008-200807": "Rhythm_FPGA-100.0",
     "H3009-200812": "Rhythm_FPGA-100.0",
     "H3009-200813": "Rhythm_FPGA-100.0",
-    "H3015-210416_1": "Rhythm_FPGA-100.0",
+    "H3015-210416_1": None,
     "H3015-210416_2": "Rhythm_FPGA-100.0",
     "H3015-210417": "Rhythm_FPGA-100.0",
     "H3016-210422": "Rhythm_FPGA-100.0",
@@ -60,6 +60,7 @@ SESSIONS_WITHOUT_RAW_DATA: set[str] = {
     "H3023-210813_1",  # Raw data missing
     "H3026-211003",    # Raw data missing
     "H3026-211004_2",  # Raw data missing
+    "H3015-210416_1",  # Raw data missing
     "H4823-221108",    # Raw data and video missing
 }
 
