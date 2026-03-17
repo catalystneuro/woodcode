@@ -54,6 +54,92 @@ STREAM_NAME_PER_SESSION: dict[str, str] = {
     "H4830-230406": "Record Node 103#Acquisition_Board-100.Rhythm Data",  # exception
 }
 
+# Whether each session has raw Open Ephys data. False means only processed data
+# (e.g. .dat / .lfp) is available; get_session_to_nwb_kwargs uses this to switch
+# to the no-raw-data path.
+HAS_RAW_DATA_PER_SESSION: dict[str, bool] = {
+    # Juvenile sessions
+    "H3001-200201": True,
+    "H3001-200202": True,
+    "H3003-200207": True,
+    "H3003-200208": True,
+    "H3006-200314_1": True,
+    "H3006-200314_2": True,
+    "H3008-200805": True,
+    "H3008-200807": True,
+    "H3009-200812": True,
+    "H3009-200813": True,
+    "H3015-210416_1": True,
+    "H3015-210416_2": True,
+    "H3015-210417": True,
+    "H3016-210422": True,
+    "H3016-210423": True,
+    "H3019-210617": True,
+    "H3019-210618_1": True,
+    "H3022-210805": True,
+    "H3022-210806": True,
+    "H3023-210812": False,   # Raw data missing
+    "H3023-210813_1": False,  # Raw data missing
+    "H3026-211003": False,   # Raw data missing
+    "H3026-211004_2": False,  # Raw data missing
+    "H3029-230510": True,
+    # Adult sessions
+    "H4813-220728": True,
+    "H4815-220814": True,
+    "H4817-220828": True,
+    "H4819-220929": True,
+    "H4820-221007": True,
+    "H4822-221023": True,
+    "H4823-221108": False,   # Raw data and video missing
+    "H4824-221117": True,
+    "H4825-221124": True,
+    "H4826-221203": True,
+    "H4827-221210": True,
+    "H4830-230406": True,
+}
+
+# Whether each session has video data recorded.
+HAS_VIDEO_PER_SESSION: dict[str, bool] = {
+    # Juvenile sessions
+    "H3001-200201": False,   # Video not recorded
+    "H3001-200202": False,   # Video not recorded
+    "H3003-200207": True,
+    "H3003-200208": True,
+    "H3006-200314_1": True,
+    "H3006-200314_2": True,
+    "H3008-200805": True,
+    "H3008-200807": True,
+    "H3009-200812": True,
+    "H3009-200813": True,
+    "H3015-210416_1": True,
+    "H3015-210416_2": True,
+    "H3015-210417": True,
+    "H3016-210422": True,
+    "H3016-210423": True,
+    "H3019-210617": True,
+    "H3019-210618_1": True,
+    "H3022-210805": True,
+    "H3022-210806": True,
+    "H3023-210812": True,
+    "H3023-210813_1": True,
+    "H3026-211003": True,
+    "H3026-211004_2": True,
+    "H3029-230510": True,
+    # Adult sessions
+    "H4813-220728": True,
+    "H4815-220814": True,
+    "H4817-220828": True,
+    "H4819-220929": True,
+    "H4820-221007": True,
+    "H4822-221023": False,   # Video missing
+    "H4823-221108": False,   # Raw data and video missing
+    "H4824-221117": True,
+    "H4825-221124": True,
+    "H4826-221203": True,
+    "H4827-221210": True,
+    "H4830-230406": True,
+}
+
 
 def detect_raw_ephys_paths(raw_folder_path: Path) -> tuple[Path, Path]:
     """Find the Open Ephys root folder and continuous.xml path within a Raw directory.
@@ -163,30 +249,59 @@ def get_session_to_nwb_kwargs(
         Kwargs to pass to session_to_nwb (excluding save_path and stub_test).
     """
     print(f"Collecting session_to_nwb kwargs for session {folder_name}...")
+    if folder_name == "H3029-230510": # uses adult-style temporal alignment
+        is_adult = True
     raw_folder_path = session_folder_path / "Raw"
     processed_xml_path, nrs_path, lfp_file_path, mat_path, sleep_path = detect_processed_paths(
         session_folder_path, folder_name
     )
 
-    if folder_name == "H3001-200202":
-        # Unusual Raw subfolder: the ephys data lives in Raw/H3001-200202/
-        ephys_search_root = raw_folder_path / folder_name
-        raw_ephys_folder_path, raw_xml_path = detect_raw_ephys_paths(ephys_search_root)
+    has_raw_data = HAS_RAW_DATA_PER_SESSION[folder_name]
+    has_video = HAS_VIDEO_PER_SESSION[folder_name]
+
+    if has_raw_data:
+        raw_ephys_folder_path, raw_xml_path = detect_raw_ephys_paths(raw_folder_path)
         stream_name = STREAM_NAME_PER_SESSION[folder_name]
         ttl_stream_name = f"{stream_name}_ADC"
-        video_file_paths = None
-        timestamps_file_paths = sorted(ephys_search_root.rglob("Bonsai testing*.csv"))
 
-    elif folder_name == "H3023-210812":
-        # No raw Open Ephys folder; use .dat file and find media in Processed/
+        if folder_name == "H4817-220828":
+            raw_xml_path = processed_xml_path  # raw XML is missing a channel
+
+        video_file_paths, timestamps_file_paths = detect_video_and_timestamp_paths(raw_folder_path)
+        if not has_video:
+            video_file_paths = None
+
+        return dict(
+            folder_name=folder_name,
+            raw_xml_path=raw_xml_path,
+            processed_xml_path=processed_xml_path,
+            nrs_path=nrs_path,
+            meta_path=meta_path,
+            mat_path=mat_path,
+            sleep_path=sleep_path,
+            timestamps_file_paths=timestamps_file_paths,
+            lfp_file_path=lfp_file_path,
+            metadata_file_path=metadata_file_path,
+            histology_folder_path=histology_folder_path,
+            stream_name=stream_name,
+            ttl_stream_name=ttl_stream_name,
+            raw_ephys_folder_path=raw_ephys_folder_path,
+            video_file_paths=video_file_paths,
+            is_adult=is_adult,
+        )
+    else:
+        # No raw Open Ephys data; use .dat file from Processed/.
         processed_root = session_folder_path / "Processed"
-        raw_xml_path = processed_xml_path  # processed XML used as raw XML (raw data missing)
+        raw_xml_path = processed_xml_path
         raw_ephys_folder_path = None
         raw_ephys_dat_file_path = processed_root / f"{folder_name}.dat"
         stream_name = None
         ttl_stream_name = None
-        video_file_paths = sorted(processed_root.glob("BonsaiCapture*.avi")) or None
-        timestamps_file_paths = sorted(processed_root.glob("BonsaiTracking*.csv"))
+
+        video_file_paths, timestamps_file_paths = detect_video_and_timestamp_paths(processed_root)
+        if not has_video:
+            video_file_paths = None
+
         return dict(
             folder_name=folder_name,
             raw_xml_path=raw_xml_path,
@@ -204,48 +319,6 @@ def get_session_to_nwb_kwargs(
             video_file_paths=video_file_paths,
             is_adult=is_adult,
         )
-
-    elif folder_name == "H3029-230510":
-        # Unusual Raw structure: Raw/day2/experiment2/; uses adult-style temporal alignment
-        ephys_search_root = raw_folder_path / "day2" / "experiment2"
-        raw_ephys_folder_path, raw_xml_path = detect_raw_ephys_paths(ephys_search_root)
-        stream_name = STREAM_NAME_PER_SESSION[folder_name]
-        ttl_stream_name = f"{stream_name}_ADC"
-        video_file_paths, timestamps_file_paths = detect_video_and_timestamp_paths(ephys_search_root)
-        is_adult = True  # adult-style temporal alignment despite being a juvenile
-
-    elif folder_name == "H4817-220828":
-        # Raw XML is missing a channel; use processed XML as raw XML
-        raw_ephys_folder_path, _ = detect_raw_ephys_paths(raw_folder_path)
-        raw_xml_path = processed_xml_path
-        stream_name = STREAM_NAME_PER_SESSION[folder_name]
-        ttl_stream_name = f"{stream_name}_ADC"
-        video_file_paths, timestamps_file_paths = detect_video_and_timestamp_paths(raw_folder_path)
-
-    else:
-        raw_ephys_folder_path, raw_xml_path = detect_raw_ephys_paths(raw_folder_path)
-        stream_name = STREAM_NAME_PER_SESSION[folder_name]
-        ttl_stream_name = f"{stream_name}_ADC"
-        video_file_paths, timestamps_file_paths = detect_video_and_timestamp_paths(raw_folder_path)
-
-    return dict(
-        folder_name=folder_name,
-        raw_xml_path=raw_xml_path,
-        processed_xml_path=processed_xml_path,
-        nrs_path=nrs_path,
-        meta_path=meta_path,
-        mat_path=mat_path,
-        sleep_path=sleep_path,
-        timestamps_file_paths=timestamps_file_paths,
-        lfp_file_path=lfp_file_path,
-        metadata_file_path=metadata_file_path,
-        histology_folder_path=histology_folder_path,
-        stream_name=stream_name,
-        ttl_stream_name=ttl_stream_name,
-        raw_ephys_folder_path=raw_ephys_folder_path,
-        video_file_paths=video_file_paths,
-        is_adult=is_adult,
-    )
 
 
 def collect_session_to_nwb_kwargs_per_session(
