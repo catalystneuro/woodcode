@@ -371,7 +371,7 @@ def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None, comment
     return nwbfile
 
 
-def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: list[np.ndarray], is_adult: bool, comments: str = "no comments"):
+def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: list[np.ndarray], metadata: dict, is_adult: bool, comments: str = "no comments"):
     print('Adding raw tracking to NWB file...')
 
     item1_pos, item_2_pos, full_aligned_timestamps = [], [], []
@@ -394,7 +394,7 @@ def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: li
     # Create the spatial series for position
     spatial_series_1 = SpatialSeries(
         name='item1_position',
-        description="Raw (x,y) position of Item 1 from Bonsai tracking data. Item 1 is an LED or marker placed on the animal's head.",
+        description=f"Raw (x,y) position of Item 1 from Bonsai tracking data. Item 1 is an LED or marker placed on the animal's head [{metadata['Bonsai']['item1']}].",
         comments=comments,
         data=item1_pos,
         timestamps=full_aligned_timestamps,
@@ -403,7 +403,7 @@ def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: li
     )
     spatial_series_2 = SpatialSeries(
         name='item2_position',
-        description="Raw (x,y) position of Item 2 from Bonsai tracking data. Item 2 is an LED or marker placed on the animal's head.",
+        description=f"Raw (x,y) position of Item 2 from Bonsai tracking data. Item 2 is an LED or marker placed on the animal's head [{metadata['Bonsai']['item2']}].",
         comments=comments,
         data=item_2_pos,
         timestamps=full_aligned_timestamps,

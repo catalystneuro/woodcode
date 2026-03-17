@@ -214,7 +214,7 @@ def session_to_nwb(
     nwbfile = nwb.convert.add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=hd, comments=dat_file_comments)
     if has_video:
         nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=video_file_paths, all_aligned_video_timestamps=all_aligned_video_timestamps, metadata=metadata, comments=dat_file_comments)
-        nwbfile = nwb.convert.add_raw_tracking(nwbfile=nwbfile, file_paths=timestamps_file_paths, all_aligned_timestamps=all_aligned_video_timestamps, is_adult=is_adult, comments=dat_file_comments)
+        nwbfile = nwb.convert.add_raw_tracking(nwbfile=nwbfile, file_paths=timestamps_file_paths, all_aligned_timestamps=all_aligned_video_timestamps, metadata=metadata, is_adult=is_adult, comments=dat_file_comments)
     nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate, comments=dat_file_comments)
     epochs = nwb.convert.get_epochs_from_eseries(eseries=nwbfile.acquisition['e-series'])
     nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
