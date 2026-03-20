@@ -76,8 +76,6 @@ SESSIONS_WITHOUT_VIDEO: set[str] = {
 
 # Sessions to skip entirely (not converted).
 SESSIONS_TO_SKIP: set[str] = {
-    "H3001-200201",  # Truncated LFP (~30MB, expected ~800MB); likely bad upload
-    "H3029-230510",  # Missing .nrs file
     "H3023-210813_1", # Missing .nrs file
     "H3019-210618_1", # Missing .nrs file
     "H3019-210617",  # Missing .nrs file
