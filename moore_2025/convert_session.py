@@ -609,7 +609,7 @@ def main():
     juvenile_histology_folder_path = histology_folder_path / "H3000"
     folder_name = 'H3029-230510'
     processed_xml_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.xml')  # path to xml file
-    raw_xml_path = jv_wt_folder_path / folder_name / "Raw" / "day2" / "experiment2" / "recording1" / "continuous" / "Acquisition_Board-100.Rhythm Data" / "continuous.xml"
+    raw_xml_path = processed_xml_path  # Raw XML for this session is missing the SpikeGroup section, so using the Processed XML instead
     nrs_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
     mat_path = jv_wt_folder_path / folder_name / "Processed" / 'Analysis'
     sleep_path = jv_wt_folder_path / folder_name / "Processed" / 'Sleep'

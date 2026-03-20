@@ -207,7 +207,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
     # Ensure number of shanks in metadata matches xmldata
     if len(shank_assignments) != len(xmldata["spike_groups"]):
         warnings.warn("Mismatch between shank count in metadata and xmldata['spike_groups']. Truncating xmldata['spike_groups'] to match metadata.", UserWarning)
-        assert len(shank_assignments) <= len(xmldata["spike_groups"]), "Metadata specifies more shanks than present in xmldata['spike_groups']"
+        assert len(shank_assignments) <= len(xmldata["spike_groups"]), f"Metadata specifies more shanks ({len(shank_assignments)}) than present in xmldata['spike_groups'] ({len(xmldata['spike_groups'])})"
         xmldata["spike_groups"] = xmldata["spike_groups"][:len(shank_assignments)] # Truncate to match metadata
 
     shank_id_to_num_electrodes = {}
