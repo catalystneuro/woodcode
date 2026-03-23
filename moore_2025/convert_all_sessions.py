@@ -95,6 +95,11 @@ SESSIONS_TO_SKIP: set[str] = {
     "H3026-211004_2",    # Mismatched metadata and XML (metadata specifies 32 channels but XML contains 64)
 }
 
+# TODO: Consider a more robust solution.
+SESSION_TO_ALT_XML_FOLDER_PATH: dict[str, Path] = {
+    "H4815-220814": Path("/Volumes/T7/CatalystNeuro/Dudchenko/251104_MooreDataset/H4800_Adults/WT/H4820-221007"), # XMLs for this session are missing a channel, so using a neighbor instead
+}
+
 
 def detect_video_and_timestamp_paths(raw_folder_path: Path) -> tuple[list[Path] | None, list[Path]]:
     """Detect video and timestamp files in a Raw directory.
@@ -178,7 +183,11 @@ def get_session_to_nwb_kwargs(
 
     if has_raw_data:
         raw_ephys_folder_path = next(raw_folder_path.rglob("experiment*")).parent
-        raw_xml_path = next(raw_folder_path.rglob("continuous.xml"))
+        if folder_name in SESSION_TO_ALT_XML_FOLDER_PATH:
+            alt_xml_raw_folder_path = SESSION_TO_ALT_XML_FOLDER_PATH[folder_name] / "Raw"
+            raw_xml_path = next(alt_xml_raw_folder_path.rglob("continuous.xml"))
+        else:
+            raw_xml_path = next(raw_folder_path.rglob("continuous.xml"))
         if folder_name in SESSIONS_USING_PROCESSED_XML:
             raw_xml_path = processed_xml_path
         stream_name = STREAM_NAME_PER_SESSION[folder_name]
@@ -382,6 +391,7 @@ def dataset_to_nwb(
         histology_folder_path=adult_histology_folder_path,
         metadata_file_path=adult_metadata_file_path,
     )
+    session_to_nwb_kwargs_per_session = [kwargs for kwargs in session_to_nwb_kwargs_per_session if kwargs["folder_name"] == "H4823-221108"]
     print(f"Collected session_to_nwb kwargs for {len(session_to_nwb_kwargs_per_session)} sessions.")
 
     futures = []
