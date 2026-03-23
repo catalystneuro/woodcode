@@ -76,17 +76,8 @@ SESSIONS_WITHOUT_VIDEO: set[str] = {
 
 # Sessions that should use Processed/<session>.xml for raw_xml_path, even if raw data exists.
 SESSIONS_USING_PROCESSED_XML: set[str] = {
-    # "H3001-200201",
-    # "H3003-200208",
-    # "H3006-200314_1",
-    # "H3006-200314_2",
-    # "H3008-200805",
-    # "H3009-200812",
-    # "H3026-211003",
-    # "H3026-211004_2",
-    # "H4817-220828",
-    # "H4822-221023",
-    # "H4823-221108",
+    "H3029-230510", # Raw XML for this session is missing the SpikeGroup section, so using the Processed XML instead
+    "H4817-220828", # Raw XML for this session is missing one of the channels (channel 38 on shank 1), so using the Processed XML instead
 }
 
 # Sessions to skip entirely (not converted).
@@ -99,6 +90,9 @@ SESSIONS_TO_SKIP: set[str] = {
     "H3019-210618_1",    # Missing .nrs file
     "H3015-210416_1",    # Missing .nrs file
     "H3023-210813_1",    # Missing .nrs file
+    "H3006-200314_1",    # Multi-experiment session
+    "H3026-211003",      # Mismatched metadata and XML (metadata specifies 32 channels but XML contains 64)
+    "H3026-211004_2",    # Mismatched metadata and XML (metadata specifies 32 channels but XML contains 64)
 }
 
 

@@ -573,7 +573,6 @@ def main():
     adult_wt_folder_path = adult_folder_path / "WT"
     adult_histology_folder_path = histology_folder_path / "H4800"
     folder_name = 'H4823-221108'
-    # /Volumes/T7/CatalystNeuro/Dudchenko/251104_MooreDataset/H4800_Adults/WT/H4823-221108/Processed/H4823-221108/H4823-221108.xml
     processed_xml_path = adult_wt_folder_path / folder_name / "Processed" / folder_name / (folder_name + '.xml')  # path to xml file
     raw_xml_path = processed_xml_path
     nrs_path = adult_wt_folder_path / folder_name / "Processed" / folder_name / (folder_name + '.nrs')  # path to xml file
