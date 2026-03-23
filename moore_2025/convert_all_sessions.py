@@ -76,14 +76,14 @@ SESSIONS_WITHOUT_VIDEO: set[str] = {
 
 # Sessions to skip entirely (not converted).
 SESSIONS_TO_SKIP: set[str] = {
-    "H3023-210813_1", # Missing .nrs file
-    "H3019-210618_1", # Missing .nrs file
-    "H3019-210617",  # Missing .nrs file
-    "H3015-210417", # Missing .nrs file
-    "H3015-210416_2", # Missing .nrs file
-    "H3015-210416_1", # Missing .nrs file
-    # Wait, actually some of these do have .nrs files; they're just not named the same as the folder name. 
-    # TODO: investigate further
+    "H3009-200813",      # Missing .nrs file
+    "H3015-210416_2",    # Missing .nrs file
+    "H3015-210417",      # Missing .nrs file
+    "H3008-200807",      # Missing .nrs file
+    "H3019-210617",      # Missing .nrs file
+    "H3019-210618_1",    # Missing .nrs file
+    "H3015-210416_1",    # Missing .nrs file
+    "H3023-210813_1",    # Missing .nrs file
 }
 
 
@@ -149,7 +149,11 @@ def get_session_to_nwb_kwargs(
     nested_directory = processed_root / folder_name
     base = nested_directory if nested_directory.is_dir() else processed_root
     processed_xml_path = base / f"{folder_name}.xml"
-    nrs_path = base / f"{folder_name}.nrs"
+    try:
+        nrs_path = next(base.glob("*.nrs"))
+    except StopIteration:
+        nrs_path = None
+        print(f"Warning: No .nrs file found for session {folder_name} in {base}.")
     lfp_file_path = base / f"{folder_name}.lfp"
     mat_path = base / "Analysis"
     sleep_path = base / "Sleep"
