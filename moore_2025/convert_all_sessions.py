@@ -182,12 +182,12 @@ def get_session_to_nwb_kwargs(
     ttl_stream_name = None
 
     if has_raw_data:
-        raw_ephys_folder_path = next(raw_folder_path.rglob("experiment*")).parent
+        raw_ephys_folder_path = sorted(raw_folder_path.rglob("experiment*"))[0].parent
         if folder_name in SESSION_TO_ALT_XML_FOLDER_PATH:
             alt_xml_raw_folder_path = SESSION_TO_ALT_XML_FOLDER_PATH[folder_name] / "Raw"
-            raw_xml_path = next(alt_xml_raw_folder_path.rglob("continuous.xml"))
+            raw_xml_path = sorted(alt_xml_raw_folder_path.rglob("continuous.xml"))[0]
         else:
-            raw_xml_path = next(raw_folder_path.rglob("continuous.xml"))
+            raw_xml_path = sorted(raw_folder_path.rglob("continuous.xml"))[0]
         if folder_name in SESSIONS_USING_PROCESSED_XML:
             raw_xml_path = processed_xml_path
         stream_name = STREAM_NAME_PER_SESSION[folder_name]
@@ -420,7 +420,7 @@ if __name__ == "__main__":
     juvenile_metadata_file_path = Path(__file__).parent / "juvenile_metadata.yaml"
     adult_metadata_file_path = Path(__file__).parent / "adult_metadata.yaml"
     stub_test = True
-    max_workers = 10
+    max_workers = 5
 
     dataset_to_nwb(
         juvenile_dir_path=juvenile_dir_path,
