@@ -161,16 +161,16 @@ def get_session_to_nwb_kwargs(
     raw_folder_path = session_folder_path / "Raw"
     processed_root = session_folder_path / "Processed"
     nested_directory = processed_root / folder_name
-    base = nested_directory if nested_directory.is_dir() else processed_root
-    processed_xml_path = base / f"{folder_name}.xml"
+    processed_folder_path = nested_directory if nested_directory.is_dir() else processed_root
+    processed_xml_path = processed_folder_path / f"{folder_name}.xml"
     try:
-        nrs_path = next(base.glob("*.nrs"))
+        nrs_path = next(processed_folder_path.glob("*.nrs"))
     except StopIteration:
         nrs_path = None
-        print(f"Warning: No .nrs file found for session {folder_name} in {base}.")
-    lfp_file_path = base / f"{folder_name}.lfp"
-    mat_path = base / "Analysis"
-    sleep_path = base / "Sleep"
+        print(f"Warning: No .nrs file found for session {folder_name} in {processed_folder_path}.")
+    lfp_file_path = processed_folder_path / f"{folder_name}.lfp"
+    mat_path = processed_folder_path / "Analysis"
+    sleep_path = processed_folder_path / "Sleep"
 
     has_raw_data = folder_name not in SESSIONS_WITHOUT_RAW_DATA
     has_video = folder_name not in SESSIONS_WITHOUT_VIDEO
@@ -195,10 +195,9 @@ def get_session_to_nwb_kwargs(
         video_file_paths, timestamps_file_paths = detect_video_and_timestamp_paths(raw_folder_path)
     else:
         # No raw Open Ephys data; use .dat file from Processed/.
-        processed_root = session_folder_path / "Processed"
         raw_xml_path = processed_xml_path
-        raw_ephys_dat_file_path = processed_root / f"{folder_name}.dat"
-        video_file_paths, timestamps_file_paths = detect_video_and_timestamp_paths(processed_root)
+        raw_ephys_dat_file_path = processed_folder_path / f"{folder_name}.dat"
+        video_file_paths, timestamps_file_paths = detect_video_and_timestamp_paths(processed_folder_path)
 
     if not has_video:
         video_file_paths = None
@@ -391,7 +390,6 @@ def dataset_to_nwb(
         histology_folder_path=adult_histology_folder_path,
         metadata_file_path=adult_metadata_file_path,
     )
-    session_to_nwb_kwargs_per_session = [kwargs for kwargs in session_to_nwb_kwargs_per_session if kwargs["folder_name"] == "H4823-221108"]
     print(f"Collected session_to_nwb kwargs for {len(session_to_nwb_kwargs_per_session)} sessions.")
 
     futures = []
