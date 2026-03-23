@@ -74,6 +74,21 @@ SESSIONS_WITHOUT_VIDEO: set[str] = {
     "H4823-221108",  # Raw data and video missing
 }
 
+# Sessions that should use Processed/<session>.xml for raw_xml_path, even if raw data exists.
+SESSIONS_USING_PROCESSED_XML: set[str] = {
+    # "H3001-200201",
+    # "H3003-200208",
+    # "H3006-200314_1",
+    # "H3006-200314_2",
+    # "H3008-200805",
+    # "H3009-200812",
+    # "H3026-211003",
+    # "H3026-211004_2",
+    # "H4817-220828",
+    # "H4822-221023",
+    # "H4823-221108",
+}
+
 # Sessions to skip entirely (not converted).
 SESSIONS_TO_SKIP: set[str] = {
     "H3009-200813",      # Missing .nrs file
@@ -170,10 +185,10 @@ def get_session_to_nwb_kwargs(
     if has_raw_data:
         raw_ephys_folder_path = next(raw_folder_path.rglob("experiment*")).parent
         raw_xml_path = next(raw_folder_path.rglob("continuous.xml"))
+        if folder_name in SESSIONS_USING_PROCESSED_XML:
+            raw_xml_path = processed_xml_path
         stream_name = STREAM_NAME_PER_SESSION[folder_name]
         ttl_stream_name = f"{stream_name}_ADC"
-        if folder_name == "H4817-220828":
-            raw_xml_path = processed_xml_path  # raw XML is missing a channel
         video_file_paths, timestamps_file_paths = detect_video_and_timestamp_paths(raw_folder_path)
     else:
         # No raw Open Ephys data; use .dat file from Processed/.

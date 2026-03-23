@@ -7,7 +7,7 @@ import pytz
 from spikeinterface.extractors import OpenEphysBinaryRecordingExtractor
 from time import time
 
-def get_start_time(timestamps_file_path: Path, video_file_path: Path) -> str:
+def get_start_time(timestamps_file_path: Path | None = None, video_file_path: Path | None = None, folder_name: str = "") -> str:
     """
     Get the session start datetime from the name of the timestamps CSV file.
     
@@ -17,12 +17,22 @@ def get_start_time(timestamps_file_path: Path, video_file_path: Path) -> str:
         Path to the timestamps CSV file.
     video_file_path : Path
         Path to the video file, used as a fallback if the datetime cannot be extracted from the timestamps file name.
+    folder_name : str
+        Name of the session folder, used as a fallback if the datetime cannot be extracted from the timestamps or video file names.
     
     Returns
     -------
     datetime
         The session start datetime with timezone information.
     """
+    if timestamps_file_path is None and video_file_path is None:
+        # Example folder names: H4823-221108, H3026-211004_2
+        folder_date_string = folder_name.split("-")[-1].split("_")[0]
+        start_time = datetime.strptime(folder_date_string, '%y%m%d')
+        tz_info = pytz.timezone('Europe/London')
+        start_time = tz_info.localize(start_time)
+        return start_time
+    
     # Example filename: 'Bonsai testing2021-08-05T17_06_23.csv'
     filename = timestamps_file_path.stem  # Ex. 'Bonsai testing2021-08-05T17_06_23'
     pattern = r'(\d{4}-\d{2}-\d{2}T\d{2}_\d{2}_\d{2})'
