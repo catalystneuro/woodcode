@@ -20,6 +20,7 @@ from pynwb.device import DeviceModel
 from neuroconv.utils import calculate_regular_series_rate
 from neuroconv.tools.nwb_helpers import configure_and_write_nwbfile
 from .dat_file_data_chunk_iterator import DatFileDataChunkIterator
+from .io import load_eeg
 
 def create_nwb_file(metadata, start_time):
     # get info from folder name
@@ -629,8 +630,7 @@ def add_lfp(nwbfile, lfp_path, xml_data, raw_eseries, stub_test=False, comments:
     chan_order = np.concatenate(xml_data['spike_groups'])
 
     # lazy load LFP
-    lfp_data = nap.load_eeg(filepath=lfp_path, channel=None, n_channels=xml_data['n_channels'], frequency=float(xml_data['eeg_sampling_rate']), precision='int16',
-                            bytes_size=2)
+    lfp_data = load_eeg(filepath=lfp_path, n_channels=xml_data['n_channels'], frequency=float(xml_data['eeg_sampling_rate']), bytes_size=2)
     if stub_test:
         raw_num_pts = 100 # This is the number of points used for stubbing a single segment of raw ephys data.
         lfp_num_pts = int(raw_num_pts / downsample_factor)
@@ -975,12 +975,10 @@ def add_raw_ephys_from_dat(nwbfile: NWBFile, dat_file_path: Path, xml_data: dict
     # Load DAT file using pynapple (same approach as add_lfp).
     # Do NOT apply chan_order here — that would force the full 20GB file into memory.
     # Channel reordering is handled chunk-by-chunk inside DatFileDataChunkIterator.
-    raw_data = nap.load_eeg(
+    raw_data = load_eeg(
         filepath=dat_file_path,
-        channel=None,
         n_channels=xml_data['n_channels'],
         frequency=sampling_rate,
-        precision='int16',
         bytes_size=2,
     )
 
