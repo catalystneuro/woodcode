@@ -420,9 +420,8 @@ if __name__ == "__main__":
     juvenile_metadata_file_path = Path(__file__).parent / "juvenile_metadata.yaml"
     adult_metadata_file_path = Path(__file__).parent / "adult_metadata.yaml"
     stub_test = True
-    max_workers = 5
+    max_workers = 10
 
-    # TODO: profile this script to relieve memory pressure.
     dataset_to_nwb(
         juvenile_dir_path=juvenile_dir_path,
         adult_dir_path=adult_dir_path,
