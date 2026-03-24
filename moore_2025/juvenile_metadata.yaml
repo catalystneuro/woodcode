@@ -14,6 +14,10 @@ Task:
     description: The rat was awake and foraging for scattered cereal in a cylindrical open field. The recording environment consisted of a cylindrical arena of 73 cm diameter, with 54 cm tall walls, painted light blue. A prominent visual cue was positioned at the top of the wall on the north side; this was 31.5 cm wide and 26 cm tall and consisted of two black horizontal stripes with a white stripe between them.
     environment: cylindrical_open_field
     camera_id: 0
+  error:
+    description: An error occurred during the setup of this session. See the next available epoch for a correctly set up session.
+    environment: cylindrical_open_field
+    camera_id: 0
 
 Video:
   ImageSeries:

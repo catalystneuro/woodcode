@@ -19,6 +19,8 @@ from pynwb.base import Images
 from pynwb.device import DeviceModel
 from neuroconv.utils import calculate_regular_series_rate
 from neuroconv.tools.nwb_helpers import configure_and_write_nwbfile
+from .dat_file_data_chunk_iterator import DatFileDataChunkIterator
+from .io import load_eeg
 
 def create_nwb_file(metadata, start_time):
     # get info from folder name
@@ -166,7 +168,7 @@ def add_units(nwbfile, raw_xml_data, processed_xml_data, spikes, waveforms, shan
             f"Waveform mean shape {waveform_mean.shape[1]} does not match expected number of channels {shank_id_to_num_channels[shank_index]} for shank {shank_index}"
         
         # Temporally align spike times to LFP timestamps
-        unaligned_lfp_timestamps = np.arange(0, lfp_eseries.data.shape[0]) / lfp_sampling_rate
+        unaligned_lfp_timestamps = np.arange(0, lfp_eseries.data._raw_data.shape[0]) / lfp_sampling_rate
         aligned_lfp_timestamps = lfp_eseries.timestamps[:]
         aligned_spike_times = np.interp(x=spike_times, xp=unaligned_lfp_timestamps, fp=aligned_lfp_timestamps)
         
@@ -205,10 +207,11 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
 
     # Ensure number of shanks in metadata matches xmldata
     if len(shank_assignments) != len(xmldata["spike_groups"]):
-        raise ValueError("Mismatch between shank count in metadata and xmldata['spike_groups']")
+        assert len(shank_assignments) <= len(xmldata["spike_groups"]), f"Metadata specifies more shanks ({len(shank_assignments)}) than present in xmldata['spike_groups'] ({len(xmldata['spike_groups'])})"
+        xmldata["spike_groups"] = xmldata["spike_groups"][:len(shank_assignments)] # Truncate to match metadata
 
     shank_id_to_num_electrodes = {}
-    for (_, shank_id, _, _, _, _), electrodes in zip(shank_assignments, xmldata["spike_groups"]):
+    for (_, shank_id, _, _, _, _), electrodes in zip(shank_assignments, xmldata["spike_groups"], strict=True):
         shank_id_to_num_electrodes[shank_id] = len(electrodes)
 
     # Add DataAcqDevice (Spyglass requirement)
@@ -317,15 +320,15 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
             )
             electrode_counter += 1
 
-    return nwbfile
+    return nwbfile, xmldata
 
 
-def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None):
+def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None, comments: str = "no comments"):
     # to do: add units as input
     print('Adding tracking to NWB file...')
 
     # Temporally align processed tracking to LFP timestamps
-    unaligned_lfp_timestamps = np.arange(0, lfp_eseries.data.shape[0]) / lfp_sampling_rate
+    unaligned_lfp_timestamps = np.arange(0, lfp_eseries.data._raw_data.shape[0]) / lfp_sampling_rate
     aligned_lfp_timestamps = lfp_eseries.timestamps[:]
     unaligned_position_timestamps = pos.index.to_numpy()
     aligned_position_timestamps = np.interp(x=unaligned_position_timestamps, xp=unaligned_lfp_timestamps, fp=aligned_lfp_timestamps)
@@ -336,6 +339,7 @@ def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None):
     spatial_series_obj = SpatialSeries(
         name='position',
         description='(x,y) position',
+        comments=comments,
         data=pos.values,
         timestamps=aligned_position_timestamps,
         reference_frame='', # TODO: add reference frame info once shared
@@ -355,6 +359,7 @@ def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None):
         spatial_series_obj = SpatialSeries(
             name='head-direction',
             description='Horizontal angle of the head (yaw)',
+            comments=comments,
             data=data,
             timestamps=aligned_ang_timestamps,
             reference_frame='', # TODO: add reference frame info once shared
@@ -366,7 +371,7 @@ def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None):
     return nwbfile
 
 
-def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: list[np.ndarray], is_adult: bool):
+def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: list[np.ndarray], metadata: dict, is_adult: bool, comments: str = "no comments"):
     print('Adding raw tracking to NWB file...')
 
     item1_pos, item_2_pos, full_aligned_timestamps = [], [], []
@@ -389,7 +394,8 @@ def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: li
     # Create the spatial series for position
     spatial_series_1 = SpatialSeries(
         name='item1_position',
-        description="Raw (x,y) position of Item 1 from Bonsai tracking data. Item 1 is an LED or marker placed on the animal's head.",
+        description=f"Raw (x,y) position of Item 1 from Bonsai tracking data. Item 1 is an LED or marker placed on the animal's head [{metadata['Bonsai']['item1']}].",
+        comments=comments,
         data=item1_pos,
         timestamps=full_aligned_timestamps,
         reference_frame='', # TODO: add reference frame info once shared
@@ -397,7 +403,8 @@ def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: li
     )
     spatial_series_2 = SpatialSeries(
         name='item2_position',
-        description="Raw (x,y) position of Item 2 from Bonsai tracking data. Item 2 is an LED or marker placed on the animal's head.",
+        description=f"Raw (x,y) position of Item 2 from Bonsai tracking data. Item 2 is an LED or marker placed on the animal's head [{metadata['Bonsai']['item2']}].",
+        comments=comments,
         data=item_2_pos,
         timestamps=full_aligned_timestamps,
         reference_frame='', # TODO: add reference frame info once shared
@@ -414,7 +421,7 @@ def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: li
     return nwbfile
 
 
-def add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate):
+def add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate, comments: str = "no comments"):
 
     sleep_file = sleep_path / (folder_name + '.SleepState.states.mat')
     emg_file = sleep_path / (folder_name + '.EMGFromLFP.LFP.mat')
@@ -454,7 +461,7 @@ def add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate):
     sleep_stage_rows.sort(key=lambda x: x['start_time'])
 
     # Temporally align sleep stage times to LFP timestamps
-    unaligned_lfp_timestamps = np.arange(0, lfp_eseries.data.shape[0]) / lfp_sampling_rate
+    unaligned_lfp_timestamps = np.arange(0, lfp_eseries.data._raw_data.shape[0]) / lfp_sampling_rate
     aligned_lfp_timestamps = lfp_eseries.timestamps[:]
     unaligned_start_times = [row['start_time'] for row in sleep_stage_rows]
     unaligned_stop_times = [row['stop_time'] for row in sleep_stage_rows]
@@ -490,6 +497,7 @@ def add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate):
     emg = TimeSeries(
         name="pseudoEMG",
         description="Pseudo EMG from correlated high-frequency LFP",
+        comments=comments,
         data=emg['EMGFromLFP']['data'],
         unit="a.u.",
         timestamps=timestamps,
@@ -600,7 +608,7 @@ def add_epochs(nwbfile, epochs, metadata):
 
 
 
-def add_lfp(nwbfile, lfp_path, xml_data, raw_eseries, stub_test=False):
+def add_lfp(nwbfile, lfp_path, xml_data, raw_eseries, stub_test=False, comments: str = "no comments"):
 
     print('Adding LFP to the NWB file...')
 
@@ -622,21 +630,21 @@ def add_lfp(nwbfile, lfp_path, xml_data, raw_eseries, stub_test=False):
     chan_order = np.concatenate(xml_data['spike_groups'])
 
     # lazy load LFP
-    lfp_data = nap.load_eeg(filepath=lfp_path, channel=None, n_channels=xml_data['n_channels'], frequency=float(xml_data['eeg_sampling_rate']), precision='int16',
-                            bytes_size=2)
-    lfp_data = lfp_data[:, chan_order]  # get only probe channels
+    lfp_data = load_eeg(filepath=lfp_path, n_channels=xml_data['n_channels'], frequency=float(xml_data['eeg_sampling_rate']), bytes_size=2)
     if stub_test:
         raw_num_pts = 100 # This is the number of points used for stubbing a single segment of raw ephys data.
         lfp_num_pts = int(raw_num_pts / downsample_factor)
         lfp_data = lfp_data[:lfp_num_pts, :]
         lfp_timestamps = lfp_timestamps[:lfp_num_pts]
+    lfp_data_iterator = DatFileDataChunkIterator(raw_data=lfp_data, chan_order=chan_order)
 
     # create ElectricalSeries
     lfp_elec_series = ElectricalSeries(
         name='LFP',
-        data=lfp_data,
+        data=lfp_data_iterator,
         timestamps=lfp_timestamps,
         description='Local field potential (downsampled DAT file)',
+        comments=comments,
         electrodes=all_table_region,
         conversion=raw_conversion,
         offset=raw_offset,
@@ -802,6 +810,7 @@ def add_video(
     video_file_paths: list[Path],
     all_aligned_video_timestamps: list[np.ndarray],
     metadata: dict,
+    comments: str = "no comments",
 ) -> NWBFile:
     print("Adding video to NWB file...")
 
@@ -833,6 +842,7 @@ def add_video(
         image_series = ImageSeries(
             name=meta["name"],
             description=meta["description"],
+            comments=comments,
             external_file=[file_path],
             format="external",
             timestamps=timestamps,
@@ -860,6 +870,8 @@ def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, xml_data: dict, stream_na
     eseries_kwargs = dict(name="e-series", description="Acquisition traces for the ElectricalSeries.")
 
     channel_ids = recording.get_channel_ids()
+    channel_ids = [chan_id for chan_id in channel_ids if not "AUX" in chan_id] # Skip AUX channels
+    recording = recording.select_channels(channel_ids=channel_ids)
     region = list(range(len(channel_ids)))
     electrode_table_region = nwbfile.create_electrode_table_region(
         region=region,
@@ -953,6 +965,54 @@ def _report_variable_offset(recording) -> None:
     message = "\n".join(message_lines)
 
     raise ValueError(message)
+
+def add_raw_ephys_from_dat(nwbfile: NWBFile, dat_file_path: Path, xml_data: dict, stub_test: bool = False, comments: str = "no comments") -> NWBFile:
+    print("Adding raw ephys from DAT file to NWB file...")
+
+    chan_order = np.concatenate(xml_data['spike_groups'])
+    sampling_rate = float(xml_data['dat_sampling_rate'])
+
+    # Load DAT file using pynapple (same approach as add_lfp).
+    # Do NOT apply chan_order here — that would force the full 20GB file into memory.
+    # Channel reordering is handled chunk-by-chunk inside DatFileDataChunkIterator.
+    raw_data = load_eeg(
+        filepath=dat_file_path,
+        n_channels=xml_data['n_channels'],
+        frequency=sampling_rate,
+        bytes_size=2,
+    )
+
+    if stub_test:
+        raw_data = raw_data[:100, :]  # row slice — stays as a memory-mapped view
+
+    # Compute conversion: voltage_range is in V, divide by amplification and ADC range to get V/LSB
+    conversion_to_volts = (
+        xml_data['voltage_range'] / xml_data['amplification'] / (2 ** xml_data['nbits'])
+    )
+    offset_to_volts = xml_data['offset'] * conversion_to_volts
+
+    all_table_region = nwbfile.create_electrode_table_region(
+        region=list(range(len(nwbfile.electrodes))),
+        description='electrode_table_region',
+    )
+
+    ephys_data_iterator = DatFileDataChunkIterator(raw_data=raw_data, chan_order=chan_order)
+    timestamps = np.arange(raw_data.shape[0]) / sampling_rate
+
+    # NOTE: Spyglass requires raw electrical series to be named "e-series"
+    eseries = ElectricalSeries(
+        name='e-series',
+        description='Acquisition traces for the ElectricalSeries.',
+        comments=comments,
+        data=ephys_data_iterator,
+        timestamps=timestamps,
+        electrodes=all_table_region,
+        conversion=conversion_to_volts,
+        offset=offset_to_volts,
+    )
+
+    nwbfile.add_acquisition(eseries)
+    return nwbfile
 
 
 def add_histology(nwbfile, histology_folder_path: Path):
