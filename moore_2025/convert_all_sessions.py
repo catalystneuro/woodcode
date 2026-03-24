@@ -422,6 +422,7 @@ if __name__ == "__main__":
     stub_test = True
     max_workers = 5
 
+    # TODO: profile this script to relieve memory pressure.
     dataset_to_nwb(
         juvenile_dir_path=juvenile_dir_path,
         adult_dir_path=adult_dir_path,

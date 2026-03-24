@@ -167,7 +167,7 @@ def add_units(nwbfile, raw_xml_data, processed_xml_data, spikes, waveforms, shan
             f"Waveform mean shape {waveform_mean.shape[1]} does not match expected number of channels {shank_id_to_num_channels[shank_index]} for shank {shank_index}"
         
         # Temporally align spike times to LFP timestamps
-        unaligned_lfp_timestamps = np.arange(0, lfp_eseries.data.shape[0]) / lfp_sampling_rate
+        unaligned_lfp_timestamps = np.arange(0, lfp_eseries.data._raw_data.shape[0]) / lfp_sampling_rate
         aligned_lfp_timestamps = lfp_eseries.timestamps[:]
         aligned_spike_times = np.interp(x=spike_times, xp=unaligned_lfp_timestamps, fp=aligned_lfp_timestamps)
         
@@ -327,7 +327,7 @@ def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None, comment
     print('Adding tracking to NWB file...')
 
     # Temporally align processed tracking to LFP timestamps
-    unaligned_lfp_timestamps = np.arange(0, lfp_eseries.data.shape[0]) / lfp_sampling_rate
+    unaligned_lfp_timestamps = np.arange(0, lfp_eseries.data._raw_data.shape[0]) / lfp_sampling_rate
     aligned_lfp_timestamps = lfp_eseries.timestamps[:]
     unaligned_position_timestamps = pos.index.to_numpy()
     aligned_position_timestamps = np.interp(x=unaligned_position_timestamps, xp=unaligned_lfp_timestamps, fp=aligned_lfp_timestamps)
@@ -460,7 +460,7 @@ def add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate, 
     sleep_stage_rows.sort(key=lambda x: x['start_time'])
 
     # Temporally align sleep stage times to LFP timestamps
-    unaligned_lfp_timestamps = np.arange(0, lfp_eseries.data.shape[0]) / lfp_sampling_rate
+    unaligned_lfp_timestamps = np.arange(0, lfp_eseries.data._raw_data.shape[0]) / lfp_sampling_rate
     aligned_lfp_timestamps = lfp_eseries.timestamps[:]
     unaligned_start_times = [row['start_time'] for row in sleep_stage_rows]
     unaligned_stop_times = [row['stop_time'] for row in sleep_stage_rows]
@@ -631,17 +631,17 @@ def add_lfp(nwbfile, lfp_path, xml_data, raw_eseries, stub_test=False, comments:
     # lazy load LFP
     lfp_data = nap.load_eeg(filepath=lfp_path, channel=None, n_channels=xml_data['n_channels'], frequency=float(xml_data['eeg_sampling_rate']), precision='int16',
                             bytes_size=2)
-    lfp_data = lfp_data[:, chan_order]  # get only probe channels
     if stub_test:
         raw_num_pts = 100 # This is the number of points used for stubbing a single segment of raw ephys data.
         lfp_num_pts = int(raw_num_pts / downsample_factor)
         lfp_data = lfp_data[:lfp_num_pts, :]
         lfp_timestamps = lfp_timestamps[:lfp_num_pts]
+    lfp_data_iterator = DatFileDataChunkIterator(raw_data=lfp_data, chan_order=chan_order)
 
     # create ElectricalSeries
     lfp_elec_series = ElectricalSeries(
         name='LFP',
-        data=lfp_data,
+        data=lfp_data_iterator,
         timestamps=lfp_timestamps,
         description='Local field potential (downsampled DAT file)',
         comments=comments,
