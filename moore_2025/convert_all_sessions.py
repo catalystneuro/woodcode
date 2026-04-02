@@ -82,11 +82,7 @@ SESSIONS_USING_PROCESSED_XML: set[str] = {
 }
 
 # Sessions to skip entirely (not converted).
-SESSIONS_TO_SKIP: set[str] = {
-    "H3006-200314_1",    # Multi-experiment session
-    "H3026-211003",      # Mismatched metadata and XML (metadata specifies 32 channels but XML contains 64)
-    "H3026-211004_2",    # Mismatched metadata and XML (metadata specifies 32 channels but XML contains 64)
-}
+SESSIONS_TO_SKIP: set[str] = {}
 
 # TODO: Consider a more robust solution.
 SESSION_TO_ALT_XML_FOLDER_PATH: dict[str, Path] = {
