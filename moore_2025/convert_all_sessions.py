@@ -82,14 +82,6 @@ SESSIONS_USING_PROCESSED_XML: set[str] = {
 
 # Sessions to skip entirely (not converted).
 SESSIONS_TO_SKIP: set[str] = {
-    "H3009-200813",      # Missing .nrs file
-    "H3015-210416_2",    # Missing .nrs file
-    "H3015-210417",      # Missing .nrs file
-    "H3008-200807",      # Missing .nrs file
-    "H3019-210617",      # Missing .nrs file
-    "H3019-210618_1",    # Missing .nrs file
-    "H3015-210416_1",    # Missing .nrs file
-    "H3023-210813_1",    # Missing .nrs file
     "H3006-200314_1",    # Multi-experiment session
     "H3026-211003",      # Mismatched metadata and XML (metadata specifies 32 channels but XML contains 64)
     "H3026-211004_2",    # Mismatched metadata and XML (metadata specifies 32 channels but XML contains 64)
