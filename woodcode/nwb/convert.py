@@ -485,7 +485,8 @@ def add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate, 
     unaligned_emg_timestamps = emg['EMGFromLFP']['timestamps']
     aligned_emg_timestamps = np.interp(x=unaligned_emg_timestamps, xp=unaligned_lfp_timestamps, fp=aligned_lfp_timestamps)
 
-    rate = calculate_regular_series_rate(aligned_emg_timestamps)
+    with np.errstate(divide='ignore'): # Suppress warnings for divide by zero in case timestamps are perfectly regular
+        rate = calculate_regular_series_rate(aligned_emg_timestamps)
     if rate is not None: # If the pseudo-EMG timestamps are perfectly regular, use the more efficient starting time and rate. 
         timestamps = None
         starting_time = float(aligned_emg_timestamps[0])
@@ -922,8 +923,8 @@ def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, xml_data: dict, stream_na
         segment_timestamps = recording.get_times(segment_index=i)
         timestamps.append(segment_timestamps)
     timestamps = np.concatenate(timestamps)
-
-    rate = calculate_regular_series_rate(series=timestamps)  # Returns None if it is not regular
+    with np.errstate(divide='ignore'):  # Suppress warnings for divide by zero in case timestamps are perfectly regular
+        rate = calculate_regular_series_rate(series=timestamps)  # Returns None if it is not regular
     if rate:
         starting_time = float(timestamps[0])
         # Note that we call the sampling frequency again because the estimated rate might be different from the
