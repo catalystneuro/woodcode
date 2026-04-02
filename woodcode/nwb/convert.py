@@ -31,6 +31,7 @@ def create_nwb_file(metadata, start_time):
     # calculate animal age
     dob_str = str(metadata['subject']['dob'])
     dob = datetime(2000 + int(dob_str[:2]), int(dob_str[2:4]), int(dob_str[4:6]))
+    dob = pytz.timezone('Europe/London').localize(dob)
 
     # create an nwb file
     nwbfile = NWBFile(
@@ -857,6 +858,8 @@ from neuroconv.tools.spikeinterface.spikeinterface import _stub_recording
 from neuroconv.utils import calculate_regular_series_rate
 import pynwb
 from .multi_segment_recording_data_chunk_iterator import MultiSegmentRecordingDataChunkIterator
+from datetime import datetime
+import pytz
 def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, xml_data: dict, stream_name: str, stub_test: bool = False) -> NWBFile:
     print("Adding raw ephys to NWB file...")
 
