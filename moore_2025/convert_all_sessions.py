@@ -53,7 +53,8 @@ STREAM_NAME_PER_SESSION: dict[str, str | None] = {
     "H4825-221124": "Record Node 101#Acquisition_Board-100.Rhythm Data",
     "H4826-221203": "Record Node 102#Acquisition_Board-101.Rhythm Data",
     "H4827-221210": "Record Node 101#Acquisition_Board-100.Rhythm Data",
-    "H4830-230406": "Record Node 103#Acquisition_Board-100.Rhythm Data",  # exception
+    "H4830-230406": "Record Node 103#Acquisition_Board-100.Rhythm Data",
+    "H4824-221117": "Record Node 101#Acquisition_Board-100.Rhythm Data",
 }
 
 # Sessions missing raw Open Ephys data; only processed data (.dat / .lfp) is available.
