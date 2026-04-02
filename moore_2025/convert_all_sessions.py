@@ -84,9 +84,8 @@ SESSIONS_USING_PROCESSED_XML: set[str] = {
 # Sessions to skip entirely (not converted).
 SESSIONS_TO_SKIP: set[str] = {}
 
-# TODO: Consider a more robust solution.
-SESSION_TO_ALT_XML_FOLDER_PATH: dict[str, Path] = {
-    "H4815-220814": Path("/Volumes/T7/CatalystNeuro/Dudchenko/251104_MooreDataset/H4800_Adults/WT/H4820-221007"), # XMLs for this session are missing a channel, so using a neighbor instead
+SESSION_TO_ALT_XML_SESSION: dict[str, str] = {
+    "H4815-220814": "H4820-221007", # XMLs for this session are missing a channel, so using a neighbor instead
 }
 
 
@@ -172,8 +171,9 @@ def get_session_to_nwb_kwargs(
 
     if has_raw_data:
         raw_ephys_folder_path = sorted(raw_folder_path.rglob("experiment*"))[0].parent
-        if folder_name in SESSION_TO_ALT_XML_FOLDER_PATH:
-            alt_xml_raw_folder_path = SESSION_TO_ALT_XML_FOLDER_PATH[folder_name] / "Raw"
+        if folder_name in SESSION_TO_ALT_XML_SESSION:
+            alt_xml_folder_name = SESSION_TO_ALT_XML_SESSION[folder_name]
+            alt_xml_raw_folder_path = session_folder_path.parent / alt_xml_folder_name / "Raw"
             raw_xml_path = sorted(alt_xml_raw_folder_path.rglob("continuous.xml"))[0]
         else:
             raw_xml_path = sorted(raw_folder_path.rglob("continuous.xml"))[0]
