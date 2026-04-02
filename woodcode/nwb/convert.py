@@ -31,7 +31,6 @@ def create_nwb_file(metadata, start_time):
     # calculate animal age
     dob_str = str(metadata['subject']['dob'])
     dob = datetime(2000 + int(dob_str[:2]), int(dob_str[2:4]), int(dob_str[4:6]))
-    age_days = (start_time.date() - dob.date()).days
 
     # create an nwb file
     nwbfile = NWBFile(
@@ -52,7 +51,7 @@ def create_nwb_file(metadata, start_time):
 
     # add subject
     nwbfile.subject = Subject(
-        age=f"P{age_days}D",
+        date_of_birth=dob,
         description=metadata['subject']['description'],
         species='Rattus norvegicus',
         subject_id=rec_id[0],
