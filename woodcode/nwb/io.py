@@ -3,6 +3,7 @@ import h5py
 import pytz
 from scipy import io as spio
 import xml.etree.ElementTree as ET
+from xml.dom import minidom
 import numpy as np
 import pandas as pd
 import json
@@ -295,7 +296,7 @@ def get_matlab_spikes(path):
 
     # get spike metadata
     waveforms = spio.loadmat(waveform_file, simplify_cells=True)
-    waveforms = waveforms['meanWaveforms'] # TODO: figure out if these waveforms have been renumbered in channels to match electrodes table and raw data
+    waveforms = waveforms['meanWaveforms']
     shank_id = spikedata['shank']-1,
     shank_id = shank_id[0]
 
@@ -537,3 +538,87 @@ def read_metadata(file_path, file_name, print_output=False):
         pprint.pprint(metadata, width=100)
 
     return metadata
+
+
+def load_eeg(
+    filepath,
+    n_channels=None,
+    frequency=None,
+    bytes_size=2,
+):
+    """
+    Standalone function to load eeg/lfp/dat file in binary format.
+
+    Parameters
+    ----------
+    filepath : str
+        The path to the eeg file
+    n_channels : int, optional
+        Number of channels
+    frequency : float, optional
+        Sampling rate of the file
+    bytes_size : int, optional
+        Bytes size of the binary file
+
+    Raises
+    ------
+    RuntimeError
+        If can't find the lfp/eeg/dat file
+
+    Returns
+    -------
+    Tsd or TsdFrame
+        The lfp in a time series format
+
+    Deleted Parameters
+    ------------------
+    extension : str, optional
+        The file extenstion (.eeg, .dat, .lfp). Make sure the frequency match
+
+    """
+    # Need to check if a xml file exists
+    filepath = Path(filepath)
+    path = filepath.parent
+    basename = filepath.name.split(".")[0]
+    listdir = list(path.glob("*"))
+
+    if frequency is None or n_channels is None:
+        if basename + ".xml" in listdir:
+            xmlpath = path / (basename + ".xml")
+            xmldoc = minidom.parse(xmlpath)
+        else:
+            raise RuntimeError(
+                "Can't find xml file; please specify sampling frequency or number of channels"
+            )
+
+        if frequency is None:
+            if filepath.endswith(".dat"):
+                fs_dat = int(
+                    xmldoc.getElementsByTagName("acquisitionSystem")[0]
+                    .getElementsByTagName("samplingRate")[0]
+                    .firstChild.data
+                )
+                frequency = fs_dat
+            elif filepath.endswith((".lfp", ".eeg")):
+                fs_eeg = int(
+                    xmldoc.getElementsByTagName("fieldPotentials")[0]
+                    .getElementsByTagName("lfpSamplingRate")[0]
+                    .firstChild.data
+                )
+                frequency = fs_eeg
+
+        if n_channels is None:
+            n_channels = int(
+                xmldoc.getElementsByTagName("acquisitionSystem")[0]
+                .getElementsByTagName("nChannels")[0]
+                .firstChild.data
+            )
+
+    f = open(filepath, "rb")
+    startoffile = f.seek(0, 0)
+    endoffile = f.seek(0, 2)
+    bytes_size = 2
+    n_samples = int((endoffile - startoffile) / n_channels / bytes_size)
+    f.close()
+    fp = np.memmap(filepath, np.int16, "r", shape=(n_samples, n_channels))
+    return fp
