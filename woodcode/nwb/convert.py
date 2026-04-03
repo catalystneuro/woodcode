@@ -342,7 +342,7 @@ def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None, comment
         comments=comments,
         data=pos.values,
         timestamps=aligned_position_timestamps,
-        reference_frame='', # TODO: add reference frame info once shared
+        reference_frame="(0,0) origin at bottom left corner.",
         unit='centimeters',
     )
     position_obj = Position(spatial_series=spatial_series_obj)
@@ -362,7 +362,7 @@ def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None, comment
             comments=comments,
             data=data,
             timestamps=aligned_ang_timestamps,
-            reference_frame='', # TODO: add reference frame info once shared
+            reference_frame="0 radians is pointing directly to the right (positive x direction), with angles increasing counterclockwise.",
             unit='radians',
         )
         direction_obj = CompassDirection(spatial_series=spatial_series_obj)
@@ -398,7 +398,7 @@ def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: li
         comments=comments,
         data=item1_pos,
         timestamps=full_aligned_timestamps,
-        reference_frame='', # TODO: add reference frame info once shared
+        reference_frame="Y axis is inverted relative to the video (down is positive), origin at top left corner.",
         unit='a.u.',
     )
     spatial_series_2 = SpatialSeries(
@@ -407,7 +407,7 @@ def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: li
         comments=comments,
         data=item_2_pos,
         timestamps=full_aligned_timestamps,
-        reference_frame='', # TODO: add reference frame info once shared
+        reference_frame="Y axis is inverted relative to the video (down is positive), origin at top left corner.",
         unit='a.u.',
     )
     if "Position" in behavior_module.data_interfaces:
