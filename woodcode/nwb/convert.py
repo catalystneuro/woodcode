@@ -632,6 +632,17 @@ def add_lfp(nwbfile, lfp_path, xml_data, raw_eseries, stub_test=False, comments:
 
     # lazy load LFP
     lfp_data = load_eeg(filepath=lfp_path, n_channels=xml_data['n_channels'], frequency=float(xml_data['eeg_sampling_rate']), bytes_size=2)
+    
+    # Correct for mismatched LFP data and timestamps (ex. H3006-200314_1)
+    if lfp_data.shape[0] > len(lfp_timestamps):
+        warnings.warn(
+            f"Number of LFP data points ({lfp_data.shape[0]}) is greater than number of LFP timestamps ({len(lfp_timestamps)}). "
+            "Extrapolating timestamps to match data length, which may lead to inaccuracies in temporal alignment. "
+            "Consider verifying the integrity of the LFP data and timestamps."
+        )
+        extra_lfp_timestamps = np.arange(len(lfp_timestamps), lfp_data.shape[0]) / lfp_sampling_rate + lfp_timestamps[-1] + (1 / lfp_sampling_rate)
+        lfp_timestamps = np.concatenate([lfp_timestamps, extra_lfp_timestamps])
+
     if stub_test:
         raw_num_pts = 100 # This is the number of points used for stubbing a single segment of raw ephys data.
         lfp_num_pts = int(raw_num_pts / downsample_factor)
