@@ -336,12 +336,19 @@ def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None, comment
     behavior_module = nwbfile.processing['behavior']
 
     # Create the spatial series for position
+    rate = calculate_regular_series_rate(aligned_position_timestamps)
+    timing_kwargs = {}
+    if rate is None:
+        timing_kwargs["timestamps"] = aligned_position_timestamps
+    else:
+        timing_kwargs["starting_time"] = aligned_position_timestamps[0]
+        timing_kwargs["rate"] = rate
     spatial_series_obj = SpatialSeries(
         name='position',
         description='(x,y) position',
         comments=comments,
         data=pos.values,
-        timestamps=aligned_position_timestamps,
+        **timing_kwargs,
         reference_frame="(0,0) origin at bottom left corner.",
         unit='centimeters',
     )
@@ -356,12 +363,19 @@ def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None, comment
 
         # data = ang.values[:, np.newaxis]  # Spyglass requires 2D array for all SpatialSeries
         data = ang.values
+        rate = calculate_regular_series_rate(aligned_ang_timestamps)
+        timing_kwargs = {}
+        if rate is None:
+            timing_kwargs["timestamps"] = aligned_ang_timestamps
+        else:
+            timing_kwargs["starting_time"] = aligned_ang_timestamps[0]
+            timing_kwargs["rate"] = rate
         spatial_series_obj = SpatialSeries(
             name='head-direction',
             description='Horizontal angle of the head (yaw)',
             comments=comments,
             data=data,
-            timestamps=aligned_ang_timestamps,
+            **timing_kwargs,
             reference_frame="0 radians is pointing directly to the right (positive x direction), with angles increasing counterclockwise.",
             unit='radians',
         )
@@ -392,12 +406,21 @@ def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: li
 
     behavior_module = nwbfile.processing['behavior']
     # Create the spatial series for position
+    rate = calculate_regular_series_rate(full_aligned_timestamps)
+    timing_kwargs = {}
+    if rate is None:
+        timing_kwargs["timestamps"] = full_aligned_timestamps
+    else:
+        timing_kwargs["starting_time"] = full_aligned_timestamps[0]
+        timing_kwargs["rate"] = rate
+
+
     spatial_series_1 = SpatialSeries(
         name='item1_position',
         description=f"Raw (x,y) position of Item 1 from Bonsai tracking data. Item 1 is an LED or marker placed on the animal's head [{metadata['Bonsai']['item1']}].",
         comments=comments,
         data=item1_pos,
-        timestamps=full_aligned_timestamps,
+        **timing_kwargs,
         reference_frame="Y axis is inverted relative to the video (down is positive), origin at top left corner.",
         unit='a.u.',
     )
@@ -406,7 +429,7 @@ def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: li
         description=f"Raw (x,y) position of Item 2 from Bonsai tracking data. Item 2 is an LED or marker placed on the animal's head [{metadata['Bonsai']['item2']}].",
         comments=comments,
         data=item_2_pos,
-        timestamps=full_aligned_timestamps,
+        **timing_kwargs,
         reference_frame="Y axis is inverted relative to the video (down is positive), origin at top left corner.",
         unit='a.u.',
     )
@@ -488,10 +511,12 @@ def add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate, 
 
     with np.errstate(divide='ignore'): # Suppress warnings for divide by zero in case timestamps are perfectly regular
         rate = calculate_regular_series_rate(aligned_emg_timestamps)
-    if rate is not None: # If the pseudo-EMG timestamps are perfectly regular, use the more efficient starting time and rate. 
-        timestamps = None
-        starting_time = float(aligned_emg_timestamps[0])
-    else: # Otherwise, use the timestamps directly.
+    timing_kwargs = {}
+    if rate is None:
+        timing_kwargs["timestamps"] = aligned_emg_timestamps
+    else:
+        timing_kwargs["starting_time"] = aligned_emg_timestamps[0]
+        timing_kwargs["rate"] = rate
         timestamps = aligned_emg_timestamps
         starting_time = None
 
@@ -501,9 +526,7 @@ def add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate, 
         comments=comments,
         data=emg['EMGFromLFP']['data'],
         unit="a.u.",
-        timestamps=timestamps,
-        rate=rate,
-        starting_time=starting_time,
+        **timing_kwargs,
     )
 
     # Create an extracellular ephys module or add to the existing one
@@ -651,10 +674,19 @@ def add_lfp(nwbfile, lfp_path, xml_data, raw_eseries, stub_test=False, comments:
     lfp_data_iterator = DatFileDataChunkIterator(raw_data=lfp_data, chan_order=chan_order)
 
     # create ElectricalSeries
+    rate = calculate_regular_series_rate(lfp_timestamps)
+    timing_kwargs = {}
+    if rate is None:
+        timing_kwargs["timestamps"] = lfp_timestamps
+    else:
+        timing_kwargs["starting_time"] = lfp_timestamps[0]
+        timing_kwargs["rate"] = rate
+
+
     lfp_elec_series = ElectricalSeries(
         name='LFP',
         data=lfp_data_iterator,
-        timestamps=lfp_timestamps,
+        **timing_kwargs,
         description='Local field potential (downsampled DAT file)',
         comments=comments,
         electrodes=all_table_region,
@@ -857,17 +889,26 @@ def add_video(
     comments: str = "no comments",
 ) -> NWBFile:
     print("Adding video to NWB file...")
+
     # Add image series for each video file
     image_series_metadata = metadata["Video"]["ImageSeries"]
     for meta, timestamps, file_path in zip(image_series_metadata, all_aligned_video_timestamps, video_file_paths):
+        timing_kwargs = {}
+        rate = calculate_regular_series_rate(timestamps)
+        if rate is None:
+            timing_kwargs["timestamps"] = timestamps
+        else:
+            timing_kwargs["starting_time"] = timestamps[0]
+            timing_kwargs["rate"] = rate
+
         image_series = ImageSeries(
             name=meta["name"],
             description=meta["description"],
             comments=comments,
             external_file=[file_path],
             format="external",
-            timestamps=timestamps,
             device=camera_device,
+            **timing_kwargs,
         )
         nwbfile.add_acquisition(image_series)
 
@@ -1020,7 +1061,6 @@ def add_raw_ephys_from_dat(nwbfile: NWBFile, dat_file_path: Path, xml_data: dict
     )
 
     ephys_data_iterator = DatFileDataChunkIterator(raw_data=raw_data, chan_order=chan_order)
-    timestamps = np.arange(raw_data.shape[0]) / sampling_rate
 
     # NOTE: Spyglass requires raw electrical series to be named "e-series"
     eseries = ElectricalSeries(
@@ -1028,7 +1068,8 @@ def add_raw_ephys_from_dat(nwbfile: NWBFile, dat_file_path: Path, xml_data: dict
         description='Acquisition traces for the ElectricalSeries.',
         comments=comments,
         data=ephys_data_iterator,
-        timestamps=timestamps,
+        starting_time=0.0,
+        rate=sampling_rate,
         electrodes=all_table_region,
         conversion=conversion_to_volts,
         offset=offset_to_volts,
