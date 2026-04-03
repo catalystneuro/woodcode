@@ -408,8 +408,8 @@ if __name__ == "__main__":
     output_dir_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/Spyglass/raw")
     juvenile_metadata_file_path = Path(__file__).parent / "juvenile_metadata.yaml"
     adult_metadata_file_path = Path(__file__).parent / "adult_metadata.yaml"
-    stub_test = True
-    max_workers = 10
+    stub_test = False
+    max_workers = 5
 
     dataset_to_nwb(
         juvenile_dir_path=juvenile_dir_path,
