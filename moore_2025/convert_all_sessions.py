@@ -405,7 +405,7 @@ if __name__ == "__main__":
     meta_path = Path("/Volumes/T7/CatalystNeuro/Dudchenko/251104_MooreDataset/MooreDataset_Metadata.xlsx")
     juvenile_histology_folder_path = Path("/Volumes/T7/CatalystNeuro/Dudchenko/251104_MooreDataset/Histology/H3000")
     adult_histology_folder_path = Path("/Volumes/T7/CatalystNeuro/Dudchenko/251104_MooreDataset/Histology/H4800")
-    output_dir_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw")
+    output_dir_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/Spyglass/raw")
     juvenile_metadata_file_path = Path(__file__).parent / "juvenile_metadata.yaml"
     adult_metadata_file_path = Path(__file__).parent / "adult_metadata.yaml"
     stub_test = True

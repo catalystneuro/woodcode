@@ -277,7 +277,7 @@ def main():
     adult_folder_path = Path("/Volumes/T7/CatalystNeuro/Dudchenko/251104_MooreDataset/H4800_Adults")
     meta_path = Path("/Volumes/T7/CatalystNeuro/Dudchenko/251104_MooreDataset/MooreDataset_Metadata.xlsx")
     histology_folder_path = Path("/Volumes/T7/CatalystNeuro/Dudchenko/251104_MooreDataset/Histology")
-    output_folder_path = Path('/Volumes/T7/CatalystNeuro/Spyglass/raw')
+    output_folder_path = Path('/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/Spyglass/raw')
     juvenile_metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/juvenile_metadata.yaml")
     adult_metadata_file_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/adult_metadata.yaml")
 
@@ -328,6 +328,7 @@ def main():
         stub_test=stub_test,
         is_adult=False,
     )
+    return
 
     # Day 2
     folder_name = 'H3022-210806'
