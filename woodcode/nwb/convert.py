@@ -816,16 +816,12 @@ def collect_nwb_metadata(nwbfile):
     return metadata
 
 
-def add_video(
+def add_camera_device(
     *,
     nwbfile: NWBFile,
-    video_file_paths: list[Path],
-    all_aligned_video_timestamps: list[np.ndarray],
     metadata: dict,
-    comments: str = "no comments",
 ) -> NWBFile:
-    print("Adding video to NWB file...")
-
+    print("Adding camera device to NWB file...")
     # Add camera device model
     camera_device_model_metadata = metadata["Video"]["CameraDevice"]["model"]
     camera_device_model = DeviceModel(
@@ -848,6 +844,19 @@ def add_video(
     )
     nwbfile.add_device(camera_device)
 
+    return nwbfile, camera_device
+
+
+def add_video(
+    *,
+    nwbfile: NWBFile,
+    video_file_paths: list[Path],
+    all_aligned_video_timestamps: list[np.ndarray],
+    metadata: dict,
+    camera_device: CameraDevice,
+    comments: str = "no comments",
+) -> NWBFile:
+    print("Adding video to NWB file...")
     # Add image series for each video file
     image_series_metadata = metadata["Video"]["ImageSeries"]
     for meta, timestamps, file_path in zip(image_series_metadata, all_aligned_video_timestamps, video_file_paths):

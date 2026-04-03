@@ -11,12 +11,14 @@ H4813-220728_. H4813          University of  Wood/Dudchenko 220728         Explo
  (Total: 1)
 
 === Subject ===
-*subject_id    age      description    genotype     sex     species       
-+------------+ +------+ +------------+ +----------+ +-----+ +------------+
-H3016          P22D     All experiment KO           M       Rattus norvegi
-H3022          P22D     All experiment WT           M       Rattus norvegi
-H4813          P65D     All experiment WT           M       Rattus norvegi
- (Total: 3)
+*subject_id    age        description    genotype     sex     species       
++------------+ +--------+ +------------+ +----------+ +-----+ +------------+
+H3001          None       All experiment WT           M       Rattus norvegi
+H3016          None       All experiment KO           M       Rattus norvegi
+H3022          None       All experiment WT           M       Rattus norvegi
+H3023          P-366D     All experiment WT           M       Rattus norvegi
+H4813          None       All experiment WT           M       Rattus norvegi
+ (Total: 5)
 
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline      
@@ -87,16 +89,16 @@ H4813-220728_. 4         wake_cue_rot   None           04             cylindrica
 === ImportedPseudoEMG ===
 *nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
 +------------+ +------------+ +------------+ +------------+
-H4813-220728_. imported pseud 0bec0120-eb24- 2.0           
+H4813-220728_. imported pseud eebd0641-e587- 2.0           
  (Total: 1)
 
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
-H4813-220728_. 1         1              Basler Camera  9e7317c9-ed9d-
-H4813-220728_. 2         1              Basler Camera  8908eb8f-526b-
-H4813-220728_. 3         1              Basler Camera  00a3a3a8-4ee9-
-H4813-220728_. 4         1              Basler Camera  4a65f4aa-e8a2-
+H4813-220728_. 1         1              Basler Camera  eee1a395-dda8-
+H4813-220728_. 2         1              Basler Camera  64d9b91c-a823-
+H4813-220728_. 3         1              Basler Camera  409dee68-5321-
+H4813-220728_. 4         1              Basler Camera  27ddd53b-b81c-
  (Total: 4)
 
 === Camera Device ===
@@ -171,13 +173,13 @@ Cambridge Neur 1              11             165.0          5.0       275.0     
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H4813-220728_. raw data valid 14fa334b-999f- 30000.0        no comments    Acquisition tr
+H4813-220728_. raw data valid 63dc3b54-86eb- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H4813-220728_. imported_lfp_0 imported lfp 0 1250.0         6a52b1c6-010f-
+H4813-220728_. imported_lfp_0 imported lfp 0 1250.0         323398d6-99c6-
  (Total: 1)
 
 === PositionSource ===
@@ -198,9 +200,9 @@ H4813-220728_. pos 1 valid ti 1      item2_position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H4813-220728_. pos 0 valid ti 0      674338de-df12-
-H4813-220728_. pos 1 valid ti 0      00298fd0-c284-
-H4813-220728_. pos 1 valid ti 1      ab0c3b8a-f390-
+H4813-220728_. pos 0 valid ti 0      8837cd61-c92b-
+H4813-220728_. pos 1 valid ti 0      d0bbe5d2-24d6-
+H4813-220728_. pos 1 valid ti 1      ab4244cf-1293-
  (Total: 3)
 
 === RawPosition ===
@@ -222,13 +224,13 @@ time
 === RawCompassDirection ===
 *nwb_file_name *interval_list compass_object name          
 +------------+ +------------+ +------------+ +------------+
-H4813-220728_. compass 1 vali 2fe59069-802d- head-direction
+H4813-220728_. compass 1 vali 0c06fae4-c772- head-direction
  (Total: 1)
 
 === ImportedSpikeSorting ===
 *nwb_file_name object_id     
 +------------+ +------------+
-H4813-220728_. 0452c2fe-b06e-
+H4813-220728_. d6b9decd-f11c-
  (Total: 1)
 
 === Annotation ===
@@ -267,8 +269,8 @@ H4813-220728_. 11     =BLOB=     =BLOB=
 === ImportedHistologyImages ===
 *nwb_file_name *image_name    histology_imag
 +------------+ +------------+ +------------+
-H4813-220728_. H4813_C3       1067a142-abb2-
-H4813-220728_. H4813_C4       734f210d-2411-
-H4813-220728_. H4813_C5       59ae9b59-c2c4-
+H4813-220728_. H4813_C3       febf0d7f-6e78-
+H4813-220728_. H4813_C4       f9786ea7-2164-
+H4813-220728_. H4813_C5       eb784ab8-3043-
  (Total: 3)
 

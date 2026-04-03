@@ -11,10 +11,12 @@ H3022-210806_. H3022          University of  Wood/Dudchenko 210806         Explo
  (Total: 1)
 
 === Subject ===
-*subject_id    age      description    genotype     sex     species       
-+------------+ +------+ +------------+ +----------+ +-----+ +------------+
-H3022          P22D     All experiment WT           M       Rattus norvegi
- (Total: 1)
+*subject_id    age        description    genotype     sex     species       
++------------+ +--------+ +------------+ +----------+ +-----+ +------------+
+H3001          None       All experiment WT           M       Rattus norvegi
+H3022          None       All experiment WT           M       Rattus norvegi
+H3023          P-366D     All experiment WT           M       Rattus norvegi
+ (Total: 3)
 
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline      
@@ -87,16 +89,16 @@ H3022-210806_. 4         wake_cue_rot   None           04             cylindrica
 === ImportedPseudoEMG ===
 *nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
 +------------+ +------------+ +------------+ +------------+
-H3022-210806_. imported pseud c99e76bd-6e78- 2.0           
+H3022-210806_. imported pseud b0673f74-ff06- 2.0           
  (Total: 1)
 
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
-H3022-210806_. 1         0              Logitech Camer 2b098649-09c8-
-H3022-210806_. 2         0              Logitech Camer 2b098649-09c8-
-H3022-210806_. 3         0              Logitech Camer 2b098649-09c8-
-H3022-210806_. 4         0              Logitech Camer 2b098649-09c8-
+H3022-210806_. 1         0              Logitech Camer 20f081de-192a-
+H3022-210806_. 2         0              Logitech Camer 20f081de-192a-
+H3022-210806_. 3         0              Logitech Camer 20f081de-192a-
+H3022-210806_. 4         0              Logitech Camer 20f081de-192a-
  (Total: 4)
 
 === Camera Device ===
@@ -156,13 +158,13 @@ H3022-210806_. probe1_shank1  1             Cambridge Neur Electrodes fro Left
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210806_. raw data valid 11250b72-751f- 30000.0        no comments    Acquisition tr
+H3022-210806_. raw data valid b2246a61-291c- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H3022-210806_. imported_lfp_0 imported lfp 0 1250.0         6623ea56-1772-
+H3022-210806_. imported_lfp_0 imported lfp 0 1250.0         8a3ec2eb-4da0-
  (Total: 1)
 
 === PositionSource ===
@@ -183,9 +185,9 @@ H3022-210806_. pos 1 valid ti 1      item2_position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H3022-210806_. pos 0 valid ti 0      38464628-c4ac-
-H3022-210806_. pos 1 valid ti 0      47b0ec95-643b-
-H3022-210806_. pos 1 valid ti 1      d27adf1c-d1a4-
+H3022-210806_. pos 0 valid ti 0      888a14e5-eccf-
+H3022-210806_. pos 1 valid ti 0      4a32c5f4-0b88-
+H3022-210806_. pos 1 valid ti 1      3b55e37d-4b97-
  (Total: 3)
 
 === RawPosition ===
@@ -207,13 +209,13 @@ time
 === RawCompassDirection ===
 *nwb_file_name *interval_list compass_object name          
 +------------+ +------------+ +------------+ +------------+
-H3022-210806_. compass 1 vali 26dbe87f-9646- head-direction
+H3022-210806_. compass 1 vali 585acc99-5e44- head-direction
  (Total: 1)
 
 === ImportedSpikeSorting ===
 *nwb_file_name object_id     
 +------------+ +------------+
-H3022-210806_. 9d90409d-11cf-
+H3022-210806_. c36c3174-5155-
  (Total: 1)
 
 === Annotation ===
@@ -252,8 +254,8 @@ H3022-210806_. 11     =BLOB=     =BLOB=
 === ImportedHistologyImages ===
 *nwb_file_name *image_name    histology_imag
 +------------+ +------------+ +------------+
-H3022-210806_. H3022_B3       bfdf0b3d-fd04-
-H3022-210806_. H3022_B4       078bde68-c4b9-
-H3022-210806_. H3022(DAPI)    6cdf3730-70a4-
+H3022-210806_. H3022_B3       beb41159-e89a-
+H3022-210806_. H3022_B4       9e436461-e6a8-
+H3022-210806_. H3022(DAPI)    64712202-9206-
  (Total: 3)
 
