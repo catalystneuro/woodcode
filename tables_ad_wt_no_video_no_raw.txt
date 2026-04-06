@@ -1,0 +1,266 @@
+=== NWB File ===
+*nwb_file_name nwb_file_a
++------------+ +--------+
+H4823-221108_. =BLOB=    
+ (Total: 1)
+
+=== Session ===
+*nwb_file_name subject_id     institution_na lab_name       session_id     session_descri session_start_ timestamps_ref experiment_des
++------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
+H4823-221108_. H4823          University of  Wood/Dudchenko 221108         Exploration, s 2022-11-08 00: 2022-11-08 00: Basic properti
+ (Total: 1)
+
+=== Subject ===
+*subject_id    age      description    genotype     sex     species       
++------------+ +------+ +------------+ +----------+ +-----+ +------------+
+H3001          None     All experiment WT           M       Rattus norvegi
+H3016          None     All experiment KO           M       Rattus norvegi
+H3022          None     All experiment WT           M       Rattus norvegi
+H3023          None     All experiment WT           M       Rattus norvegi
+H3029          None     All experiment WT           M       Rattus norvegi
+H4813          None     All experiment WT           M       Rattus norvegi
+H4817          None     All experiment KO           M       Rattus norvegi
+H4823          None     All experiment WT           M       Rattus norvegi
+H4830          None     All experiment WT           M       Rattus norvegi
+subject        P50D     this is a mock None         F       None          
+ (Total: 10)
+
+=== IntervalList ===
+*nwb_file_name *interval_list valid_time pipeline      
++------------+ +------------+ +--------+ +------------+
+H4823-221108_. 01             =BLOB=                   
+H4823-221108_. compass 1 vali =BLOB=                   
+H4823-221108_. imported lfp 0 =BLOB=     imported_lfp  
+H4823-221108_. imported pseud =BLOB=     imported_pseud
+H4823-221108_. pos 0 valid ti =BLOB=     position      
+H4823-221108_. raw data valid =BLOB=                   
+H4823-221108_. sleep_nrem     =BLOB=                   
+H4823-221108_. sleep_rem      =BLOB=                   
+H4823-221108_. sleep_wake     =BLOB=                   
+ (Total: 9)
+
+=== Task ===
+*task_name     task_descripti task_type     task_subtype  
++------------+ +------------+ +-----------+ +------------+
+sleep          The rat was gi None          None          
+wake           The rat was aw None          None          
+wake_cue_rot   The rat was aw None          None          
+ (Total: 3)
+
+=== Task Epoch ===
+*nwb_file_name *epoch    task_name     camera_name    interval_list_ task_environme camera_nam
++------------+ +-------+ +-----------+ +------------+ +------------+ +------------+ +--------+
+H4823-221108_. 1         wake          None           01             cylindrical_op =BLOB=    
+ (Total: 1)
+
+=== Sleep NREM Valid Times ===
+[[1216.00076667 1230.00076667]
+ [1609.00076667 1637.00076667]
+ [1651.00076667 1674.00076667]
+ [1685.00076667 1786.00076667]
+ [1797.00076667 1818.00076667]
+ [1848.00076667 1914.00076667]
+ [1936.00076667 2005.00076667]
+ [2286.00076667 2304.00076667]
+ [2323.00076667 2388.00076667]
+ [2443.00076667 2459.00076667]
+ [2474.00076667 2489.00076667]
+ [2504.00076667 2589.00076667]
+ [3717.00076667 3756.00076667]
+ [3779.00076667 3864.00076667]
+ [3915.00076667 3947.00076667]
+ [4259.00076667 4331.00076667]
+ [4356.00076667 4419.00076667]
+ [4430.00076667 4457.00076667]
+ [4471.00076667 4478.00076667]
+ [4538.00076667 5263.00076667]
+ [5284.00076667 5537.00076667]
+ [5549.00076667 5592.00076667]
+ [5621.00076667 5633.00076667]
+ [6080.00076667 6092.00076667]
+ [6116.00076667 6206.00076667]
+ [6217.00076667 6305.00076667]
+ [6530.00076667 6552.00076667]
+ [6593.00076667 6754.00076667]
+ [6818.00076667 6827.00076667]
+ [9215.00076667 9237.00076667]
+ [9274.00076667 9299.00076667]]
+=== ImportedPseudoEMG ===
+*nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
++------------+ +------------+ +------------+ +------------+
+H4823-221108_. imported pseud 79026935-f307- 2.0           
+ (Total: 1)
+
+=== Video File ===
+*nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
++------------+ +-------+ +------------+ +------------+ +------------+
+
+ (Total: 0)
+
+=== Camera Device ===
+*camera_name   meters_per_pix manufacturer   model          lens           camera_id    
++------------+ +------------+ +------------+ +------------+ +------------+ +-----------+
+Basler Camera  0.00265        Basler         CameraDeviceMo LMVZ4411 Kowa  1            
+camera_device  0.001          Test Manufactu Test Camera Mo Test Lens      0            
+Logitech Camer 0.00265        Logitech       CameraDeviceMo built-in       0            
+ (Total: 3)
+
+=== Data Acquisition Device ===
+*data_acquisit data_acquisiti data_acquisiti adc_circuit   
++------------+ +------------+ +------------+ +------------+
+data_acquisiti OpenEphys      Intan RHD ampl Intan RHD adc 
+ (Total: 1)
+
+=== Electrode ===
+*nwb_file_name *electrode_gro *electrode_id  probe_id       probe_shank    probe_electrod region_id     name     original_refer x       y       z       filtering      impedance     bad_channel    x_warped     y_warped     z_warped     contacts    
++------------+ +------------+ +------------+ +------------+ +------------+ +------------+ +-----------+ +------+ +------------+ +-----+ +-----+ +-----+ +------------+ +-----------+ +------------+ +----------+ +----------+ +----------+ +----------+
+H4823-221108_. probe1_shank1  0              Cambridge Neur 1              0              1             0        -1             nan     nan     nan     unfiltered     nan           False          0.0          0.0          0.0                      
+H4823-221108_. probe1_shank1  1              Cambridge Neur 1              1              1             1        -1             nan     nan     nan     unfiltered     nan           False          0.0          0.0          0.0                      
+H4823-221108_. probe1_shank1  2              Cambridge Neur 1              2              1             2        -1             nan     nan     nan     unfiltered     nan           False          0.0          0.0          0.0                      
+H4823-221108_. probe1_shank1  3              Cambridge Neur 1              3              1             3        -1             nan     nan     nan     unfiltered     nan           False          0.0          0.0          0.0                      
+H4823-221108_. probe1_shank1  4              Cambridge Neur 1              4              1             4        -1             nan     nan     nan     unfiltered     nan           False          0.0          0.0          0.0                      
+H4823-221108_. probe1_shank1  5              Cambridge Neur 1              5              1             5        -1             nan     nan     nan     unfiltered     nan           False          0.0          0.0          0.0                      
+H4823-221108_. probe1_shank1  6              Cambridge Neur 1              6              1             6        -1             nan     nan     nan     unfiltered     nan           False          0.0          0.0          0.0                      
+H4823-221108_. probe1_shank1  7              Cambridge Neur 1              7              1             7        -1             nan     nan     nan     unfiltered     nan           False          0.0          0.0          0.0                      
+H4823-221108_. probe1_shank1  8              Cambridge Neur 1              8              1             8        -1             nan     nan     nan     unfiltered     nan           False          0.0          0.0          0.0                      
+H4823-221108_. probe1_shank1  9              Cambridge Neur 1              9              1             9        -1             nan     nan     nan     unfiltered     nan           False          0.0          0.0          0.0                      
+H4823-221108_. probe1_shank1  10             Cambridge Neur 1              10             1             10       -1             nan     nan     nan     unfiltered     nan           False          0.0          0.0          0.0                      
+H4823-221108_. probe1_shank1  11             Cambridge Neur 1              11             1             11       -1             nan     nan     nan     unfiltered     nan           False          0.0          0.0          0.0                      
+   ...
+ (Total: 64)
+
+=== Electrode Group ===
+*nwb_file_name *electrode_gro region_id     probe_id       description    target_hemisph
++------------+ +------------+ +-----------+ +------------+ +------------+ +------------+
+H4823-221108_. probe1_shank1  1             Cambridge Neur Electrodes fro Left          
+H4823-221108_. probe1_shank2  1             Cambridge Neur Electrodes fro Left          
+ (Total: 2)
+
+=== Probe ===
+*probe_id      probe_type     data_acquisiti contact_side_n
++------------+ +------------+ +------------+ +------------+
+Cambridge Neur Cambridge Neur None           True          
+ (Total: 1)
+
+=== Probe Shank ===
+*probe_id      *probe_shank  
++------------+ +------------+
+Cambridge Neur 1             
+Cambridge Neur 2             
+ (Total: 2)
+
+=== Probe Electrode ===
+*probe_id      *probe_shank   *probe_electro contact_size   rel_x     rel_y     rel_z    
++------------+ +------------+ +------------+ +------------+ +-------+ +-------+ +-------+
+Cambridge Neur 1              0              165.0          -27.5     0.0       0.0      
+Cambridge Neur 1              1              165.0          7.5       25.0      0.0      
+Cambridge Neur 1              2              165.0          -27.0     50.0      0.0      
+Cambridge Neur 1              3              165.0          7.0       75.0      0.0      
+Cambridge Neur 1              4              165.0          -26.5     100.0     0.0      
+Cambridge Neur 1              5              165.0          6.5       125.0     0.0      
+Cambridge Neur 1              6              165.0          -26.0     150.0     0.0      
+Cambridge Neur 1              7              165.0          6.0       175.0     0.0      
+Cambridge Neur 1              8              165.0          -25.5     200.0     0.0      
+Cambridge Neur 1              9              165.0          5.5       225.0     0.0      
+Cambridge Neur 1              10             165.0          -25.0     250.0     0.0      
+Cambridge Neur 1              11             165.0          5.0       275.0     0.0      
+   ...
+ (Total: 64)
+
+=== Raw ===
+*nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
++------------+ +------------+ +------------+ +------------+ +------------+ +------------+
+H4823-221108_. raw data valid 899b82fd-8978- 30000.0        WARNING: Ephys Acquisition tr
+ (Total: 1)
+
+=== ImportedLFP ===
+*nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
++------------+ +------------+ +------------+ +------------+ +------------+
+H4823-221108_. imported_lfp_0 imported lfp 0 1250.0         41973be0-5741-
+ (Total: 1)
+
+=== PositionSource ===
+*nwb_file_name *interval_list source       import_file_na
++------------+ +------------+ +----------+ +------------+
+H4823-221108_. pos 0 valid ti imported                   
+ (Total: 1)
+
+=== PositionSource.SpatialSeries ===
+*nwb_file_name *interval_list *id    name        
++------------+ +------------+ +----+ +----------+
+H4823-221108_. pos 0 valid ti 0      position    
+ (Total: 1)
+
+=== RawPosition.PosObject ===
+*nwb_file_name *interval_list *id    raw_position_o
++------------+ +------------+ +----+ +------------+
+H4823-221108_. pos 0 valid ti 0      8d17a8ac-95a8-
+ (Total: 1)
+
+=== RawPosition ===
+                     x          y
+time                             
+5.221667     295.46555  700.05940
+5.246233     291.70145  698.67360
+5.270767     287.11425  696.19775
+5.295333     282.35355  693.41215
+5.319867     277.90185  690.61215
+...                ...        ...
+9463.608533  332.07725  138.74185
+9463.633067  332.43860  138.86190
+9463.657633  332.46915  139.33875
+9463.682167  332.28825  139.61115
+9463.706733  332.27045  140.03570
+
+[384383 rows x 2 columns]
+=== RawCompassDirection ===
+*nwb_file_name *interval_list compass_object name          
++------------+ +------------+ +------------+ +------------+
+H4823-221108_. compass 1 vali 424e6cec-2039- head-direction
+ (Total: 1)
+
+=== ImportedSpikeSorting ===
+*nwb_file_name object_id     
++------------+ +------------+
+H4823-221108_. 8787737e-6cf4-
+ (Total: 1)
+
+=== Annotation ===
+*nwb_file_name *id    label      annotation
++------------+ +----+ +--------+ +--------+
+H4823-221108_. 0      =BLOB=     =BLOB=    
+H4823-221108_. 1      =BLOB=     =BLOB=    
+H4823-221108_. 2      =BLOB=     =BLOB=    
+H4823-221108_. 3      =BLOB=     =BLOB=    
+H4823-221108_. 4      =BLOB=     =BLOB=    
+H4823-221108_. 5      =BLOB=     =BLOB=    
+H4823-221108_. 6      =BLOB=     =BLOB=    
+H4823-221108_. 7      =BLOB=     =BLOB=    
+H4823-221108_. 8      =BLOB=     =BLOB=    
+H4823-221108_. 9      =BLOB=     =BLOB=    
+H4823-221108_. 10     =BLOB=     =BLOB=    
+H4823-221108_. 11     =BLOB=     =BLOB=    
+   ...
+ (Total: 113)
+
+=== Example Annotation (Unit 0) ===
+{'sampling_rate': np.int64(30000), 'waveform_mean': array([[-2.98697948, -6.83432436, -3.62501383, ..., -5.21831465,
+        -5.1203146 , -6.45664215],
+       [-1.61682928, -4.23033857, -1.21116054, ..., -4.49285984,
+        -6.35127544, -4.20931339],
+       [ 0.57132179, -2.72534943, -0.23930599, ..., -2.49540949,
+        -7.16723442, -3.94199538],
+       ...,
+       [-3.20029426, -2.33694935, -0.55827022, ..., -1.45948815,
+        -1.22007132, -1.88927603],
+       [-1.24513948, -1.74396098, -0.03641354, ..., -0.60303551,
+        -1.68203473, -3.07195401],
+       [ 2.53701162, -2.46497035,  0.65144014, ..., -0.63658303,
+        -0.59699059, -5.32763767]], shape=(60, 32))}
+=== ImportedHistologyImages ===
+*nwb_file_name *image_name    histology_imag
++------------+ +------------+ +------------+
+H4823-221108_. H4823_D5       390fe11b-f766-
+H4823-221108_. H4823_D6       b0b3f5ec-cd3f-
+ (Total: 2)
+

@@ -17,10 +17,13 @@ H3001          None       All experiment WT           M       Rattus norvegi
 H3016          None       All experiment KO           M       Rattus norvegi
 H3022          None       All experiment WT           M       Rattus norvegi
 H3023          P-366D     All experiment WT           M       Rattus norvegi
+H3029          None       All experiment WT           M       Rattus norvegi
 H4813          None       All experiment WT           M       Rattus norvegi
 H4817          None       All experiment KO           M       Rattus norvegi
+H4823          None       All experiment WT           M       Rattus norvegi
+H4830          None       All experiment WT           M       Rattus norvegi
 subject        P50D       this is a mock None         F       None          
- (Total: 7)
+ (Total: 10)
 
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline      
@@ -38,11 +41,12 @@ H3001-200202_. sleep_wake     =BLOB=
  (Total: 10)
 
 === Task ===
-*task_name    task_descripti task_type     task_subtype  
-+-----------+ +------------+ +-----------+ +------------+
-sleep         The rat was gi None          None          
-wake          The rat was aw None          None          
- (Total: 2)
+*task_name     task_descripti task_type     task_subtype  
++------------+ +------------+ +-----------+ +------------+
+sleep          The rat was gi None          None          
+wake           The rat was aw None          None          
+wake_cue_rot   The rat was aw None          None          
+ (Total: 3)
 
 === Task Epoch ===
 *nwb_file_name *epoch    task_name     camera_name    interval_list_ task_environme camera_nam
@@ -98,7 +102,7 @@ H3001-200202_. 2         sleep         None           02             sleep_conta
 === ImportedPseudoEMG ===
 *nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
 +------------+ +------------+ +------------+ +------------+
-H3001-200202_. imported pseud 02ce42e5-6a7e- 2.0           
+H3001-200202_. imported pseud 31d70f0f-f413- 2.0           
  (Total: 1)
 
 === Video File ===
@@ -108,11 +112,12 @@ H3001-200202_. imported pseud 02ce42e5-6a7e- 2.0
  (Total: 0)
 
 === Camera Device ===
-*camera_name   meters_per_pix manufacturer   model          lens          camera_id    
-+------------+ +------------+ +------------+ +------------+ +-----------+ +-----------+
-camera_device  0.001          Test Manufactu Test Camera Mo Test Lens     0            
-Logitech Camer 0.00265        Logitech       CameraDeviceMo built-in      0            
- (Total: 2)
+*camera_name   meters_per_pix manufacturer   model          lens           camera_id    
++------------+ +------------+ +------------+ +------------+ +------------+ +-----------+
+Basler Camera  0.00265        Basler         CameraDeviceMo LMVZ4411 Kowa  1            
+camera_device  0.001          Test Manufactu Test Camera Mo Test Lens      0            
+Logitech Camer 0.00265        Logitech       CameraDeviceMo built-in       0            
+ (Total: 3)
 
 === Data Acquisition Device ===
 *data_acquisit data_acquisiti data_acquisiti adc_circuit   
@@ -145,33 +150,46 @@ H3001-200202_. probe1_shank1  1             Cambridge Neur Electrodes fro Left
  (Total: 1)
 
 === Probe ===
-*probe_id    probe_type     data_acquisiti contact_side_n
-+----------+ +------------+ +------------+ +------------+
-
- (Total: 0)
+*probe_id      probe_type     data_acquisiti contact_side_n
++------------+ +------------+ +------------+ +------------+
+Cambridge Neur Cambridge Neur None           True          
+ (Total: 1)
 
 === Probe Shank ===
-*probe_id    *probe_shank  
-+----------+ +------------+
-
- (Total: 0)
+*probe_id      *probe_shank  
++------------+ +------------+
+Cambridge Neur 1             
+Cambridge Neur 2             
+ (Total: 2)
 
 === Probe Electrode ===
-*probe_id    *probe_shank   *probe_electro contact_size   rel_x     rel_y     rel_z    
-+----------+ +------------+ +------------+ +------------+ +-------+ +-------+ +-------+
-
- (Total: 0)
+*probe_id      *probe_shank   *probe_electro contact_size   rel_x     rel_y     rel_z    
++------------+ +------------+ +------------+ +------------+ +-------+ +-------+ +-------+
+Cambridge Neur 1              0              165.0          -27.5     0.0       0.0      
+Cambridge Neur 1              1              165.0          7.5       25.0      0.0      
+Cambridge Neur 1              2              165.0          -27.0     50.0      0.0      
+Cambridge Neur 1              3              165.0          7.0       75.0      0.0      
+Cambridge Neur 1              4              165.0          -26.5     100.0     0.0      
+Cambridge Neur 1              5              165.0          6.5       125.0     0.0      
+Cambridge Neur 1              6              165.0          -26.0     150.0     0.0      
+Cambridge Neur 1              7              165.0          6.0       175.0     0.0      
+Cambridge Neur 1              8              165.0          -25.5     200.0     0.0      
+Cambridge Neur 1              9              165.0          5.5       225.0     0.0      
+Cambridge Neur 1              10             165.0          -25.0     250.0     0.0      
+Cambridge Neur 1              11             165.0          5.0       275.0     0.0      
+   ...
+ (Total: 64)
 
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3001-200202_. raw data valid 4a918f91-bd54- 30000.0        no comments    Acquisition tr
+H3001-200202_. raw data valid 0d77cebe-c286- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H3001-200202_. imported_lfp_0 imported lfp 0 1250.0         ab3d62b8-2436-
+H3001-200202_. imported_lfp_0 imported lfp 0 1250.0         f12b260c-5c96-
  (Total: 1)
 
 === PositionSource ===
@@ -189,7 +207,7 @@ H3001-200202_. pos 0 valid ti 0      position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H3001-200202_. pos 0 valid ti 0      1e5811e9-a5dd-
+H3001-200202_. pos 0 valid ti 0      97dff51e-7d0e-
  (Total: 1)
 
 === RawPosition ===
@@ -211,13 +229,13 @@ time
 === RawCompassDirection ===
 *nwb_file_name *interval_list compass_object name          
 +------------+ +------------+ +------------+ +------------+
-H3001-200202_. compass 1 vali 37d2a804-6147- head-direction
+H3001-200202_. compass 1 vali ac0a9c34-aa42- head-direction
  (Total: 1)
 
 === ImportedSpikeSorting ===
 *nwb_file_name object_id     
 +------------+ +------------+
-H3001-200202_. afe44837-0aac-
+H3001-200202_. ef40c5f6-2ee5-
  (Total: 1)
 
 === Annotation ===
@@ -255,7 +273,7 @@ H3001-200202_. 11     =BLOB=     =BLOB=
 === ImportedHistologyImages ===
 *nwb_file_name *image_name    histology_imag
 +------------+ +------------+ +------------+
-H3001-200202_. H3001_D2       f3a90348-ed86-
-H3001-200202_. H3001_D3       7ca4df55-724a-
+H3001-200202_. H3001_D2       a47cd50e-4f17-
+H3001-200202_. H3001_D3       5f380963-3257-
  (Total: 2)
 

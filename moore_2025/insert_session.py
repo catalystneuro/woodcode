@@ -217,61 +217,61 @@ def main():
     (sgc.CameraDevice & {"camera_name": "Logitech Camera"}).delete()
     sgc.Task().delete()
 
-    # # Example Juvenile WT
-    # (sgc.Subject & {"subject_id": "H3022"}).delete()
+    # Example Juvenile WT
+    (sgc.Subject & {"subject_id": "H3022"}).delete()
 
-    # # Example Juvenile WT Day 1 Session
-    # nwbfile_path = raw_data_path / "H3022-210805.nwb"
-    # table_path = Path("tables_jv_wt_day1.txt")
-    # nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    # (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    # insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    # print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+    # Example Juvenile WT Day 1 Session
+    nwbfile_path = raw_data_path / "H3022-210805.nwb"
+    table_path = Path("tables_jv_wt_day1.txt")
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
-    # # Example Juvenile WT Day 2 Session
-    # nwbfile_path = raw_data_path / "H3022-210806.nwb"
-    # table_path = Path("tables_jv_wt_day2.txt")
-    # nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    # (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    # insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    # print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+    # Example Juvenile WT Day 2 Session
+    nwbfile_path = raw_data_path / "H3022-210806.nwb"
+    table_path = Path("tables_jv_wt_day2.txt")
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
-    # # Example Juvenile KO
-    # (sgc.Subject & {"subject_id": "H3016"}).delete()
+    # Example Juvenile KO
+    (sgc.Subject & {"subject_id": "H3016"}).delete()
 
-    # # Example Juvenile KO Day 1 Session
-    # nwbfile_path = raw_data_path / "H3016-210422.nwb"
-    # table_path = Path("tables_jv_ko_day1.txt")
-    # nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    # (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    # insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    # print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+    # Example Juvenile KO Day 1 Session
+    nwbfile_path = raw_data_path / "H3016-210422.nwb"
+    table_path = Path("tables_jv_ko_day1.txt")
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
-    # # Example Juvenile KO Day 2 Session
-    # nwbfile_path = raw_data_path / "H3016-210423.nwb"
-    # table_path = Path("tables_jv_ko_day2.txt")
-    # nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    # (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    # insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    # print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+    # Example Juvenile KO Day 2 Session
+    nwbfile_path = raw_data_path / "H3016-210423.nwb"
+    table_path = Path("tables_jv_ko_day2.txt")
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
-    # # Example Adult WT Session
-    # nwbfile_path = raw_data_path / "H4813-220728.nwb"
-    # table_path = Path("tables_ad_wt.txt")
-    # nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    # (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    # (sgc.Subject & {"subject_id": "H4813"}).delete()
-    # insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    # print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+    # Example Adult WT Session
+    nwbfile_path = raw_data_path / "H4813-220728.nwb"
+    table_path = Path("tables_ad_wt.txt")
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    (sgc.Subject & {"subject_id": "H4813"}).delete()
+    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
-    # # Example Adult KO Session
-    # nwbfile_path = raw_data_path / "H4817-220828.nwb"
-    # table_path = Path("tables_ad_ko.txt")
-    # nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    # (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    # (sgc.Subject & {"subject_id": "H4817"}).delete()
-    # insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    # print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+    # Example Adult KO Session
+    nwbfile_path = raw_data_path / "H4817-220828.nwb"
+    table_path = Path("tables_ad_ko.txt")
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    (sgc.Subject & {"subject_id": "H4817"}).delete()
+    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
     # Example Session without videos
     nwbfile_path = raw_data_path / "H3001-200202.nwb"
@@ -282,14 +282,41 @@ def main():
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
     print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
-    # # Example Session without raw data
-    # nwbfile_path = raw_data_path / "H3023-210812.nwb"
-    # table_path = Path("tables_jv_wt_no_raw.txt")
-    # nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    # (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    # (sgc.Subject & {"subject_id": "H3023"}).delete()
-    # insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    # print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+    # Example Session without raw data
+    nwbfile_path = raw_data_path / "H3023-210812.nwb"
+    table_path = Path("tables_jv_wt_no_raw.txt")
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    (sgc.Subject & {"subject_id": "H3023"}).delete()
+    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+
+    # Example Session without video nor timestamp csv files nor raw OpenEphys output
+    nwbfile_path = raw_data_path / "H4823-221108.nwb"
+    table_path = Path("tables_ad_wt_no_video_no_raw.txt")
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    (sgc.Subject & {"subject_id": "H4823"}).delete()
+    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+
+    # Example Juvenile Session with Adult temporal alignment and H5 Probe
+    nwbfile_path = raw_data_path / "H3029-230510.nwb"
+    table_path = Path("tables_jv_wt_adult_alignment_h5.txt")
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    (sgc.Subject & {"subject_id": "H3029"}).delete()
+    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+
+    # Example Adult Session with error epoch
+    nwbfile_path = raw_data_path / "H4830-230406.nwb"
+    table_path = Path("tables_ad_wt_error_epoch.txt")
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    (sgc.Subject & {"subject_id": "H4830"}).delete()
+    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
 
 if __name__ == "__main__":
