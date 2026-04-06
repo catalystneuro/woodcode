@@ -54,3 +54,6 @@ class DatFileDataChunkIterator(GenericDataChunkIterator):
 
     def _get_maxshape(self) -> tuple[int, int]:
         return (len(self._raw_data), len(self._chan_order))
+    
+    def __len__(self):
+        return len(self._raw_data)

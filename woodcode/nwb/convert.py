@@ -169,7 +169,7 @@ def add_units(nwbfile, raw_xml_data, processed_xml_data, spikes, waveforms, shan
         
         # Temporally align spike times to LFP timestamps
         unaligned_lfp_timestamps = np.arange(0, lfp_eseries.data._raw_data.shape[0]) / lfp_sampling_rate
-        aligned_lfp_timestamps = lfp_eseries.timestamps[:]
+        aligned_lfp_timestamps = lfp_eseries.get_timestamps()[:]
         aligned_spike_times = np.interp(x=spike_times, xp=unaligned_lfp_timestamps, fp=aligned_lfp_timestamps)
         
         nwbfile.add_unit(id=ncell,
@@ -329,7 +329,7 @@ def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None, comment
 
     # Temporally align processed tracking to LFP timestamps
     unaligned_lfp_timestamps = np.arange(0, lfp_eseries.data._raw_data.shape[0]) / lfp_sampling_rate
-    aligned_lfp_timestamps = lfp_eseries.timestamps[:]
+    aligned_lfp_timestamps = lfp_eseries.get_timestamps()[:]
     unaligned_position_timestamps = pos.index.to_numpy()
     aligned_position_timestamps = np.interp(x=unaligned_position_timestamps, xp=unaligned_lfp_timestamps, fp=aligned_lfp_timestamps)
 
@@ -485,7 +485,7 @@ def add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate, 
 
     # Temporally align sleep stage times to LFP timestamps
     unaligned_lfp_timestamps = np.arange(0, lfp_eseries.data._raw_data.shape[0]) / lfp_sampling_rate
-    aligned_lfp_timestamps = lfp_eseries.timestamps[:]
+    aligned_lfp_timestamps = lfp_eseries.get_timestamps()[:]
     unaligned_start_times = [row['start_time'] for row in sleep_stage_rows]
     unaligned_stop_times = [row['stop_time'] for row in sleep_stage_rows]
     aligned_start_times = np.interp(x=unaligned_start_times, xp=unaligned_lfp_timestamps, fp=aligned_lfp_timestamps)
@@ -552,7 +552,7 @@ def get_epochs_from_eseries(eseries):
     - DataFrame containing 'Start' and 'End' times of epochs
     """
 
-    timestamps = eseries.timestamps[:]
+    timestamps = eseries.get_timestamps()[:]
     diff = np.diff(timestamps)
     gap_threshold = 2 * np.median(diff)
     gap_indices = np.where(diff > gap_threshold)[0]
@@ -636,7 +636,7 @@ def add_lfp(nwbfile, lfp_path, xml_data, raw_eseries, stub_test=False, comments:
 
     print('Adding LFP to the NWB file...')
 
-    raw_timestamps = raw_eseries.timestamps[:]
+    raw_timestamps = raw_eseries.get_timestamps()[:]
     raw_sampling_rate = 30_000.0
     raw_conversion = raw_eseries.conversion
     raw_offset = raw_eseries.offset
