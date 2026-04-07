@@ -25,7 +25,6 @@ import spyglass.spikesorting.v1 as sgs
 from spyglass.spikesorting.analysis.v1.group import SortedSpikesGroup
 from spyglass.spikesorting.analysis.v1.group import UnitSelectionParams
 from spyglass.spikesorting.analysis.v1.unit_annotation import UnitAnnotation
-from tqdm import tqdm
 
 # Custom Table Imports
 sys.path.append(
@@ -80,7 +79,7 @@ def insert_sorting(nwbfile_path: Path):
     group_key = (SortedSpikesGroup & group_key).fetch1("KEY")
     _, unit_ids = SortedSpikesGroup().fetch_spike_data(group_key, return_unit_ids=True)
 
-    for unit_key in tqdm(unit_ids, desc="Inserting Unit Annotations"):
+    for unit_key in unit_ids:
         unit_id = unit_key["unit_id"]
         sampling_rate = nwbfile.units.get((unit_id, "sampling_rate"))
         waveform_mean = nwbfile.units.get((unit_id, "waveform_mean"))
