@@ -54,6 +54,11 @@ def main():
     spyglass_raw_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/Spyglass/raw")
     nwbfile_paths = sorted(spyglass_raw_path.glob("*.nwb"))
     for nwbfile_path in tqdm(nwbfile_paths, desc="Inserting sessions"):
+        # TODO: unskip these files after investigating timestamp issues and implementing fixes in conversion code
+        if nwbfile_path.name == "H3019-210618_1.nwb":
+            continue # skip this file due to known issues with SpatialSeries timestamps
+        if nwbfile_path.name == "H4815-220814.nwb":
+            continue # skip this file due to known issues with sleep stage and epoch timestamps
         insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
 
 
