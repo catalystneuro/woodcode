@@ -151,11 +151,7 @@ def get_session_to_nwb_kwargs(
     nested_directory = processed_root / folder_name
     processed_folder_path = nested_directory if nested_directory.is_dir() else processed_root
     processed_xml_path = processed_folder_path / f"{folder_name}.xml"
-    try:
-        nrs_path = next(processed_folder_path.glob("*.nrs"))
-    except StopIteration:
-        nrs_path = None
-        print(f"Warning: No .nrs file found for session {folder_name} in {processed_folder_path}.")
+    nrs_path = next(processed_folder_path.glob("*.nrs"))
     lfp_file_path = processed_folder_path / f"{folder_name}.lfp"
     mat_path = processed_folder_path / "Analysis"
     sleep_path = processed_folder_path / "Sleep"
@@ -411,7 +407,6 @@ if __name__ == "__main__":
     stub_test = False
     max_workers = 5
 
-    # TODO: investigate H4815-220814 sleep stages and epochs (non-ascending according to NWBInspector)
     # TODO: figure out which time stamps are emitting the runtime error and why.
     dataset_to_nwb(
         juvenile_dir_path=juvenile_dir_path,

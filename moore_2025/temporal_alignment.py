@@ -6,6 +6,7 @@ from datetime import datetime
 import pytz
 from spikeinterface.extractors import OpenEphysBinaryRecordingExtractor
 from time import time
+import woodcode.nwb as nwb
 
 def get_start_time(timestamps_file_path: Path | None = None, video_file_path: Path | None = None, folder_name: str = "") -> str:
     """
@@ -399,14 +400,17 @@ def get_aligned_video_timestamps_adults(
     extractor = OpenEphysBinaryRecordingExtractor(folder_path=ephys_folder_path, stream_name=ttl_stream_name)
     sampling_rate = extractor.get_sampling_frequency()
     assert extractor.get_num_segments() == len(timestamp_file_paths), f"Number of ephys segments ({extractor.get_num_segments()}) does not match number of timestamp files ({len(timestamp_file_paths)})."
-    all_aligned_video_timestamps = []
+    starting_time_shifts = nwb.convert.correct_for_clock_resets(extractor)
 
+    all_aligned_video_timestamps = []
     for segment_index, timestamp_file_path in enumerate(timestamp_file_paths):
         print(f"  Aligning segment {segment_index} with timestamp file {timestamp_file_path.name}...")
+        starting_time_shift = starting_time_shifts[segment_index]
         timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
         num_frames = timestamps_df.shape[0] + 1 # + 1 bc video has one extra frame at the end
         traces = extractor.get_traces(segment_index=segment_index, channel_ids=[ttl_channel_id])
         ephys_timestamps = extractor.get_times(segment_index=segment_index)
+        ephys_timestamps += starting_time_shift
         single_segment_ttl_timestamps = get_ttl_timestamps(traces=traces, timestamps=ephys_timestamps, threshold=ttl_threshold, cooldown_in_seconds=cooldown_in_seconds, sampling_rate=sampling_rate)
         num_ttls = single_segment_ttl_timestamps.shape[0]
         assert num_ttls >= num_frames, f"Number of TTLs ({num_ttls}) is less than number of video frames ({num_frames}) for segment {segment_index}."

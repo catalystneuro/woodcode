@@ -57,8 +57,6 @@ def main():
         # TODO: unskip these files after investigating timestamp issues and implementing fixes in conversion code
         if nwbfile_path.name == "H3019-210618_1.nwb":
             continue # skip this file due to known issues with SpatialSeries timestamps
-        if nwbfile_path.name == "H4815-220814.nwb":
-            continue # skip this file due to known issues with sleep stage and epoch timestamps
         insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
 
 

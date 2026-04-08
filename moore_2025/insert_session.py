@@ -317,6 +317,15 @@ def main():
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
     print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
+    # Example Session with clock reset between segments
+    nwbfile_path = raw_data_path / "H4815-220814.nwb"
+    table_path = Path("tables_ad_wt_clock_reset.txt")
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    (sgc.Subject & {"subject_id": "H4815"}).delete()
+    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+
 
 if __name__ == "__main__":
     main()

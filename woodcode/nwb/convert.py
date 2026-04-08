@@ -21,6 +21,13 @@ from neuroconv.utils import calculate_regular_series_rate
 from neuroconv.tools.nwb_helpers import configure_and_write_nwbfile
 from .dat_file_data_chunk_iterator import DatFileDataChunkIterator
 from .io import load_eeg
+from spikeinterface.extractors import OpenEphysBinaryRecordingExtractor
+from neuroconv.tools.spikeinterface.spikeinterface import _stub_recording
+from neuroconv.utils import calculate_regular_series_rate
+import pynwb
+from .multi_segment_recording_data_chunk_iterator import MultiSegmentRecordingDataChunkIterator
+from datetime import datetime
+import pytz
 
 def create_nwb_file(metadata, start_time):
     # get info from folder name
@@ -914,13 +921,34 @@ def add_video(
 
     return nwbfile
 
-from spikeinterface.extractors import OpenEphysBinaryRecordingExtractor
-from neuroconv.tools.spikeinterface.spikeinterface import _stub_recording
-from neuroconv.utils import calculate_regular_series_rate
-import pynwb
-from .multi_segment_recording_data_chunk_iterator import MultiSegmentRecordingDataChunkIterator
-from datetime import datetime
-import pytz
+def correct_for_clock_resets(recording: OpenEphysBinaryRecordingExtractor) -> list[float]:
+    INTER_EPOCH_INTERVAL = 100.0  # seconds to insert between segments to ensure no overlapping timestamps after clock resets
+
+    segment_indices = range(recording.get_num_segments())
+    segment_start_times = []
+    segment_stop_times = []
+    for i in segment_indices:
+        segment_timestamps = recording.get_times(segment_index=i)
+        segment_start_times.append(segment_timestamps[0])
+        segment_stop_times.append(segment_timestamps[-1])
+
+    clock_reset_indices = []
+    for i in range(1, len(segment_indices)):
+        if segment_start_times[i] < segment_stop_times[i-1]:
+            # clock_reset_index is the index of the first segment after the clock reset
+            clock_reset_indices.append(i)
+
+    starting_time_shifts = []
+    for segment_index in segment_indices:
+        # Calculate starting time shift for this segment
+        starting_time_shift = 0.0
+        for reset_index in clock_reset_indices:
+            if segment_index >= reset_index:
+                starting_time_shift += segment_stop_times[reset_index - 1] + INTER_EPOCH_INTERVAL
+        starting_time_shifts.append(starting_time_shift)
+    
+    return starting_time_shifts
+
 def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, xml_data: dict, stream_name: str, stub_test: bool = False) -> NWBFile:
     print("Adding raw ephys to NWB file...")
 
@@ -982,13 +1010,15 @@ def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, xml_data: dict, stream_na
     )
     eseries_kwargs.update(data=ephys_data_iterator)
 
+    starting_time_shifts = correct_for_clock_resets(recording=recording)
     timestamps = []
     for i in segment_indices:
         segment_timestamps = recording.get_times(segment_index=i)
+        segment_timestamps += starting_time_shifts[i]
         timestamps.append(segment_timestamps)
+    
     timestamps = np.concatenate(timestamps)
-    with np.errstate(divide='ignore'):  # Suppress warnings for divide by zero in case timestamps are perfectly regular
-        rate = calculate_regular_series_rate(series=timestamps)  # Returns None if it is not regular
+    rate = calculate_regular_series_rate(series=timestamps)  # Returns None if it is not regular
     if rate:
         starting_time = float(timestamps[0])
         # Note that we call the sampling frequency again because the estimated rate might be different from the
