@@ -516,8 +516,7 @@ def add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate, 
     unaligned_emg_timestamps = emg['EMGFromLFP']['timestamps']
     aligned_emg_timestamps = np.interp(x=unaligned_emg_timestamps, xp=unaligned_lfp_timestamps, fp=aligned_lfp_timestamps)
 
-    with np.errstate(divide='ignore'): # Suppress warnings for divide by zero in case timestamps are perfectly regular
-        rate = calculate_regular_series_rate(aligned_emg_timestamps)
+    rate = calculate_regular_series_rate(aligned_emg_timestamps)
     timing_kwargs = {}
     if rate is None:
         timing_kwargs["timestamps"] = aligned_emg_timestamps
@@ -663,6 +662,7 @@ def add_lfp(nwbfile, lfp_path, xml_data, raw_eseries, stub_test=False, comments:
     # lazy load LFP
     lfp_data = load_eeg(filepath=lfp_path, n_channels=xml_data['n_channels'], frequency=float(xml_data['eeg_sampling_rate']), bytes_size=2)
     
+    # TODO: remove this correction once new data has been shared.
     # Correct for mismatched LFP data and timestamps (ex. H3006-200314_1)
     if lfp_data.shape[0] > len(lfp_timestamps):
         warnings.warn(
