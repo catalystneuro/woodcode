@@ -407,7 +407,6 @@ if __name__ == "__main__":
     stub_test = False
     max_workers = 5
 
-    # TODO: figure out mismatched LFP vs raw data: H3006-200314_1 and H3006-200314_2
     dataset_to_nwb(
         juvenile_dir_path=juvenile_dir_path,
         adult_dir_path=adult_dir_path,
