@@ -25,7 +25,6 @@ import spyglass.spikesorting.v1 as sgs
 from spyglass.spikesorting.analysis.v1.group import SortedSpikesGroup
 from spyglass.spikesorting.analysis.v1.group import UnitSelectionParams
 from spyglass.spikesorting.analysis.v1.unit_annotation import UnitAnnotation
-from tqdm import tqdm
 
 # Custom Table Imports
 sys.path.append(
@@ -80,7 +79,7 @@ def insert_sorting(nwbfile_path: Path):
     group_key = (SortedSpikesGroup & group_key).fetch1("KEY")
     _, unit_ids = SortedSpikesGroup().fetch_spike_data(group_key, return_unit_ids=True)
 
-    for unit_key in tqdm(unit_ids, desc="Inserting Unit Annotations"):
+    for unit_key in unit_ids:
         unit_id = unit_key["unit_id"]
         sampling_rate = nwbfile.units.get((unit_id, "sampling_rate"))
         waveform_mean = nwbfile.units.get((unit_id, "waveform_mean"))
@@ -206,7 +205,10 @@ def print_tables(nwbfile_path: Path, table_path: Path = Path("tables.txt")):
 
 
 def main():
+    raw_data_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/Spyglass/raw")
+
     # Clear existing data for a clean insertion
+    (sgc.ProbeType & {"probe_type": "Cambridge Neurotech H5 probe"}).delete()
     (sgc.ProbeType & {"probe_type": "Cambridge Neurotech H6b probe"}).delete()
     (sgc.ProbeType & {"probe_type": "Cambridge Neurotech H7 probe"}).delete()
     (sgc.DataAcquisitionDevice & {"name": "data_acquisition_device"}).delete()
@@ -218,7 +220,7 @@ def main():
     (sgc.Subject & {"subject_id": "H3022"}).delete()
 
     # Example Juvenile WT Day 1 Session
-    nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3022-210805.nwb")
+    nwbfile_path = raw_data_path / "H3022-210805.nwb"
     table_path = Path("tables_jv_wt_day1.txt")
     nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
@@ -226,7 +228,7 @@ def main():
     print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
     # Example Juvenile WT Day 2 Session
-    nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3022-210806.nwb")
+    nwbfile_path = raw_data_path / "H3022-210806.nwb"
     table_path = Path("tables_jv_wt_day2.txt")
     nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
@@ -237,7 +239,7 @@ def main():
     (sgc.Subject & {"subject_id": "H3016"}).delete()
 
     # Example Juvenile KO Day 1 Session
-    nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3016-210422.nwb")
+    nwbfile_path = raw_data_path / "H3016-210422.nwb"
     table_path = Path("tables_jv_ko_day1.txt")
     nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
@@ -245,7 +247,7 @@ def main():
     print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
     # Example Juvenile KO Day 2 Session
-    nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H3016-210423.nwb")
+    nwbfile_path = raw_data_path / "H3016-210423.nwb"
     table_path = Path("tables_jv_ko_day2.txt")
     nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
@@ -253,7 +255,7 @@ def main():
     print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
     # Example Adult WT Session
-    nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H4813-220728.nwb")
+    nwbfile_path = raw_data_path / "H4813-220728.nwb"
     table_path = Path("tables_ad_wt.txt")
     nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
@@ -262,11 +264,65 @@ def main():
     print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 
     # Example Adult KO Session
-    nwbfile_path = Path("/Volumes/T7/CatalystNeuro/Spyglass/raw/H4817-220828.nwb")
+    nwbfile_path = raw_data_path / "H4817-220828.nwb"
     table_path = Path("tables_ad_ko.txt")
     nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
     (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
     (sgc.Subject & {"subject_id": "H4817"}).delete()
+    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+
+    # Example Session without videos
+    nwbfile_path = raw_data_path / "H3001-200202.nwb"
+    table_path = Path("tables_jv_wt_no_videos.txt")
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    (sgc.Subject & {"subject_id": "H3001"}).delete()
+    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+
+    # Example Session without raw data
+    nwbfile_path = raw_data_path / "H3023-210812.nwb"
+    table_path = Path("tables_jv_wt_no_raw.txt")
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    (sgc.Subject & {"subject_id": "H3023"}).delete()
+    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+
+    # Example Session without video nor timestamp csv files nor raw OpenEphys output
+    nwbfile_path = raw_data_path / "H4823-221108.nwb"
+    table_path = Path("tables_ad_wt_no_video_no_raw.txt")
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    (sgc.Subject & {"subject_id": "H4823"}).delete()
+    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+
+    # Example Juvenile Session with Adult temporal alignment and H5 Probe
+    nwbfile_path = raw_data_path / "H3029-230510.nwb"
+    table_path = Path("tables_jv_wt_adult_alignment_h5.txt")
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    (sgc.Subject & {"subject_id": "H3029"}).delete()
+    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+
+    # Example Adult Session with error epoch
+    nwbfile_path = raw_data_path / "H4830-230406.nwb"
+    table_path = Path("tables_ad_wt_error_epoch.txt")
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    (sgc.Subject & {"subject_id": "H4830"}).delete()
+    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
+    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
+
+    # Example Session with clock reset between segments
+    nwbfile_path = raw_data_path / "H4815-220814.nwb"
+    table_path = Path("tables_ad_wt_clock_reset.txt")
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
+    (sgc.Subject & {"subject_id": "H4815"}).delete()
     insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
     print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
 

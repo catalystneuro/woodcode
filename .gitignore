@@ -18,6 +18,7 @@ venv/
 *.log
 *.tmp
 .DS_Store
+.vscode/
 
 # ssh
 eval "$(ssh-agent -s)"

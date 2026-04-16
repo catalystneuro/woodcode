@@ -11,11 +11,19 @@ H3016-210422_. H3016          University of  Wood/Dudchenko 210422         Explo
  (Total: 1)
 
 === Subject ===
-*subject_id    age      description    genotype     sex     species       
-+------------+ +------+ +------------+ +----------+ +-----+ +------------+
-H3016          P22D     All experiment KO           M       Rattus norvegi
-H3022          P22D     All experiment WT           M       Rattus norvegi
- (Total: 2)
+*subject_id    age        description    genotype     sex     species       
++------------+ +--------+ +------------+ +----------+ +-----+ +------------+
+H3001          None       All experiment WT           M       Rattus norvegi
+H3016          None       All experiment KO           M       Rattus norvegi
+H3022          None       All experiment WT           M       Rattus norvegi
+H3023          P-366D     All experiment WT           M       Rattus norvegi
+H3029          None       All experiment WT           M       Rattus norvegi
+H4813          None       All experiment WT           M       Rattus norvegi
+H4817          None       All experiment KO           M       Rattus norvegi
+H4823          None       All experiment WT           M       Rattus norvegi
+H4830          None       All experiment WT           M       Rattus norvegi
+subject        P50D       this is a mock None         F       None          
+ (Total: 10)
 
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline      
@@ -118,23 +126,24 @@ H3016-210422_. 4         wake_cue_rot   None           04             cylindrica
 === ImportedPseudoEMG ===
 *nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
 +------------+ +------------+ +------------+ +------------+
-H3016-210422_. imported pseud 10d376af-7677- 2.0           
+H3016-210422_. imported pseud 923dda84-ae01- 2.0           
  (Total: 1)
 
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
-H3016-210422_. 1         0              Logitech Camer 9b3fe828-0e64-
-H3016-210422_. 2         0              Logitech Camer 9b3fe828-0e64-
-H3016-210422_. 3         0              Logitech Camer 9b3fe828-0e64-
-H3016-210422_. 4         0              Logitech Camer 9b3fe828-0e64-
+H3016-210422_. 1         0              Logitech Camer c730836e-1bce-
+H3016-210422_. 2         0              Logitech Camer c730836e-1bce-
+H3016-210422_. 3         0              Logitech Camer c730836e-1bce-
+H3016-210422_. 4         0              Logitech Camer c730836e-1bce-
  (Total: 4)
 
 === Camera Device ===
-*camera_name   meters_per_pix manufacturer   model          lens         camera_id    
-+------------+ +------------+ +------------+ +------------+ +----------+ +-----------+
-Logitech Camer 0.00265        Logitech       CameraDeviceMo built-in     0            
- (Total: 1)
+*camera_name   meters_per_pix manufacturer   model          lens          camera_id    
++------------+ +------------+ +------------+ +------------+ +-----------+ +-----------+
+camera_device  0.001          Test Manufactu Test Camera Mo Test Lens     0            
+Logitech Camer 0.00265        Logitech       CameraDeviceMo built-in      0            
+ (Total: 2)
 
 === Data Acquisition Device ===
 *data_acquisit data_acquisiti data_acquisiti adc_circuit   
@@ -187,13 +196,13 @@ H3016-210422_. probe1_shank1  1             Cambridge Neur Electrodes fro Left
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3016-210422_. raw data valid 825bc02a-a1d3- 30000.0        no comments    Acquisition tr
+H3016-210422_. raw data valid e14e9109-67c3- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H3016-210422_. imported_lfp_0 imported lfp 0 1250.0         d10ecce0-682a-
+H3016-210422_. imported_lfp_0 imported lfp 0 1250.0         e6cdf74b-290e-
  (Total: 1)
 
 === PositionSource ===
@@ -214,9 +223,9 @@ H3016-210422_. pos 1 valid ti 1      item2_position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H3016-210422_. pos 0 valid ti 0      e9fe9fb4-8606-
-H3016-210422_. pos 1 valid ti 0      51df8813-4661-
-H3016-210422_. pos 1 valid ti 1      2462cce9-6529-
+H3016-210422_. pos 0 valid ti 0      662f1e20-8215-
+H3016-210422_. pos 1 valid ti 0      4fcb38d4-b682-
+H3016-210422_. pos 1 valid ti 1      e128d313-b533-
  (Total: 3)
 
 === RawPosition ===
@@ -238,13 +247,13 @@ time
 === RawCompassDirection ===
 *nwb_file_name *interval_list compass_object name          
 +------------+ +------------+ +------------+ +------------+
-H3016-210422_. compass 1 vali e0b3593b-f5c5- head-direction
+H3016-210422_. compass 1 vali 73ad94d1-fc7f- head-direction
  (Total: 1)
 
 === ImportedSpikeSorting ===
 *nwb_file_name object_id     
 +------------+ +------------+
-H3016-210422_. b4eac9fe-6207-
+H3016-210422_. c408342e-a325-
  (Total: 1)
 
 === Annotation ===
@@ -282,7 +291,7 @@ H3016-210422_. 11     =BLOB=     =BLOB=
 === ImportedHistologyImages ===
 *nwb_file_name *image_name    histology_imag
 +------------+ +------------+ +------------+
-H3016-210422_. H3016_C5       fd37d6f6-6082-
-H3016-210422_. H3016_C6       9672089e-3341-
+H3016-210422_. H3016_C5       473d8062-4c83-
+H3016-210422_. H3016_C6       23fde8f0-93ce-
  (Total: 2)
 

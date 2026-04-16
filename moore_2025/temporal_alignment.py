@@ -6,8 +6,9 @@ from datetime import datetime
 import pytz
 from spikeinterface.extractors import OpenEphysBinaryRecordingExtractor
 from time import time
+import woodcode.nwb as nwb
 
-def get_start_time(timestamps_file_path: Path) -> str:
+def get_start_time(timestamps_file_path: Path | None = None, video_file_path: Path | None = None, folder_name: str = "") -> str:
     """
     Get the session start datetime from the name of the timestamps CSV file.
     
@@ -15,18 +16,33 @@ def get_start_time(timestamps_file_path: Path) -> str:
     ----------
     timestamps_file_path : Path
         Path to the timestamps CSV file.
+    video_file_path : Path
+        Path to the video file, used as a fallback if the datetime cannot be extracted from the timestamps file name.
+    folder_name : str
+        Name of the session folder, used as a fallback if the datetime cannot be extracted from the timestamps or video file names.
     
     Returns
     -------
     datetime
         The session start datetime with timezone information.
     """
+    if timestamps_file_path is None and video_file_path is None:
+        # Example folder names: H4823-221108, H3026-211004_2
+        folder_date_string = folder_name.split("-")[-1].split("_")[0]
+        start_time = datetime.strptime(folder_date_string, '%y%m%d')
+        tz_info = pytz.timezone('Europe/London')
+        start_time = tz_info.localize(start_time)
+        return start_time
+    
     # Example filename: 'Bonsai testing2021-08-05T17_06_23.csv'
     filename = timestamps_file_path.stem  # Ex. 'Bonsai testing2021-08-05T17_06_23'
     pattern = r'(\d{4}-\d{2}-\d{2}T\d{2}_\d{2}_\d{2})'
     match = re.search(pattern, filename)
     if not match:
-        raise ValueError(f"Could not extract datetime from filename: {filename}")
+        video_file_name = video_file_path.stem  # Ex. 'BonsaiCaptureALL2021-08-12T19_44_12'
+        match = re.search(pattern, video_file_name)
+        if not match:
+            raise ValueError(f"Could not extract datetime from filename: {filename} or video file: {video_file_name}")
     
     start_time = match.group(1)
     start_time = datetime.strptime(start_time, '%Y-%m-%dT%H_%M_%S')
@@ -286,6 +302,7 @@ def get_aligned_video_timestamps_juveniles(
     *,
     timestamp_file_path: Path,
     ephys_folder_path: Path,
+    ttl_stream_name: str,
 ) -> np.ndarray:
     """
     Get aligned video timestamps for juvenile sessions.
@@ -296,6 +313,8 @@ def get_aligned_video_timestamps_juveniles(
         Path to the video timestamps CSV file.
     ephys_folder_path : Path
         Path to the ephys OpenEphys record node folder.
+    ttl_stream_name : str
+        Name of the Open Ephys stream containing the TTL signal.
 
     Returns
     -------
@@ -308,7 +327,6 @@ def get_aligned_video_timestamps_juveniles(
     timestamp_column_name = "Item4.Timestamp"
     led_column_name = "Item3.Val0"
     ttl_threshold = 20_000
-    ttl_stream_name = "Rhythm_FPGA-100.0_ADC"
     ttl_channel_id = 'ADC1'
     cooldown_in_seconds = 1.0
     min_matches = 5
@@ -325,7 +343,6 @@ def get_aligned_video_timestamps_juveniles(
     ttl_timestamps = np.ones_like(led_timestamps) * np.nan
     for segment_index in range(extractor.get_num_segments()):
         print(f"  Aligning segment {segment_index}...")
-        t0 = time()
         traces = extractor.get_traces(segment_index=segment_index, channel_ids=[ttl_channel_id])
         ephys_timestamps = extractor.get_times(segment_index=segment_index)
         single_segment_ttl_timestamps = get_ttl_timestamps(traces=traces, timestamps=ephys_timestamps, threshold=ttl_threshold, cooldown_in_seconds=cooldown_in_seconds, sampling_rate=sampling_rate)
@@ -336,7 +353,6 @@ def get_aligned_video_timestamps_juveniles(
         ttl_timestamps[segment_start_index:segment_start_index + len(single_segment_ttl_timestamps)] = single_segment_ttl_timestamps
         error = led_intervals[segment_start_index:segment_start_index + len(ttl_intervals)] - ttl_intervals
         assert np.max(np.abs(error)) < tolerance_in_seconds, f"Alignment error too large: {np.max(np.abs(error))} seconds for segment {segment_index}"
-        print(f"    Segment {segment_index} aligned in {time() - t0:.2f} seconds")
 
     # NaN values represent LED pulses that were not recorded in the ephys data (ex. between segments)
     not_nan = ~np.isnan(ttl_timestamps)
@@ -356,6 +372,7 @@ def get_aligned_video_timestamps_adults(
     *,
     timestamp_file_paths: list[Path],
     ephys_folder_path: Path,
+    ttl_stream_name: str,
 ) -> list[np.ndarray]:
     """
     Get aligned video timestamps for adult sessions.
@@ -366,28 +383,34 @@ def get_aligned_video_timestamps_adults(
         List of paths to the video timestamps CSV files.
     ephys_folder_path : Path
         Path to the ephys OpenEphys record node folder.
+    ttl_stream_name : str
+        Name of the Open Ephys stream containing the TTL signal.
 
     Returns
     -------
     list[np.ndarray]
         The aligned video timestamps for each segment/file.
     """
+    print("Aligning adult video timestamps...")
     timestamp_column_name = "Item3.Timestamp"
     ttl_threshold = 10_000
-    ttl_stream_name = "Rhythm_FPGA-103.0_ADC"
     ttl_channel_id = 'ADC6'
     cooldown_in_seconds = 0.0
 
     extractor = OpenEphysBinaryRecordingExtractor(folder_path=ephys_folder_path, stream_name=ttl_stream_name)
     sampling_rate = extractor.get_sampling_frequency()
     assert extractor.get_num_segments() == len(timestamp_file_paths), f"Number of ephys segments ({extractor.get_num_segments()}) does not match number of timestamp files ({len(timestamp_file_paths)})."
-    all_aligned_video_timestamps = []
+    starting_time_shifts = nwb.convert.correct_for_clock_resets(extractor)
 
+    all_aligned_video_timestamps = []
     for segment_index, timestamp_file_path in enumerate(timestamp_file_paths):
+        print(f"  Aligning segment {segment_index} with timestamp file {timestamp_file_path.name}...")
+        starting_time_shift = starting_time_shifts[segment_index]
         timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
         num_frames = timestamps_df.shape[0] + 1 # + 1 bc video has one extra frame at the end
         traces = extractor.get_traces(segment_index=segment_index, channel_ids=[ttl_channel_id])
         ephys_timestamps = extractor.get_times(segment_index=segment_index)
+        ephys_timestamps += starting_time_shift
         single_segment_ttl_timestamps = get_ttl_timestamps(traces=traces, timestamps=ephys_timestamps, threshold=ttl_threshold, cooldown_in_seconds=cooldown_in_seconds, sampling_rate=sampling_rate)
         num_ttls = single_segment_ttl_timestamps.shape[0]
         assert num_ttls >= num_frames, f"Number of TTLs ({num_ttls}) is less than number of video frames ({num_frames}) for segment {segment_index}."
@@ -404,3 +427,25 @@ def get_aligned_video_timestamps_adults(
         all_aligned_video_timestamps.append(single_segment_ttl_timestamps)
 
     return all_aligned_video_timestamps
+
+
+def get_unaligned_video_timestamps_juveniles(*,timestamp_file_path: Path) -> np.ndarray:
+    """
+    Get unaligned video timestamps for juvenile sessions.
+
+    Parameters
+    ----------
+    timestamp_file_path : Path
+        Path to the video timestamps CSV file.
+
+    Returns
+    -------
+    np.ndarray
+        The unaligned video timestamps.
+    """
+    timestamp_column_name = "Item4.Timestamp"
+    timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
+    unaligned_timestamps = timestamps_df[timestamp_column_name].values
+    unaligned_timestamps = (unaligned_timestamps - unaligned_timestamps[0]) / np.timedelta64(1, 's') # Convert to seconds relative to the first timestamp
+
+    return unaligned_timestamps
