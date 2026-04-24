@@ -15,7 +15,7 @@ The requirements are split into two parts:
 <details>
 <summary><b>1. Raw electrophysiology</b></summary>
 
-- **All raw electrophysiology must be written as a single `ElectricalSeries`.** Multi-segment recordings are concatenated; clock resets across segments are corrected before concatenation so timestamps remain monotonic.
+- **All raw electrophysiology must be written as a single `ElectricalSeries`.** Multi-segment recordings are concatenated.
 - **The `ElectricalSeries` must be named exactly `e-series`** (lowercase, with a hyphen).
 - The series is added to `nwbfile.acquisition`.
 
