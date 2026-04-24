@@ -36,7 +36,7 @@ The requirements are split into two parts:
 - **Each task table must have exactly these columns**:
   - `task_name`
   - `task_description`
-  - `task_environment`
+  - `task_environment` (this one is actually optional in Spyglass, but it's a good idea to include it for clarity)
   - `camera_id` (list of camera device IDs)
   - `task_epochs` (list of epoch indices that this task covers)
 
@@ -67,7 +67,7 @@ The required types and their roles:
 
 | Type | Role |
 |---|---|
-| `DataAcqDevice` | Data-acquisition system (amplifier, ADC, system). One per file is required. |
+| `DataAcqDevice` | Data-acquisition system (amplifier, ADC, system). |
 | `Probe` | Silicon probe. Holds a list of `Shank` objects. |
 | `Shank` | One shank of a probe. Holds a list of `ShanksElectrode` objects. |
 | `ShanksElectrode` | A single electrode site on a shank, with relative `(x, y, z)` coordinates. |
@@ -81,7 +81,7 @@ Hierarchy: `Probe` contains `Shank`s, each `Shank` contains `ShanksElectrode`s. 
 <details>
 <summary><b>6. LFP</b></summary>
 
-- LFP must be written as an `ElectricalSeries` named exactly **`LFP`**, wrapped in a `pynwb.ecephys.LFP` container.
+- LFP must be written as an `ElectricalSeries` and wrapped in a `pynwb.ecephys.LFP` container.
 - The `LFP` container must live in the `ecephys` processing module (i.e. `nwbfile.processing["ecephys"]`).
 
 </details>
