@@ -368,7 +368,6 @@ def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None, comment
         unaligned_ang_timestamps = ang.index.to_numpy()
         aligned_ang_timestamps = np.interp(x=unaligned_ang_timestamps, xp=unaligned_lfp_timestamps, fp=aligned_lfp_timestamps)
 
-        # data = ang.values[:, np.newaxis]  # Spyglass requires 2D array for all SpatialSeries
         data = ang.values
         rate = calculate_regular_series_rate(aligned_ang_timestamps)
         timing_kwargs = {}
