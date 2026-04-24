@@ -11,19 +11,22 @@ H3001-200202_. H3001          University of  Wood/Dudchenko 200202         Explo
  (Total: 1)
 
 === Subject ===
-*subject_id    age        description    genotype     sex     species       
-+------------+ +--------+ +------------+ +----------+ +-----+ +------------+
-H3001          None       All experiment WT           M       Rattus norvegi
-H3016          None       All experiment KO           M       Rattus norvegi
-H3022          None       All experiment WT           M       Rattus norvegi
-H3023          P-366D     All experiment WT           M       Rattus norvegi
-H3029          None       All experiment WT           M       Rattus norvegi
-H4813          None       All experiment WT           M       Rattus norvegi
-H4817          None       All experiment KO           M       Rattus norvegi
-H4823          None       All experiment WT           M       Rattus norvegi
-H4830          None       All experiment WT           M       Rattus norvegi
-subject        P50D       this is a mock None         F       None          
- (Total: 10)
+*subject_id    age      description    genotype     sex     species       
++------------+ +------+ +------------+ +----------+ +-----+ +------------+
+H3001          None     All experiment WT           M       Rattus norvegi
+H3003          None     All experiment KO           M       Rattus norvegi
+H3006          None     All experiment WT           M       Rattus norvegi
+H3008          None     All experiment KO           M       Rattus norvegi
+H3009          None     All experiment WT           M       Rattus norvegi
+H3015          None     All experiment WT           M       Rattus norvegi
+H3016          None     All experiment KO           M       Rattus norvegi
+H3019          None     All experiment KO           M       Rattus norvegi
+H3022          None     All experiment WT           M       Rattus norvegi
+H3023          None     All experiment WT           M       Rattus norvegi
+H3026          None     All experiment WT           M       Rattus norvegi
+H3029          None     All experiment WT           M       Rattus norvegi
+   ...
+ (Total: 25)
 
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline      
@@ -102,7 +105,7 @@ H3001-200202_. 2         sleep         None           02             sleep_conta
 === ImportedPseudoEMG ===
 *nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
 +------------+ +------------+ +------------+ +------------+
-H3001-200202_. imported pseud 31d70f0f-f413- 2.0           
+H3001-200202_. imported pseud ce5cd599-0ecc- 2.0           
  (Total: 1)
 
 === Video File ===
@@ -183,13 +186,13 @@ Cambridge Neur 1              11             165.0          5.0       275.0     
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3001-200202_. raw data valid 0d77cebe-c286- 30000.0        no comments    Acquisition tr
+H3001-200202_. raw data valid cf198304-5a97- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H3001-200202_. imported_lfp_0 imported lfp 0 1250.0         f12b260c-5c96-
+H3001-200202_. imported_lfp_0 imported lfp 0 1250.0         94694ca8-7beb-
  (Total: 1)
 
 === PositionSource ===
@@ -207,7 +210,7 @@ H3001-200202_. pos 0 valid ti 0      position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H3001-200202_. pos 0 valid ti 0      97dff51e-7d0e-
+H3001-200202_. pos 0 valid ti 0      08dc26ed-9086-
  (Total: 1)
 
 === RawPosition ===
@@ -229,13 +232,13 @@ time
 === RawCompassDirection ===
 *nwb_file_name *interval_list compass_object name          
 +------------+ +------------+ +------------+ +------------+
-H3001-200202_. compass 1 vali ac0a9c34-aa42- head-direction
+H3001-200202_. compass 1 vali 9953db91-13f8- head-direction
  (Total: 1)
 
 === ImportedSpikeSorting ===
 *nwb_file_name object_id     
 +------------+ +------------+
-H3001-200202_. ef40c5f6-2ee5-
+H3001-200202_. 8e04a48d-fc23-
  (Total: 1)
 
 === Annotation ===
@@ -273,7 +276,7 @@ H3001-200202_. 11     =BLOB=     =BLOB=
 === ImportedHistologyImages ===
 *nwb_file_name *image_name    histology_imag
 +------------+ +------------+ +------------+
-H3001-200202_. H3001_D2       a47cd50e-4f17-
-H3001-200202_. H3001_D3       5f380963-3257-
+H3001-200202_. H3001_D2       853b774b-5923-
+H3001-200202_. H3001_D3       324cfc52-dee1-
  (Total: 2)
 

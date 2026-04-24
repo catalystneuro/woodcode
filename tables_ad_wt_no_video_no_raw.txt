@@ -14,16 +14,19 @@ H4823-221108_. H4823          University of  Wood/Dudchenko 221108         Explo
 *subject_id    age      description    genotype     sex     species       
 +------------+ +------+ +------------+ +----------+ +-----+ +------------+
 H3001          None     All experiment WT           M       Rattus norvegi
+H3003          None     All experiment KO           M       Rattus norvegi
+H3006          None     All experiment WT           M       Rattus norvegi
+H3008          None     All experiment KO           M       Rattus norvegi
+H3009          None     All experiment WT           M       Rattus norvegi
+H3015          None     All experiment WT           M       Rattus norvegi
 H3016          None     All experiment KO           M       Rattus norvegi
+H3019          None     All experiment KO           M       Rattus norvegi
 H3022          None     All experiment WT           M       Rattus norvegi
 H3023          None     All experiment WT           M       Rattus norvegi
+H3026          None     All experiment WT           M       Rattus norvegi
 H3029          None     All experiment WT           M       Rattus norvegi
-H4813          None     All experiment WT           M       Rattus norvegi
-H4817          None     All experiment KO           M       Rattus norvegi
-H4823          None     All experiment WT           M       Rattus norvegi
-H4830          None     All experiment WT           M       Rattus norvegi
-subject        P50D     this is a mock None         F       None          
- (Total: 10)
+   ...
+ (Total: 25)
 
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline      
@@ -88,7 +91,7 @@ H4823-221108_. 1         wake          None           01             cylindrical
 === ImportedPseudoEMG ===
 *nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
 +------------+ +------------+ +------------+ +------------+
-H4823-221108_. imported pseud 79026935-f307- 2.0           
+H4823-221108_. imported pseud e3193af0-2e6c- 2.0           
  (Total: 1)
 
 === Video File ===
@@ -170,13 +173,13 @@ Cambridge Neur 1              11             165.0          5.0       275.0     
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H4823-221108_. raw data valid 899b82fd-8978- 30000.0        WARNING: Ephys Acquisition tr
+H4823-221108_. raw data valid 25c9d1a1-a130- 30000.0        WARNING: Ephys Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H4823-221108_. imported_lfp_0 imported lfp 0 1250.0         41973be0-5741-
+H4823-221108_. imported_lfp_0 imported lfp 0 1250.0         78f75ff6-1ba5-
  (Total: 1)
 
 === PositionSource ===
@@ -194,7 +197,7 @@ H4823-221108_. pos 0 valid ti 0      position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H4823-221108_. pos 0 valid ti 0      8d17a8ac-95a8-
+H4823-221108_. pos 0 valid ti 0      f37bc14f-0708-
  (Total: 1)
 
 === RawPosition ===
@@ -216,13 +219,13 @@ time
 === RawCompassDirection ===
 *nwb_file_name *interval_list compass_object name          
 +------------+ +------------+ +------------+ +------------+
-H4823-221108_. compass 1 vali 424e6cec-2039- head-direction
+H4823-221108_. compass 1 vali 64a8c625-9879- head-direction
  (Total: 1)
 
 === ImportedSpikeSorting ===
 *nwb_file_name object_id     
 +------------+ +------------+
-H4823-221108_. 8787737e-6cf4-
+H4823-221108_. 1dccebf2-b8a5-
  (Total: 1)
 
 === Annotation ===
@@ -260,7 +263,7 @@ H4823-221108_. 11     =BLOB=     =BLOB=
 === ImportedHistologyImages ===
 *nwb_file_name *image_name    histology_imag
 +------------+ +------------+ +------------+
-H4823-221108_. H4823_D5       390fe11b-f766-
-H4823-221108_. H4823_D6       b0b3f5ec-cd3f-
+H4823-221108_. H4823_D5       9c7ee149-4b37-
+H4823-221108_. H4823_D6       13d65d34-6868-
  (Total: 2)
 

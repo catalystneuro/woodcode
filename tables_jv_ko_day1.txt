@@ -11,19 +11,22 @@ H3016-210422_. H3016          University of  Wood/Dudchenko 210422         Explo
  (Total: 1)
 
 === Subject ===
-*subject_id    age        description    genotype     sex     species       
-+------------+ +--------+ +------------+ +----------+ +-----+ +------------+
-H3001          None       All experiment WT           M       Rattus norvegi
-H3016          None       All experiment KO           M       Rattus norvegi
-H3022          None       All experiment WT           M       Rattus norvegi
-H3023          P-366D     All experiment WT           M       Rattus norvegi
-H3029          None       All experiment WT           M       Rattus norvegi
-H4813          None       All experiment WT           M       Rattus norvegi
-H4817          None       All experiment KO           M       Rattus norvegi
-H4823          None       All experiment WT           M       Rattus norvegi
-H4830          None       All experiment WT           M       Rattus norvegi
-subject        P50D       this is a mock None         F       None          
- (Total: 10)
+*subject_id    age      description    genotype     sex     species       
++------------+ +------+ +------------+ +----------+ +-----+ +------------+
+H3001          None     All experiment WT           M       Rattus norvegi
+H3003          None     All experiment KO           M       Rattus norvegi
+H3006          None     All experiment WT           M       Rattus norvegi
+H3008          None     All experiment KO           M       Rattus norvegi
+H3009          None     All experiment WT           M       Rattus norvegi
+H3015          None     All experiment WT           M       Rattus norvegi
+H3016          None     All experiment KO           M       Rattus norvegi
+H3019          None     All experiment KO           M       Rattus norvegi
+H3022          None     All experiment WT           M       Rattus norvegi
+H3023          None     All experiment WT           M       Rattus norvegi
+H3026          None     All experiment WT           M       Rattus norvegi
+H3029          None     All experiment WT           M       Rattus norvegi
+   ...
+ (Total: 25)
 
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline      
@@ -126,16 +129,16 @@ H3016-210422_. 4         wake_cue_rot   None           04             cylindrica
 === ImportedPseudoEMG ===
 *nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
 +------------+ +------------+ +------------+ +------------+
-H3016-210422_. imported pseud 923dda84-ae01- 2.0           
+H3016-210422_. imported pseud d48ace66-5c02- 2.0           
  (Total: 1)
 
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
-H3016-210422_. 1         0              Logitech Camer c730836e-1bce-
-H3016-210422_. 2         0              Logitech Camer c730836e-1bce-
-H3016-210422_. 3         0              Logitech Camer c730836e-1bce-
-H3016-210422_. 4         0              Logitech Camer c730836e-1bce-
+H3016-210422_. 1         0              Logitech Camer 6dc60215-53e1-
+H3016-210422_. 2         0              Logitech Camer 6dc60215-53e1-
+H3016-210422_. 3         0              Logitech Camer 6dc60215-53e1-
+H3016-210422_. 4         0              Logitech Camer 6dc60215-53e1-
  (Total: 4)
 
 === Camera Device ===
@@ -196,13 +199,13 @@ H3016-210422_. probe1_shank1  1             Cambridge Neur Electrodes fro Left
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3016-210422_. raw data valid e14e9109-67c3- 30000.0        no comments    Acquisition tr
+H3016-210422_. raw data valid 9f1befd6-0245- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H3016-210422_. imported_lfp_0 imported lfp 0 1250.0         e6cdf74b-290e-
+H3016-210422_. imported_lfp_0 imported lfp 0 1250.0         aa0394ba-d7b4-
  (Total: 1)
 
 === PositionSource ===
@@ -223,9 +226,9 @@ H3016-210422_. pos 1 valid ti 1      item2_position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H3016-210422_. pos 0 valid ti 0      662f1e20-8215-
-H3016-210422_. pos 1 valid ti 0      4fcb38d4-b682-
-H3016-210422_. pos 1 valid ti 1      e128d313-b533-
+H3016-210422_. pos 0 valid ti 0      415d8343-65fc-
+H3016-210422_. pos 1 valid ti 0      c0d7c523-48d6-
+H3016-210422_. pos 1 valid ti 1      bd09f5de-eba8-
  (Total: 3)
 
 === RawPosition ===
@@ -247,13 +250,13 @@ time
 === RawCompassDirection ===
 *nwb_file_name *interval_list compass_object name          
 +------------+ +------------+ +------------+ +------------+
-H3016-210422_. compass 1 vali 73ad94d1-fc7f- head-direction
+H3016-210422_. compass 1 vali 216a5e49-5e7c- head-direction
  (Total: 1)
 
 === ImportedSpikeSorting ===
 *nwb_file_name object_id     
 +------------+ +------------+
-H3016-210422_. c408342e-a325-
+H3016-210422_. 2090a87b-5c17-
  (Total: 1)
 
 === Annotation ===
@@ -291,7 +294,7 @@ H3016-210422_. 11     =BLOB=     =BLOB=
 === ImportedHistologyImages ===
 *nwb_file_name *image_name    histology_imag
 +------------+ +------------+ +------------+
-H3016-210422_. H3016_C5       473d8062-4c83-
-H3016-210422_. H3016_C6       23fde8f0-93ce-
+H3016-210422_. H3016_C5       d1e0467c-85a4-
+H3016-210422_. H3016_C6       8fa0f46c-58db-
  (Total: 2)
 
