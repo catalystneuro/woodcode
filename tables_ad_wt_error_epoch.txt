@@ -23,7 +23,8 @@ H4817          None     All experiment KO           M       Rattus norvegi
 H4823          None     All experiment WT           M       Rattus norvegi
 H4830          None     All experiment WT           M       Rattus norvegi
 subject        P50D     this is a mock None         F       None          
- (Total: 10)
+subject2       P50D     this is a mock None         F       None          
+ (Total: 11)
 
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline      
@@ -123,23 +124,23 @@ H4830-230406_. 5         wake_cue_rot   None           05             cylindrica
 === ImportedPseudoEMG ===
 *nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
 +------------+ +------------+ +------------+ +------------+
-H4830-230406_. imported pseud 2df11c68-65fe- 2.0           
+H4830-230406_. imported pseud 9db4b151-893e- 2.0           
  (Total: 1)
 
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
-H4830-230406_. 1         1              Basler Camera  6cbcd200-7eb0-
-H4830-230406_. 2         1              Basler Camera  5df56a45-dc61-
-H4830-230406_. 3         1              Basler Camera  9773cccf-fc1b-
-H4830-230406_. 4         1              Basler Camera  4e7ff114-4481-
+H4830-230406_. 1         1              Basler Camera  4bfe7e30-e99c-
+H4830-230406_. 2         1              Basler Camera  fb7292dc-2eb2-
+H4830-230406_. 3         1              Basler Camera  21fc3a12-373b-
+H4830-230406_. 4         1              Basler Camera  60f8085c-acd2-
  (Total: 4)
 
 === Camera Device ===
 *camera_name   meters_per_pix manufacturer   model          lens           camera_id    
 +------------+ +------------+ +------------+ +------------+ +------------+ +-----------+
 Basler Camera  0.00265        Basler         CameraDeviceMo LMVZ4411 Kowa  1            
-camera_device  0.001          Test Manufactu Test Camera Mo Test Lens      0            
+Logitech Camer 0.00265        Logitech       CameraDeviceMo built-in       0            
  (Total: 2)
 
 === Data Acquisition Device ===
@@ -207,13 +208,13 @@ Cambridge Neur 1              11             165.0          5.0       275.0     
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H4830-230406_. raw data valid e2947f97-3a8f- 30000.0        no comments    Acquisition tr
+H4830-230406_. raw data valid 697d7496-3c1a- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H4830-230406_. imported_lfp_0 imported lfp 0 1250.0         a084f5dd-5c58-
+H4830-230406_. imported_lfp_0 imported lfp 0 1250.0         fcb63d0e-43f6-
  (Total: 1)
 
 === PositionSource ===
@@ -234,9 +235,9 @@ H4830-230406_. pos 1 valid ti 1      item2_position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H4830-230406_. pos 0 valid ti 0      a978e5a3-d939-
-H4830-230406_. pos 1 valid ti 0      59d577ea-e70f-
-H4830-230406_. pos 1 valid ti 1      1339c90f-2f1f-
+H4830-230406_. pos 0 valid ti 0      d943049a-91e3-
+H4830-230406_. pos 1 valid ti 0      be596a68-a12f-
+H4830-230406_. pos 1 valid ti 1      9b8e0745-8829-
  (Total: 3)
 
 === RawPosition ===
@@ -258,13 +259,13 @@ time
 === RawCompassDirection ===
 *nwb_file_name *interval_list compass_object name          
 +------------+ +------------+ +------------+ +------------+
-H4830-230406_. compass 1 vali 998096e1-422b- head-direction
+H4830-230406_. compass 1 vali 0ddaae67-2f6a- head-direction
  (Total: 1)
 
 === ImportedSpikeSorting ===
 *nwb_file_name object_id     
 +------------+ +------------+
-H4830-230406_. db79d217-74d9-
+H4830-230406_. c472fdea-b6c3-
  (Total: 1)
 
 === Annotation ===
@@ -302,6 +303,6 @@ H4830-230406_. 11     =BLOB=     =BLOB=
 === ImportedHistologyImages ===
 *nwb_file_name *image_name    histology_imag
 +------------+ +------------+ +------------+
-H4830-230406_. H4830_D2       3c2bc0e8-b06b-
+H4830-230406_. H4830_D2       fbc4c2a6-a95c-
  (Total: 1)
 

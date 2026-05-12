@@ -14,19 +14,18 @@ H4815-220814_. H4815          University of  Wood/Dudchenko 220814         Explo
 *subject_id    age      description    genotype     sex     species       
 +------------+ +------+ +------------+ +----------+ +-----+ +------------+
 H3001          None     All experiment WT           M       Rattus norvegi
-H3003          None     All experiment KO           M       Rattus norvegi
-H3006          None     All experiment WT           M       Rattus norvegi
-H3008          None     All experiment KO           M       Rattus norvegi
-H3009          None     All experiment WT           M       Rattus norvegi
-H3015          None     All experiment WT           M       Rattus norvegi
 H3016          None     All experiment KO           M       Rattus norvegi
-H3019          None     All experiment KO           M       Rattus norvegi
 H3022          None     All experiment WT           M       Rattus norvegi
 H3023          None     All experiment WT           M       Rattus norvegi
-H3026          None     All experiment WT           M       Rattus norvegi
 H3029          None     All experiment WT           M       Rattus norvegi
-   ...
- (Total: 25)
+H4813          None     All experiment WT           M       Rattus norvegi
+H4815          None     All experiment WT           M       Rattus norvegi
+H4817          None     All experiment KO           M       Rattus norvegi
+H4823          None     All experiment WT           M       Rattus norvegi
+H4830          None     All experiment WT           M       Rattus norvegi
+subject        P50D     this is a mock None         F       None          
+subject2       P50D     this is a mock None         F       None          
+ (Total: 12)
 
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline      
@@ -49,10 +48,11 @@ H4815-220814_. sleep_rem      =BLOB=
 === Task ===
 *task_name     task_descripti task_type     task_subtype  
 +------------+ +------------+ +-----------+ +------------+
+error          An error occur None          None          
 sleep          The rat was gi None          None          
 wake           The rat was aw None          None          
 wake_cue_rot   The rat was aw None          None          
- (Total: 3)
+ (Total: 4)
 
 === Task Epoch ===
 *nwb_file_name *epoch    task_name      camera_name    interval_list_ task_environme camera_nam
@@ -102,23 +102,23 @@ H4815-220814_. 4         wake_cue_rot   None           04             cylindrica
 === ImportedPseudoEMG ===
 *nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
 +------------+ +------------+ +------------+ +------------+
-H4815-220814_. imported pseud c96b625d-536a- 2.0           
+H4815-220814_. imported pseud ed829d47-2207- 2.0           
  (Total: 1)
 
 === Video File ===
 *nwb_file_name *epoch    *video_file_nu camera_name    video_file_obj
 +------------+ +-------+ +------------+ +------------+ +------------+
-H4815-220814_. 1         1              Basler Camera  30fc0284-d8ce-
-H4815-220814_. 2         1              Basler Camera  e3112888-aa9e-
-H4815-220814_. 3         1              Basler Camera  87c868fa-0a88-
-H4815-220814_. 4         1              Basler Camera  a07afa4a-049f-
+H4815-220814_. 1         1              Basler Camera  c9a733c8-7b19-
+H4815-220814_. 2         1              Basler Camera  90b97d73-4226-
+H4815-220814_. 3         1              Basler Camera  b1f8f53c-28e1-
+H4815-220814_. 4         1              Basler Camera  0adcc7c7-055d-
  (Total: 4)
 
 === Camera Device ===
 *camera_name   meters_per_pix manufacturer   model          lens           camera_id    
 +------------+ +------------+ +------------+ +------------+ +------------+ +-----------+
 Basler Camera  0.00265        Basler         CameraDeviceMo LMVZ4411 Kowa  1            
-camera_device  0.001          Test Manufactu Test Camera Mo Test Lens      0            
+Logitech Camer 0.00265        Logitech       CameraDeviceMo built-in       0            
  (Total: 2)
 
 === Data Acquisition Device ===
@@ -186,13 +186,13 @@ Cambridge Neur 1              11             165.0          5.0       275.0     
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H4815-220814_. raw data valid 27e2e497-4dcd- 30000.0        no comments    Acquisition tr
+H4815-220814_. raw data valid 5e922550-1fb4- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H4815-220814_. imported_lfp_0 imported lfp 0 1250.0         8a742448-0381-
+H4815-220814_. imported_lfp_0 imported lfp 0 1250.0         7e9c520b-162e-
  (Total: 1)
 
 === PositionSource ===
@@ -213,9 +213,9 @@ H4815-220814_. pos 1 valid ti 1      item2_position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H4815-220814_. pos 0 valid ti 0      d3fe3fd6-a12e-
-H4815-220814_. pos 1 valid ti 0      655a4aa5-9179-
-H4815-220814_. pos 1 valid ti 1      4c1273cd-5028-
+H4815-220814_. pos 0 valid ti 0      e32519fc-aeac-
+H4815-220814_. pos 1 valid ti 0      628f724e-2583-
+H4815-220814_. pos 1 valid ti 1      7f3ec880-3f61-
  (Total: 3)
 
 === RawPosition ===
@@ -237,13 +237,13 @@ time
 === RawCompassDirection ===
 *nwb_file_name *interval_list compass_object name          
 +------------+ +------------+ +------------+ +------------+
-H4815-220814_. compass 1 vali 7aae301a-31ee- head-direction
+H4815-220814_. compass 1 vali dbb8b497-17b6- head-direction
  (Total: 1)
 
 === ImportedSpikeSorting ===
 *nwb_file_name object_id     
 +------------+ +------------+
-H4815-220814_. daf351c9-3de0-
+H4815-220814_. 921cb19d-78c2-
  (Total: 1)
 
 === Annotation ===
@@ -281,9 +281,9 @@ H4815-220814_. 11     =BLOB=     =BLOB=
 === ImportedHistologyImages ===
 *nwb_file_name *image_name    histology_imag
 +------------+ +------------+ +------------+
-H4815-220814_. H4815_D1       fe4951b1-1c35-
-H4815-220814_. H4815_E1       e6008c61-5d10-
-H4815-220814_. H4815_E2       7f6021f4-ded6-
-H4815-220814_. H4815_E3       de02f4be-0284-
+H4815-220814_. H4815_D1       75a612ee-2078-
+H4815-220814_. H4815_E1       4ffa5c71-ba27-
+H4815-220814_. H4815_E2       4ff58a86-d609-
+H4815-220814_. H4815_E3       eade39e5-f810-
  (Total: 4)
 
