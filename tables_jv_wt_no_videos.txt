@@ -14,19 +14,13 @@ H3001-200202_. H3001          University of  Wood/Dudchenko 200202         Explo
 *subject_id    age      description    genotype     sex     species       
 +------------+ +------+ +------------+ +----------+ +-----+ +------------+
 H3001          None     All experiment WT           M       Rattus norvegi
-H3003          None     All experiment KO           M       Rattus norvegi
-H3006          None     All experiment WT           M       Rattus norvegi
-H3008          None     All experiment KO           M       Rattus norvegi
-H3009          None     All experiment WT           M       Rattus norvegi
-H3015          None     All experiment WT           M       Rattus norvegi
 H3016          None     All experiment KO           M       Rattus norvegi
-H3019          None     All experiment KO           M       Rattus norvegi
 H3022          None     All experiment WT           M       Rattus norvegi
-H3023          None     All experiment WT           M       Rattus norvegi
-H3026          None     All experiment WT           M       Rattus norvegi
-H3029          None     All experiment WT           M       Rattus norvegi
-   ...
- (Total: 25)
+H4813          None     All experiment WT           M       Rattus norvegi
+H4817          None     All experiment KO           M       Rattus norvegi
+subject        P50D     this is a mock None         F       None          
+subject2       P50D     this is a mock None         F       None          
+ (Total: 7)
 
 === IntervalList ===
 *nwb_file_name *interval_list valid_time pipeline      
@@ -105,7 +99,7 @@ H3001-200202_. 2         sleep         None           02             sleep_conta
 === ImportedPseudoEMG ===
 *nwb_file_name *interval_list *pseudoemg_obj pseudoemg_samp
 +------------+ +------------+ +------------+ +------------+
-H3001-200202_. imported pseud ce5cd599-0ecc- 2.0           
+H3001-200202_. imported pseud 8945d87a-b3ba- 2.0           
  (Total: 1)
 
 === Video File ===
@@ -118,9 +112,8 @@ H3001-200202_. imported pseud ce5cd599-0ecc- 2.0
 *camera_name   meters_per_pix manufacturer   model          lens           camera_id    
 +------------+ +------------+ +------------+ +------------+ +------------+ +-----------+
 Basler Camera  0.00265        Basler         CameraDeviceMo LMVZ4411 Kowa  1            
-camera_device  0.001          Test Manufactu Test Camera Mo Test Lens      0            
 Logitech Camer 0.00265        Logitech       CameraDeviceMo built-in       0            
- (Total: 3)
+ (Total: 2)
 
 === Data Acquisition Device ===
 *data_acquisit data_acquisiti data_acquisiti adc_circuit   
@@ -186,13 +179,13 @@ Cambridge Neur 1              11             165.0          5.0       275.0     
 === Raw ===
 *nwb_file_name interval_list_ raw_object_id  sampling_rate  comments       description   
 +------------+ +------------+ +------------+ +------------+ +------------+ +------------+
-H3001-200202_. raw data valid cf198304-5a97- 30000.0        no comments    Acquisition tr
+H3001-200202_. raw data valid eb8f2a7a-6681- 30000.0        no comments    Acquisition tr
  (Total: 1)
 
 === ImportedLFP ===
 *nwb_file_name *lfp_electrode *interval_list lfp_sampling_r lfp_object_id 
 +------------+ +------------+ +------------+ +------------+ +------------+
-H3001-200202_. imported_lfp_0 imported lfp 0 1250.0         94694ca8-7beb-
+H3001-200202_. imported_lfp_0 imported lfp 0 1250.0         747df535-c177-
  (Total: 1)
 
 === PositionSource ===
@@ -210,7 +203,7 @@ H3001-200202_. pos 0 valid ti 0      position
 === RawPosition.PosObject ===
 *nwb_file_name *interval_list *id    raw_position_o
 +------------+ +------------+ +----+ +------------+
-H3001-200202_. pos 0 valid ti 0      08dc26ed-9086-
+H3001-200202_. pos 0 valid ti 0      dcb0b117-84c7-
  (Total: 1)
 
 === RawPosition ===
@@ -232,13 +225,13 @@ time
 === RawCompassDirection ===
 *nwb_file_name *interval_list compass_object name          
 +------------+ +------------+ +------------+ +------------+
-H3001-200202_. compass 1 vali 9953db91-13f8- head-direction
+H3001-200202_. compass 1 vali e347e70c-e66d- head-direction
  (Total: 1)
 
 === ImportedSpikeSorting ===
 *nwb_file_name object_id     
 +------------+ +------------+
-H3001-200202_. 8e04a48d-fc23-
+H3001-200202_. 51e53b91-c4bb-
  (Total: 1)
 
 === Annotation ===
@@ -276,7 +269,7 @@ H3001-200202_. 11     =BLOB=     =BLOB=
 === ImportedHistologyImages ===
 *nwb_file_name *image_name    histology_imag
 +------------+ +------------+ +------------+
-H3001-200202_. H3001_D2       853b774b-5923-
-H3001-200202_. H3001_D3       324cfc52-dee1-
+H3001-200202_. H3001_D2       50389b6f-f830-
+H3001-200202_. H3001_D3       8be04957-5b63-
  (Total: 2)
 
