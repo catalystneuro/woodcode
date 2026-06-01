@@ -332,7 +332,8 @@ def get_aligned_video_timestamps_juveniles(
     min_matches = 5
     tolerance_in_seconds = 0.5
 
-    timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
+    sep = nwb.convert.get_separator(file_path=timestamp_file_path)
+    timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name], sep=sep)
     traces = timestamps_df[led_column_name].values
     video_timestamps = np.arange(traces.shape[0]) / video_sampling_rate
     led_timestamps = get_ttl_timestamps(traces=traces, timestamps=video_timestamps, threshold=led_threshold, cooldown_in_seconds=cooldown_in_seconds, sampling_rate=video_sampling_rate)
@@ -366,7 +367,6 @@ def get_aligned_video_timestamps_juveniles(
     )
 
     return aligned_video_timestamps
-
 
 def get_aligned_video_timestamps_juveniles_from_dat(
     *,
@@ -423,7 +423,8 @@ def get_aligned_video_timestamps_juveniles_from_dat(
     min_matches = 5
     tolerance_in_seconds = 0.5
 
-    timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
+    sep = nwb.convert.get_separator(file_path=timestamp_file_path)
+    timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name], sep=sep)
     traces = timestamps_df[led_column_name].values
     video_timestamps = np.arange(traces.shape[0]) / video_sampling_rate
     led_timestamps = get_ttl_timestamps(traces=traces, timestamps=video_timestamps, threshold=led_threshold, cooldown_in_seconds=cooldown_in_seconds, sampling_rate=video_sampling_rate)
@@ -527,7 +528,8 @@ def get_aligned_video_timestamps_adults(
     for segment_index, timestamp_file_path in enumerate(timestamp_file_paths):
         print(f"  Aligning segment {segment_index} with timestamp file {timestamp_file_path.name}...")
         starting_time_shift = starting_time_shifts[segment_index]
-        timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
+        sep = nwb.convert.get_separator(file_path=timestamp_file_path)
+        timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name], sep=sep)
         num_frames = timestamps_df.shape[0] + 1 # + 1 bc video has one extra frame at the end
         traces = extractor.get_traces(segment_index=segment_index, channel_ids=[ttl_channel_id])
         ephys_timestamps = extractor.get_times(segment_index=segment_index)

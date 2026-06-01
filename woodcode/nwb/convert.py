@@ -389,12 +389,20 @@ def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None):
     return nwbfile
 
 
+def get_separator(*, file_path):
+    with open(file_path, 'r') as f:
+        first_line = f.readline()
+    sep = ',' if ',' in first_line else r'\s+'
+    return sep
+
+
 def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: list[np.ndarray], metadata: dict, is_adult: bool):
     print('Adding raw tracking to NWB file...')
 
     item1_pos, item_2_pos, full_aligned_timestamps = [], [], []
     for file_path, aligned_timestamps in zip(file_paths, all_aligned_timestamps):
-        tracking_df = pd.read_csv(file_path)
+        separator = get_separator(file_path=file_path)
+        tracking_df = pd.read_csv(file_path, sep=separator)
         item1_x = tracking_df['Item1.X'].to_numpy()
         item1_y = tracking_df['Item1.Y'].to_numpy()
         item2_x = tracking_df['Item2.X'].to_numpy()
