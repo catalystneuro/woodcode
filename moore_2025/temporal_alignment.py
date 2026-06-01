@@ -375,13 +375,18 @@ def get_aligned_video_timestamps_juveniles_from_dat(
     xml_data: dict,
     epoch_ts_file_path: Path,
     ttl_channel_index: int,
-) -> np.ndarray:
+) -> tuple[np.ndarray, np.ndarray]:
     """
     Get aligned video timestamps for juvenile sessions using the raw ephys .dat file.
 
     Used when the OpenEphys record-node folder is not available but the raw .dat file is.
     The TTL signal is read directly from the appropriate channel of the .dat memmap, sliced
     per segment using the start/stop times in the Epoch_TS.csv file.
+
+    The .dat file concatenates segments without preserving the wall-clock gaps between them.
+    The wall-clock duration of each inter-segment gap is estimated from the LED (which keeps
+    ticking continuously on the video clock) and re-injected, so the returned timestamps live
+    on the raw ephys time basis rather than the processed (concatenated) one.
 
     Parameters
     ----------
@@ -401,8 +406,12 @@ def get_aligned_video_timestamps_juveniles_from_dat(
 
     Returns
     -------
-    np.ndarray
-        The aligned video timestamps.
+    aligned_video_timestamps : np.ndarray
+        The video timestamps aligned to the raw ephys time basis.
+    raw_ephys_timestamps : np.ndarray
+        Per-sample timestamps for the .dat file on the raw ephys time basis. Within each
+        segment, samples advance at the .dat sampling rate; between segments, the wall-clock
+        gap estimated from the LED is injected.
     """
     print("Aligning juvenile video timestamps from .dat file...")
     led_threshold = 2_100
@@ -433,6 +442,8 @@ def get_aligned_video_timestamps_juveniles_from_dat(
     segment_stop_indices = np.concatenate([segment_start_indices[1:], [raw_data.shape[0]]])
 
     ttl_timestamps = np.ones_like(led_timestamps) * np.nan
+    segment_led_start_indices = []
+    segment_led_stop_indices = []
     for segment_index, (dat_segment_start_index, dat_segment_stop_index) in enumerate(zip(segment_start_indices, segment_stop_indices, strict=True)):
         print(f"  Aligning segment {segment_index}...")
         traces = raw_data[dat_segment_start_index:dat_segment_stop_index, ttl_channel_index]
@@ -446,18 +457,41 @@ def get_aligned_video_timestamps_juveniles_from_dat(
         error = led_intervals[led_segment_start_index:led_segment_start_index + len(ttl_intervals)] - ttl_intervals
         assert np.max(np.abs(error)) < tolerance_in_seconds, f"Alignment error too large: {np.max(np.abs(error))} seconds for segment {segment_index}"
 
+        segment_led_start_indices.append(led_segment_start_index)
+        segment_led_stop_indices.append(led_segment_start_index + len(single_segment_ttl_timestamps))
+
+    # Estimate the wall-clock offset of each segment relative to segment 0 (which anchors at 0).
+    # Each later segment is pushed forward by the LED-measured gap between its first matched
+    # pulse and the previous segment's last matched pulse, minus the gap already present in
+    # the processed (concatenated) ephys time basis.
+    segment_shifts = np.zeros(len(segment_start_indices))
+    for segment_index in range(1, len(segment_start_indices)):
+        previous_last_led_index = segment_led_stop_indices[segment_index - 1] - 1
+        current_first_led_index = segment_led_start_indices[segment_index]
+        led_gap = led_timestamps[current_first_led_index] - led_timestamps[previous_last_led_index]
+        processed_ttl_gap = ttl_timestamps[current_first_led_index] - ttl_timestamps[previous_last_led_index]
+        segment_shifts[segment_index] = segment_shifts[segment_index - 1] + (led_gap - processed_ttl_gap)
+
+    raw_ttl_timestamps = ttl_timestamps.copy()
+    for segment_index, (led_start, led_stop) in enumerate(zip(segment_led_start_indices, segment_led_stop_indices, strict=True)):
+        raw_ttl_timestamps[led_start:led_stop] += segment_shifts[segment_index]
+
     # NaN values represent LED pulses that were not recorded in the ephys data (ex. between segments)
-    not_nan = ~np.isnan(ttl_timestamps)
-    led_timestamps = led_timestamps[not_nan]
-    ttl_timestamps = ttl_timestamps[not_nan]
+    not_nan = ~np.isnan(raw_ttl_timestamps)
+    matched_led_timestamps = led_timestamps[not_nan]
+    matched_raw_ttl_timestamps = raw_ttl_timestamps[not_nan]
 
     aligned_video_timestamps = align_by_interpolation(
         unaligned_dense_timestamps=video_timestamps,
-        unaligned_sparse_timestamps=led_timestamps,
-        aligned_sparse_timestamps=ttl_timestamps,
+        unaligned_sparse_timestamps=matched_led_timestamps,
+        aligned_sparse_timestamps=matched_raw_ttl_timestamps,
     )
 
-    return aligned_video_timestamps
+    raw_ephys_timestamps = np.arange(raw_data.shape[0]) / sampling_rate
+    for segment_index, (dat_segment_start_index, dat_segment_stop_index) in enumerate(zip(segment_start_indices, segment_stop_indices, strict=True)):
+        raw_ephys_timestamps[dat_segment_start_index:dat_segment_stop_index] += segment_shifts[segment_index]
+
+    return aligned_video_timestamps, raw_ephys_timestamps
 
 
 def get_aligned_video_timestamps_adults(
