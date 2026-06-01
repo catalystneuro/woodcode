@@ -476,15 +476,10 @@ def get_aligned_video_timestamps_juveniles_from_dat(
     for segment_index, (led_start, led_stop) in enumerate(zip(segment_led_start_indices, segment_led_stop_indices, strict=True)):
         raw_ttl_timestamps[led_start:led_stop] += segment_shifts[segment_index]
 
-    # NaN values represent LED pulses that were not recorded in the ephys data (ex. between segments)
-    not_nan = ~np.isnan(raw_ttl_timestamps)
-    matched_led_timestamps = led_timestamps[not_nan]
-    matched_raw_ttl_timestamps = raw_ttl_timestamps[not_nan]
-
     aligned_video_timestamps = align_by_interpolation(
         unaligned_dense_timestamps=video_timestamps,
-        unaligned_sparse_timestamps=matched_led_timestamps,
-        aligned_sparse_timestamps=matched_raw_ttl_timestamps,
+        unaligned_sparse_timestamps=led_timestamps,
+        aligned_sparse_timestamps=raw_ttl_timestamps,
     )
 
     raw_ephys_timestamps = np.arange(raw_data.shape[0]) / sampling_rate
