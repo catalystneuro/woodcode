@@ -330,7 +330,7 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
     return nwbfile, xmldata
 
 
-def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None, comments: str = "no comments"):
+def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None):
     # to do: add units as input
     print('Adding tracking to NWB file...')
 
@@ -353,7 +353,6 @@ def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None, comment
     spatial_series_obj = SpatialSeries(
         name='position',
         description='(x,y) position',
-        comments=comments,
         data=pos.values,
         **timing_kwargs,
         reference_frame="(0,0) origin at bottom left corner.",
@@ -379,7 +378,6 @@ def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None, comment
         spatial_series_obj = SpatialSeries(
             name='head-direction',
             description='Horizontal angle of the head (yaw)',
-            comments=comments,
             data=data,
             **timing_kwargs,
             reference_frame="0 radians is pointing directly to the right (positive x direction), with angles increasing counterclockwise.",
@@ -391,7 +389,7 @@ def add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=None, comment
     return nwbfile
 
 
-def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: list[np.ndarray], metadata: dict, is_adult: bool, comments: str = "no comments"):
+def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: list[np.ndarray], metadata: dict, is_adult: bool):
     print('Adding raw tracking to NWB file...')
 
     item1_pos, item_2_pos, full_aligned_timestamps = [], [], []
@@ -424,7 +422,6 @@ def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: li
     spatial_series_1 = SpatialSeries(
         name='item1_position',
         description=f"Raw (x,y) position of Item 1 from Bonsai tracking data. Item 1 is an LED or marker placed on the animal's head [{metadata['Bonsai']['item1']}].",
-        comments=comments,
         data=item1_pos,
         **timing_kwargs,
         reference_frame="Y axis is inverted relative to the video (down is positive), origin at top left corner.",
@@ -433,7 +430,6 @@ def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: li
     spatial_series_2 = SpatialSeries(
         name='item2_position',
         description=f"Raw (x,y) position of Item 2 from Bonsai tracking data. Item 2 is an LED or marker placed on the animal's head [{metadata['Bonsai']['item2']}].",
-        comments=comments,
         data=item_2_pos,
         **timing_kwargs,
         reference_frame="Y axis is inverted relative to the video (down is positive), origin at top left corner.",
@@ -450,7 +446,7 @@ def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: li
     return nwbfile
 
 
-def add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate, comments: str = "no comments"):
+def add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate):
 
     sleep_file = sleep_path / (folder_name + '.SleepState.states.mat')
     emg_file = sleep_path / (folder_name + '.EMGFromLFP.LFP.mat')
@@ -528,7 +524,6 @@ def add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate, 
     emg = TimeSeries(
         name="pseudoEMG",
         description="Pseudo EMG from correlated high-frequency LFP",
-        comments=comments,
         data=emg['EMGFromLFP']['data'],
         unit="a.u.",
         **timing_kwargs,
@@ -637,7 +632,7 @@ def add_epochs(nwbfile, epochs, metadata):
 
 
 
-def add_lfp(nwbfile, lfp_path, xml_data, raw_eseries, stub_test=False, comments: str = "no comments"):
+def add_lfp(nwbfile, lfp_path, xml_data, raw_eseries, stub_test=False):
 
     print('Adding LFP to the NWB file...')
 
@@ -694,7 +689,6 @@ def add_lfp(nwbfile, lfp_path, xml_data, raw_eseries, stub_test=False, comments:
         data=lfp_data_iterator,
         **timing_kwargs,
         description='Local field potential (downsampled DAT file)',
-        comments=comments,
         electrodes=all_table_region,
         conversion=raw_conversion,
         offset=raw_offset,
@@ -892,7 +886,6 @@ def add_video(
     all_aligned_video_timestamps: list[np.ndarray],
     metadata: dict,
     camera_device: CameraDevice,
-    comments: str = "no comments",
 ) -> NWBFile:
     print("Adding video to NWB file...")
 
@@ -910,7 +903,6 @@ def add_video(
         image_series = ImageSeries(
             name=meta["name"],
             description=meta["description"],
-            comments=comments,
             external_file=[file_path],
             format="external",
             device=camera_device,
@@ -1059,7 +1051,7 @@ def _report_variable_offset(recording) -> None:
 
     raise ValueError(message)
 
-def add_raw_ephys_from_dat(nwbfile: NWBFile, dat_file_path: Path, xml_data: dict, stub_test: bool = False, comments: str = "no comments") -> NWBFile:
+def add_raw_ephys_from_dat(nwbfile: NWBFile, dat_file_path: Path, xml_data: dict, stub_test: bool = False, timestamps: np.ndarray | None = None) -> NWBFile:
     print("Adding raw ephys from DAT file to NWB file...")
 
     chan_order = np.concatenate(xml_data['spike_groups'])
@@ -1077,6 +1069,8 @@ def add_raw_ephys_from_dat(nwbfile: NWBFile, dat_file_path: Path, xml_data: dict
 
     if stub_test:
         raw_data = raw_data[:100, :]  # row slice — stays as a memory-mapped view
+        if timestamps is not None:
+            timestamps = timestamps[:100]
 
     # Compute conversion: voltage_range is in V, divide by amplification and ADC range to get V/LSB
     conversion_to_volts = (
@@ -1091,17 +1085,19 @@ def add_raw_ephys_from_dat(nwbfile: NWBFile, dat_file_path: Path, xml_data: dict
 
     ephys_data_iterator = DatFileDataChunkIterator(raw_data=raw_data, chan_order=chan_order)
 
+    # When per-sample timestamps are provided they carry the inter-segment gaps recovered from
+    # the LED alignment; otherwise fall back to a regular rate anchored at zero.
+    timing_kwargs = {"timestamps": timestamps} if timestamps is not None else {"starting_time": 0.0, "rate": sampling_rate}
+
     # NOTE: Spyglass requires raw electrical series to be named "e-series"
     eseries = ElectricalSeries(
         name='e-series',
         description='Acquisition traces for the ElectricalSeries.',
-        comments=comments,
         data=ephys_data_iterator,
-        starting_time=0.0,
-        rate=sampling_rate,
         electrodes=all_table_region,
         conversion=conversion_to_volts,
         offset=offset_to_volts,
+        **timing_kwargs,
     )
 
     nwbfile.add_acquisition(eseries)

@@ -6,7 +6,12 @@ import woodcode.nwb as nwb
 import probeinterface as pbi
 import numpy as np
 
-from moore_2025.temporal_alignment import get_aligned_video_timestamps_juveniles, get_aligned_video_timestamps_adults, get_start_time, get_unaligned_video_timestamps_juveniles
+from moore_2025.temporal_alignment import (
+    get_aligned_video_timestamps_juveniles,
+    get_aligned_video_timestamps_juveniles_from_dat,
+    get_aligned_video_timestamps_adults,
+    get_start_time,
+)
 
 def get_probe_info_h6b() -> dict:
     manufacturer = 'cambridgeneurotech'
@@ -120,17 +125,6 @@ def get_probe_info(model: str) -> dict:
         # https://github.com/SpikeInterface/probeinterface_library/tree/main
 
 
-DAT_FILE_TEMPORAL_ALIGNMENT_WARNING = (
-    "WARNING: Ephys data was loaded from a raw .dat file because the Open Ephys output folder "
-    "is unavailable for this session. Two temporal alignment issues apply to all time series in "
-    "this file: (1) The ephys time basis is NOT aligned to the behavioral time basis — ephys and "
-    "behavioral timestamps cannot be used to cross-reference signals. (2) The recording consists "
-    "of multiple segments that were separated by real-world gaps (on the order of 5-10 minutes); "
-    "those gaps are NOT represented in the timestamps — the segments are simply concatenated, so "
-    "timestamps are discontinuous at segment boundaries without any indication of where breaks occur."
-)
-
-
 def session_to_nwb(
     *,
     folder_name: str,
@@ -200,26 +194,6 @@ def session_to_nwb(
         assert raw_ephys_dat_file_path is None, "Cannot provide both raw_ephys_folder_path and raw_ephys_dat_file_path"
     else:
         assert raw_ephys_dat_file_path is not None, "Must provide either raw_ephys_folder_path or raw_ephys_dat_file_path"
-    if is_adult:
-        if has_video:
-            all_aligned_video_timestamps = get_aligned_video_timestamps_adults(
-                timestamp_file_paths=timestamps_file_paths,
-                ephys_folder_path=raw_ephys_folder_path,
-                ttl_stream_name=ttl_stream_name,
-            )
-    else: # juvenile
-        if has_video:
-            if has_open_ephys_output:
-                aligned_video_timestamps = get_aligned_video_timestamps_juveniles(
-                    timestamp_file_path=timestamps_file_paths[0],
-                    ephys_folder_path=raw_ephys_folder_path,
-                    ttl_stream_name=ttl_stream_name,
-                )
-                all_aligned_video_timestamps = [aligned_video_timestamps]
-            else:
-                unaligned_video_timestamps = get_unaligned_video_timestamps_juveniles(timestamp_file_path=timestamps_file_paths[0])
-                all_aligned_video_timestamps = [unaligned_video_timestamps]
-
     save_path.mkdir(parents=True, exist_ok=True)
 
     # LOAD DATA
@@ -247,23 +221,52 @@ def session_to_nwb(
     probe_model = metadata["probe"][0]["type"]
     probe_info = get_probe_info(probe_model)
 
+    # TEMPORAL ALIGNMENT
+    # When raw ephys comes from the .dat file, the .dat concatenates segments without preserving
+    # the wall-clock gaps between them; the alignment step recovers those gaps from the video LED
+    # and produces per-sample timestamps for the .dat on the raw ephys basis.
+    raw_ephys_timestamps = None
+    if is_adult:
+        if has_video:
+            all_aligned_video_timestamps = get_aligned_video_timestamps_adults(
+                timestamp_file_paths=timestamps_file_paths,
+                ephys_folder_path=raw_ephys_folder_path,
+                ttl_stream_name=ttl_stream_name,
+            )
+    else:  # juvenile
+        if has_video:
+            if has_open_ephys_output:
+                aligned_video_timestamps = get_aligned_video_timestamps_juveniles(
+                    timestamp_file_path=timestamps_file_paths[0],
+                    ephys_folder_path=raw_ephys_folder_path,
+                    ttl_stream_name=ttl_stream_name,
+                )
+            else:
+                aligned_video_timestamps, raw_ephys_timestamps = get_aligned_video_timestamps_juveniles_from_dat(
+                    timestamp_file_path=timestamps_file_paths[0],
+                    dat_file_path=raw_ephys_dat_file_path,
+                    xml_data=raw_xml_data,
+                    epoch_ts_file_path=mat_path / "Epoch_TS.csv",
+                    ttl_channel_index=metadata["channelTTL"]["0base"],
+                )
+            all_aligned_video_timestamps = [aligned_video_timestamps]
+
     # CONSTRUCT NWB FILE
-    dat_file_comments = DAT_FILE_TEMPORAL_ALIGNMENT_WARNING if not has_open_ephys_output else "no comments"
     nwbfile = nwb.convert.create_nwb_file(metadata, start_time)
     nwbfile, raw_xml_data = nwb.convert.add_probes(nwbfile, metadata, raw_xml_data, nrs_data, probe_info)
     if has_open_ephys_output:
         nwbfile = nwb.convert.add_raw_ephys(nwbfile=nwbfile, folder_path=raw_ephys_folder_path, xml_data=raw_xml_data, stream_name=stream_name, stub_test=stub_test)
     else:
-        nwbfile = nwb.convert.add_raw_ephys_from_dat(nwbfile=nwbfile, dat_file_path=raw_ephys_dat_file_path, xml_data=raw_xml_data, stub_test=stub_test, comments=dat_file_comments)
-    nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=raw_xml_data, raw_eseries=nwbfile.acquisition['e-series'], stub_test=stub_test, comments=dat_file_comments)
+        nwbfile = nwb.convert.add_raw_ephys_from_dat(nwbfile=nwbfile, dat_file_path=raw_ephys_dat_file_path, xml_data=raw_xml_data, stub_test=stub_test, timestamps=raw_ephys_timestamps)
+    nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=raw_xml_data, raw_eseries=nwbfile.acquisition['e-series'], stub_test=stub_test)
     lfp_eseries = nwbfile.processing["ecephys"].data_interfaces["LFP"].electrical_series["LFP"]
-    nwbfile = nwb.convert.add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=hd, comments=dat_file_comments)
+    nwbfile = nwb.convert.add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=hd)
     nwbfile, camera_device = nwb.convert.add_camera_device(nwbfile=nwbfile, metadata=metadata)
     if has_video:
         converted_video_file_paths = nwb.video_codec.convert_avi_to_mp4_h264(video_file_paths=video_file_paths, output_directory=save_path)
-        nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=converted_video_file_paths, all_aligned_video_timestamps=all_aligned_video_timestamps, metadata=metadata, camera_device=camera_device, comments=dat_file_comments)
-        nwbfile = nwb.convert.add_raw_tracking(nwbfile=nwbfile, file_paths=timestamps_file_paths, all_aligned_timestamps=all_aligned_video_timestamps, metadata=metadata, is_adult=is_adult, comments=dat_file_comments)
-    nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate, comments=dat_file_comments)
+        nwbfile = nwb.convert.add_video(nwbfile=nwbfile, video_file_paths=converted_video_file_paths, all_aligned_video_timestamps=all_aligned_video_timestamps, metadata=metadata, camera_device=camera_device)
+        nwbfile = nwb.convert.add_raw_tracking(nwbfile=nwbfile, file_paths=timestamps_file_paths, all_aligned_timestamps=all_aligned_video_timestamps, metadata=metadata, is_adult=is_adult)
+    nwbfile = nwb.convert.add_sleep(nwbfile, sleep_path, folder_name, lfp_eseries, lfp_sampling_rate)
     epochs = nwb.convert.get_epochs_from_eseries(eseries=nwbfile.acquisition['e-series'])
     nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
     nwbfile = nwb.convert.add_units(nwbfile, raw_xml_data, processed_xml_data, spikes, waveforms, shank_id, lfp_eseries, lfp_sampling_rate)  # get shank names from NWB file

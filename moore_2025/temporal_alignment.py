@@ -548,25 +548,3 @@ def get_aligned_video_timestamps_adults(
         all_aligned_video_timestamps.append(single_segment_ttl_timestamps)
 
     return all_aligned_video_timestamps
-
-
-def get_unaligned_video_timestamps_juveniles(*,timestamp_file_path: Path) -> np.ndarray:
-    """
-    Get unaligned video timestamps for juvenile sessions.
-
-    Parameters
-    ----------
-    timestamp_file_path : Path
-        Path to the video timestamps CSV file.
-
-    Returns
-    -------
-    np.ndarray
-        The unaligned video timestamps.
-    """
-    timestamp_column_name = "Item4.Timestamp"
-    timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
-    unaligned_timestamps = timestamps_df[timestamp_column_name].values
-    unaligned_timestamps = (unaligned_timestamps - unaligned_timestamps[0]) / np.timedelta64(1, 's') # Convert to seconds relative to the first timestamp
-
-    return unaligned_timestamps
