@@ -259,11 +259,13 @@ def correct_ttl_times(*, led_times: np.ndarray, ttl_times: np.ndarray, min_match
                 raise ValueError(f"No matching TTL interval found for LED interval {led_interval} at index {led_interval_index}")
     corrected_ttl_timestamps = np.array(corrected_ttl_timestamps)
 
-    # If the last interval does not match, there is no way to correct it with a compound interval, so we drop it.
-    last_ttl_interval = corrected_ttl_timestamps[-1] - corrected_ttl_timestamps[-2]
+    # If the last N interval(s) do not match, there is no way to correct it with a compound interval, so we drop it.
     last_led_interval = segment_led_times[len(corrected_ttl_timestamps)-1] - segment_led_times[len(corrected_ttl_timestamps)-2]
-    if np.abs(last_ttl_interval - last_led_interval) > tolerance_in_seconds:
+    last_ttl_interval = corrected_ttl_timestamps[-1] - corrected_ttl_timestamps[-2]
+    while np.abs(last_ttl_interval - last_led_interval) > tolerance_in_seconds:
         corrected_ttl_timestamps = corrected_ttl_timestamps[:-1]
+        last_ttl_interval = corrected_ttl_timestamps[-1] - corrected_ttl_timestamps[-2]
+        last_led_interval = segment_led_times[len(corrected_ttl_timestamps)-1] - segment_led_times[len(corrected_ttl_timestamps)-2]
 
     return corrected_ttl_timestamps, segment_start_index
 
