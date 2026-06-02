@@ -75,6 +75,12 @@ SESSIONS_WITHOUT_VIDEO: set[str] = {
     "H4823-221108",  # Raw data and video missing
 }
 
+# Sessions without raw bonsai output
+SESSIONS_WITHOUT_RAW_BONSAI_OUTPUT: set[str] = {
+    "H3001-200201",  # Video not recorded --> Bonsai TTLs do not match ephys TTLs
+    "H3001-200202",  # Video not recorded --> Bonsai TTLs do not match ephys TTLs
+}
+
 # Sessions that should use Processed/<session>.xml for raw_xml_path, even if raw data exists.
 SESSIONS_USING_PROCESSED_XML: set[str] = {
     "H3029-230510", # Raw XML for this session is missing the SpikeGroup section, so using the Processed XML instead
@@ -158,6 +164,7 @@ def get_session_to_nwb_kwargs(
 
     has_raw_data = folder_name not in SESSIONS_WITHOUT_RAW_DATA
     has_video = folder_name not in SESSIONS_WITHOUT_VIDEO
+    has_raw_bonsai_output = folder_name not in SESSIONS_WITHOUT_RAW_BONSAI_OUTPUT
 
     # Defaults for optional kwargs; overridden below when applicable.
     raw_ephys_folder_path = None
@@ -186,6 +193,8 @@ def get_session_to_nwb_kwargs(
 
     if not has_video:
         video_file_paths = None
+    if not has_raw_bonsai_output:
+        timestamps_file_paths = None
 
     return dict(
         folder_name=folder_name,

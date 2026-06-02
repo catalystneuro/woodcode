@@ -550,9 +550,7 @@ def main():
     nrs_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.nrs')  # path to xml file
     mat_path = jv_wt_folder_path / folder_name / "Processed" / 'Analysis'
     sleep_path = jv_wt_folder_path / folder_name / "Processed" / 'Sleep'
-    timestamps_file_paths = [
-        jv_wt_folder_path / folder_name / "Raw" / "H3001-200202" / "experiment1" / "Bonsai testing2020-02-02T18_27_37.csv",
-    ]
+    timestamps_file_paths = None # Raw Bonsai csv fails to align temporally with the Ephys TTLs --> excluding raw tracking 
     lfp_file_path = jv_wt_folder_path / folder_name / "Processed" / (folder_name + '.lfp')
     raw_ephys_folder_path = jv_wt_folder_path / folder_name / "Raw" / "H3001-200202"
     save_path = output_folder_path
