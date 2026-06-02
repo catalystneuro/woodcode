@@ -189,6 +189,9 @@ def get_session_to_nwb_kwargs(
         # No raw Open Ephys data; use .dat file from Processed/.
         raw_xml_path = processed_xml_path
         raw_ephys_dat_file_path = processed_folder_path / f"{folder_name}.dat"
+        video_file_paths, timestamps_file_paths = [], []
+        
+    if not(video_file_paths and timestamps_file_paths):
         video_file_paths, timestamps_file_paths = detect_video_and_timestamp_paths(processed_folder_path)
 
     if not has_video:
