@@ -95,7 +95,7 @@ SESSION_TO_ALT_XML_SESSION: dict[str, str] = {
 }
 
 
-def detect_video_and_timestamp_paths(raw_folder_path: Path) -> tuple[list[Path] | None, list[Path]]:
+def detect_video_and_timestamp_paths(raw_folder_path: Path) -> tuple[list[Path], list[Path]]:
     """Detect video and timestamp files in a Raw directory.
 
     Parameters
@@ -105,13 +105,11 @@ def detect_video_and_timestamp_paths(raw_folder_path: Path) -> tuple[list[Path] 
 
     Returns
     -------
-    tuple[list[Path] | None, list[Path]]
-        (video_file_paths, timestamps_file_paths). video_file_paths is None if no videos found.
+    tuple[list[Path], list[Path]]
+        (video_file_paths, timestamps_file_paths)
     """
     video_file_paths = sorted(raw_folder_path.rglob("Bonsai*.avi"))
     timestamps_file_paths = sorted(raw_folder_path.rglob("Bonsai*.csv"))
-    if not video_file_paths:
-        video_file_paths = None
     return video_file_paths, timestamps_file_paths
 
 
@@ -194,11 +192,15 @@ def get_session_to_nwb_kwargs(
     if not(video_file_paths and timestamps_file_paths):
         video_file_paths, timestamps_file_paths = detect_video_and_timestamp_paths(processed_folder_path)
 
-    if not has_video:
+    if has_video:
+        assert video_file_paths, f"Expected video files for session {folder_name} but found none."
+    else:
         video_file_paths = None
-    if not has_raw_bonsai_output:
+    if has_raw_bonsai_output:
+        assert timestamps_file_paths, f"Expected Bonsai timestamp files for session {folder_name} but found none."
+    else:
         timestamps_file_paths = None
-
+        
     return dict(
         folder_name=folder_name,
         raw_xml_path=raw_xml_path,
