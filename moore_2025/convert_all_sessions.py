@@ -64,21 +64,25 @@ SESSIONS_WITHOUT_RAW_DATA: set[str] = {
     "H3026-211003",    # Raw data missing
     "H3026-211004_2",  # Raw data missing
     "H3015-210416_1",  # Raw data missing
-    "H4823-221108",    # Raw data and video missing
+    "H4823-221108",    # Raw data and video and raw Bonsai missing
 }
 
 # Sessions with no video recorded.
 SESSIONS_WITHOUT_VIDEO: set[str] = {
     "H3001-200201",  # Video not recorded
     "H3001-200202",  # Video not recorded
-    "H4822-221023",  # Video missing
-    "H4823-221108",  # Raw data and video missing
+    "H4822-221023",  # Video and raw Bonsai missing
+    "H4823-221108",  # Raw data and video and raw Bonsai missing
 }
 
 # Sessions without raw bonsai output
 SESSIONS_WITHOUT_RAW_BONSAI_OUTPUT: set[str] = {
     "H3001-200201",  # Video not recorded --> Bonsai TTLs do not match ephys TTLs
     "H3001-200202",  # Video not recorded --> Bonsai TTLs do not match ephys TTLs
+    "H4823-221108",  # Raw data and video and raw Bonsai missing
+    "H4822-221023",  # Video and raw Bonsai missing
+    "H3006-200314_1",  # Raw Bonsai missing is missing LED flashes
+    "H3006-200314_2",  # Raw Bonsai missing is missing LED flashes
 }
 
 # Sessions that should use Processed/<session>.xml for raw_xml_path, even if raw data exists.

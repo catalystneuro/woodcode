@@ -895,22 +895,31 @@ def add_video(
     *,
     nwbfile: NWBFile,
     video_file_paths: list[Path],
-    all_aligned_video_timestamps: list[np.ndarray],
+    all_aligned_video_timestamps: list[np.ndarray] | None,
     metadata: dict,
     camera_device: CameraDevice,
 ) -> NWBFile:
     print("Adding video to NWB file...")
 
+    if all_aligned_video_timestamps is None:
+        all_aligned_video_timestamps = [None for _ in video_file_paths]
+
     # Add image series for each video file
     image_series_metadata = metadata["Video"]["ImageSeries"]
     for meta, timestamps, file_path in zip(image_series_metadata, all_aligned_video_timestamps, video_file_paths):
         timing_kwargs = {}
-        rate = calculate_regular_series_rate(timestamps)
-        if rate is None:
-            timing_kwargs["timestamps"] = timestamps
-        else:
-            timing_kwargs["starting_time"] = timestamps[0]
+        if timestamps is None:
+            starting_time = 0.0
+            rate = 30.0  # Default frame rate if timestamps are not provided
+            timing_kwargs["starting_time"] = starting_time
             timing_kwargs["rate"] = rate
+        else:
+            rate = calculate_regular_series_rate(timestamps)
+            if rate is None:
+                timing_kwargs["timestamps"] = timestamps
+            else:
+                timing_kwargs["starting_time"] = timestamps[0]
+                timing_kwargs["rate"] = rate
 
         image_series = ImageSeries(
             name=meta["name"],

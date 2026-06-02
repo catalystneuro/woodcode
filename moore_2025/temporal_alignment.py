@@ -33,11 +33,13 @@ def get_start_time(timestamps_file_path: Path | None = None, video_file_path: Pa
         tz_info = pytz.timezone('Europe/London')
         start_time = tz_info.localize(start_time)
         return start_time
-    
-    # Example filename: 'Bonsai testing2021-08-05T17_06_23.csv'
-    filename = timestamps_file_path.stem  # Ex. 'Bonsai testing2021-08-05T17_06_23'
+
     pattern = r'(\d{4}-\d{2}-\d{2}T\d{2}_\d{2}_\d{2})'
-    match = re.search(pattern, filename)
+    match = False
+    if timestamps_file_path is not None:
+        # Example filename: 'Bonsai testing2021-08-05T17_06_23.csv'
+        filename = timestamps_file_path.stem  # Ex. 'Bonsai testing2021-08-05T17_06_23'
+        match = re.search(pattern, filename)
     if not match:
         video_file_name = video_file_path.stem  # Ex. 'BonsaiCaptureALL2021-08-12T19_44_12'
         match = re.search(pattern, video_file_name)

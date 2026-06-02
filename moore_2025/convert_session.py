@@ -227,15 +227,16 @@ def session_to_nwb(
     # the wall-clock gaps between them; the alignment step recovers those gaps from the video LED
     # and produces per-sample timestamps for the .dat on the raw ephys basis.
     raw_ephys_timestamps = None
-    if is_adult:
-        if has_raw_bonsai_output:
+    if not has_raw_bonsai_output:
+        all_aligned_video_timestamps = None
+    else:
+        if is_adult:
             all_aligned_video_timestamps = get_aligned_video_timestamps_adults(
                 timestamp_file_paths=timestamps_file_paths,
                 ephys_folder_path=raw_ephys_folder_path,
                 ttl_stream_name=ttl_stream_name,
             )
-    else:  # juvenile
-        if has_raw_bonsai_output:
+        else:  # juvenile
             if has_open_ephys_output:
                 aligned_video_timestamps = get_aligned_video_timestamps_juveniles(
                     timestamp_file_path=timestamps_file_paths[0],
