@@ -184,6 +184,10 @@ def add_units(nwbfile, raw_xml_data, processed_xml_data, spikes, waveforms, shan
                          waveform_mean=waveform_mean,
                          sampling_rate=raw_xml_data['dat_sampling_rate'],
                          electrode_group=nwbfile.electrode_groups[group_name])
+        
+    # Set the resolution to allow for consecutive, equal spike times
+    nwbfile.units.resolution = 1 / raw_xml_data['dat_sampling_rate']
+
     return nwbfile
 
 
@@ -433,7 +437,7 @@ def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: li
         data=item1_pos,
         **timing_kwargs,
         reference_frame="Y axis is inverted relative to the video (down is positive), origin at top left corner.",
-        unit='a.u.',
+        unit='n.a.',
     )
     spatial_series_2 = SpatialSeries(
         name='item2_position',
@@ -441,7 +445,7 @@ def add_raw_tracking(nwbfile, file_paths: list[Path], all_aligned_timestamps: li
         data=item_2_pos,
         **timing_kwargs,
         reference_frame="Y axis is inverted relative to the video (down is positive), origin at top left corner.",
-        unit='a.u.',
+        unit='n.a.',
     )
     if "Position" in behavior_module.data_interfaces:
         position_obj = behavior_module.data_interfaces["Position"]
