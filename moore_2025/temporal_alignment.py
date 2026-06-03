@@ -362,7 +362,6 @@ def get_aligned_video_timestamps_juveniles(
     """
     print("Aligning juvenile video timestamps...")
     led_threshold = 2_100
-    video_sampling_rate = 30.0
     timestamp_column_name = "Item4.Timestamp"
     led_column_name = "Item3.Val0"
     ttl_threshold = 20_000
@@ -374,7 +373,9 @@ def get_aligned_video_timestamps_juveniles(
     sep = nwb.convert.get_separator(file_path=timestamp_file_path)
     timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name], sep=sep)
     traces = timestamps_df[led_column_name].values
-    video_timestamps = np.arange(traces.shape[0]) / video_sampling_rate
+    video_timestamps = (timestamps_df[timestamp_column_name] - timestamps_df[timestamp_column_name][0]).dt.total_seconds().values
+    dt = np.median(np.diff(video_timestamps))
+    video_sampling_rate = int(1 / dt)
     led_timestamps = get_led_flash_timestamps(traces=traces, timestamps=video_timestamps, threshold=led_threshold, cooldown_in_seconds=cooldown_in_seconds, sampling_rate=video_sampling_rate)
     led_intervals = np.diff(led_timestamps)
 
@@ -470,7 +471,9 @@ def get_aligned_video_timestamps_juveniles_from_dat(
     sep = nwb.convert.get_separator(file_path=timestamp_file_path)
     timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name], sep=sep)
     traces = timestamps_df[led_column_name].values
-    video_timestamps = np.arange(traces.shape[0]) / video_sampling_rate
+    video_timestamps = (timestamps_df[timestamp_column_name] - timestamps_df[timestamp_column_name][0]).dt.total_seconds().values
+    dt = np.median(np.diff(video_timestamps))
+    video_sampling_rate = int(1 / dt)
     led_timestamps = get_led_flash_timestamps(traces=traces, timestamps=video_timestamps, threshold=led_threshold, cooldown_in_seconds=cooldown_in_seconds, sampling_rate=video_sampling_rate)
     led_intervals = np.diff(led_timestamps)
 
