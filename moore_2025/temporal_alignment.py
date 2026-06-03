@@ -225,7 +225,7 @@ def find_segment_start(*, led_times: np.ndarray, ttl_times: np.ndarray, min_matc
     global_led_index = 0
     while not match_is_found:
         led_index, ttl_index = find_putative_interval_match(led_intervals=led_intervals, ttl_intervals=ttl_intervals, tolerance_in_seconds=tolerance_in_seconds)
-        if led_index is None:
+        if led_index is None or led_index + min_matches >= len(led_intervals):
             return None
         global_led_index += led_index
         match_is_found = check_interval_match(
