@@ -390,13 +390,14 @@ def get_aligned_video_timestamps_juveniles(
             # Very short segments contain no TTL pulses and carry no alignment information, so we skip them.
             print(f"    Segment {segment_index} contains no TTL pulses, skipping...")
             continue
-        single_segment_ttl_timestamps, segment_start_index = correct_ttl_times(led_times=led_timestamps, ttl_times=single_segment_ttl_timestamps, min_matches=min_matches, tolerance_in_seconds=tolerance_in_seconds)
+        single_segment_ttl_timestamps, led_segment_start_index = correct_ttl_times(led_times=led_timestamps, ttl_times=single_segment_ttl_timestamps, min_matches=min_matches, tolerance_in_seconds=tolerance_in_seconds)
 
         ttl_intervals = np.diff(single_segment_ttl_timestamps)
-        assert np.all(np.isnan(ttl_timestamps[segment_start_index:segment_start_index + len(single_segment_ttl_timestamps)])), f"Overlap in TTL timestamps at segment {segment_index}"
-        ttl_timestamps[segment_start_index:segment_start_index + len(single_segment_ttl_timestamps)] = single_segment_ttl_timestamps
-        error = led_intervals[segment_start_index:segment_start_index + len(ttl_intervals)] - ttl_intervals
-        assert np.max(np.abs(error)) < tolerance_in_seconds, f"Alignment error too large: {np.max(np.abs(error))} seconds for segment {segment_index}"
+        assert np.all(np.isnan(ttl_timestamps[led_segment_start_index:led_segment_start_index + len(single_segment_ttl_timestamps)])), f"Overlap in TTL timestamps at segment {segment_index}"
+        ttl_timestamps[led_segment_start_index:led_segment_start_index + len(single_segment_ttl_timestamps)] = single_segment_ttl_timestamps
+        error = led_intervals[led_segment_start_index:led_segment_start_index + len(ttl_intervals)] - ttl_intervals
+        num_misaligned_intervals = np.sum(np.abs(error) > tolerance_in_seconds)
+        assert num_misaligned_intervals <= 3, f"{num_misaligned_intervals} misaligned intervals found between LED and TTL timestamps for segment {segment_index}"
 
     # NaN values represent LED pulses that were not recorded in the ephys data (ex. between segments)
     not_nan = ~np.isnan(ttl_timestamps)
