@@ -53,6 +53,50 @@ def get_start_time(timestamps_file_path: Path | None = None, video_file_path: Pa
 
     return start_time
 
+def get_led_flash_timestamps(*, traces: np.ndarray, timestamps: np.ndarray, threshold: float, cooldown_in_seconds: float, sampling_rate: float) -> np.ndarray:
+    """
+    Get LED flash timestamps from traces.
+
+    Parameters
+    ----------
+    traces : np.ndarray
+        The input signal traces.
+    timestamps : np.ndarray
+        The corresponding timestamps for the traces.
+    threshold : float
+        The threshold to detect LED onsets and offsets.
+    cooldown_in_seconds : float
+        The cooldown period in seconds to avoid detecting the same onset multiple times.
+    sampling_rate : float
+        The sampling rate of the traces in Hz.
+    
+    Returns
+    -------
+    np.ndarray
+        The timestamps of detected LED flash centers.
+    """    
+
+    peak_points = np.where((traces > threshold))[0]
+    gaps = np.diff(peak_points) > 1
+    onsets = np.concatenate([[peak_points[0]], peak_points[1:][gaps]])
+    offsets = np.concatenate([peak_points[:-1][gaps], [peak_points[-1]]])
+    onsets = np.array(onsets)
+    offsets = np.array(offsets)
+    centers = (onsets + offsets) // 2
+
+    # Add a cooldown period to avoid detecting the same onset multiple times
+    cooldown_in_samples = int(cooldown_in_seconds * sampling_rate)
+    center_diff = np.diff(centers)
+    cooldown_conflict_mask = center_diff <= cooldown_in_samples
+    cooldown_conflict_mask[:-1] = cooldown_conflict_mask[:-1] | np.roll(cooldown_conflict_mask[:-1], -1) # Exclude all centers involved in a conflict even if they are the first in the group
+    cooldown_conflict_mask = np.concatenate(([False], cooldown_conflict_mask))
+    if center_diff[0] <= cooldown_in_samples:
+        cooldown_conflict_mask[0] = True
+    centers = centers[~cooldown_conflict_mask]
+
+    ttl_timestamps = timestamps[centers]
+    return ttl_timestamps
+
 def get_ttl_timestamps(*, traces: np.ndarray, timestamps: np.ndarray, threshold: float, cooldown_in_seconds: float, sampling_rate: float) -> np.ndarray:
     """
     Get TTL timestamps from traces.
@@ -83,16 +127,6 @@ def get_ttl_timestamps(*, traces: np.ndarray, timestamps: np.ndarray, threshold:
     onsets = np.array(onsets)
     offsets = np.array(offsets)
     centers = (onsets + offsets) // 2
-
-    # Add a cooldown period to avoid detecting the same onset multiple times
-    cooldown_in_samples = int(cooldown_in_seconds * sampling_rate)
-    center_diff = np.diff(centers)
-    cooldown_conflict_mask = center_diff <= cooldown_in_samples
-    cooldown_conflict_mask[:-1] = cooldown_conflict_mask[:-1] | np.roll(cooldown_conflict_mask[:-1], -1) # Exclude all centers involved in a conflict even if they are the first in the group
-    cooldown_conflict_mask = np.concatenate(([False], cooldown_conflict_mask))
-    if center_diff[0] <= cooldown_in_samples:
-        cooldown_conflict_mask[0] = True
-    centers = centers[~cooldown_conflict_mask]
 
     ttl_timestamps = timestamps[centers]
     return ttl_timestamps
@@ -340,7 +374,7 @@ def get_aligned_video_timestamps_juveniles(
     timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name], sep=sep)
     traces = timestamps_df[led_column_name].values
     video_timestamps = np.arange(traces.shape[0]) / video_sampling_rate
-    led_timestamps = get_ttl_timestamps(traces=traces, timestamps=video_timestamps, threshold=led_threshold, cooldown_in_seconds=cooldown_in_seconds, sampling_rate=video_sampling_rate)
+    led_timestamps = get_led_flash_timestamps(traces=traces, timestamps=video_timestamps, threshold=led_threshold, cooldown_in_seconds=cooldown_in_seconds, sampling_rate=video_sampling_rate)
     led_intervals = np.diff(led_timestamps)
 
     extractor = OpenEphysBinaryRecordingExtractor(folder_path=ephys_folder_path, stream_name=ttl_stream_name)
@@ -431,7 +465,7 @@ def get_aligned_video_timestamps_juveniles_from_dat(
     timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name], sep=sep)
     traces = timestamps_df[led_column_name].values
     video_timestamps = np.arange(traces.shape[0]) / video_sampling_rate
-    led_timestamps = get_ttl_timestamps(traces=traces, timestamps=video_timestamps, threshold=led_threshold, cooldown_in_seconds=cooldown_in_seconds, sampling_rate=video_sampling_rate)
+    led_timestamps = get_led_flash_timestamps(traces=traces, timestamps=video_timestamps, threshold=led_threshold, cooldown_in_seconds=cooldown_in_seconds, sampling_rate=video_sampling_rate)
     led_intervals = np.diff(led_timestamps)
 
     sampling_rate = float(xml_data['dat_sampling_rate'])
