@@ -376,6 +376,17 @@ def get_aligned_video_timestamps_juveniles(
     video_timestamps = (timestamps_df[timestamp_column_name] - timestamps_df[timestamp_column_name][0]).dt.total_seconds().values
     dt = np.median(np.diff(video_timestamps))
     video_sampling_rate = int(1 / dt)
+    # Handle any NaN timestamps by using sampling rate
+    assert not(np.all(np.isnan(video_timestamps))), "All video timestamps are NaN, cannot infer from sampling rate."
+    isnan_mask = np.isnan(video_timestamps)
+    for i, isnan in enumerate(isnan_mask):
+        if isnan:
+            video_timestamps[i] = video_timestamps[i-1] + dt
+    # Second pass in reverse to catch any leading NaNs
+    isnan_mask = np.isnan(video_timestamps)
+    for i, isnan in enumerate(isnan_mask[::-1]):
+        if isnan:
+            video_timestamps[len(video_timestamps)-1-i] = video_timestamps[len(video_timestamps)-i] - dt
     led_timestamps = get_led_flash_timestamps(traces=traces, timestamps=video_timestamps, threshold=led_threshold, cooldown_in_seconds=cooldown_in_seconds, sampling_rate=video_sampling_rate)
     led_intervals = np.diff(led_timestamps)
 
@@ -474,6 +485,18 @@ def get_aligned_video_timestamps_juveniles_from_dat(
     video_timestamps = (timestamps_df[timestamp_column_name] - timestamps_df[timestamp_column_name][0]).dt.total_seconds().values
     dt = np.median(np.diff(video_timestamps))
     video_sampling_rate = int(1 / dt)
+    # Handle any NaN timestamps by using sampling rate
+    assert not(np.all(np.isnan(video_timestamps))), "All video timestamps are NaN, cannot infer from sampling rate."
+    isnan_mask = np.isnan(video_timestamps)
+    for i, isnan in enumerate(isnan_mask):
+        if isnan:
+            video_timestamps[i] = video_timestamps[i-1] + dt
+    # Second pass in reverse to catch any leading NaNs
+    isnan_mask = np.isnan(video_timestamps)
+    for i, isnan in enumerate(isnan_mask[::-1]):
+        if isnan:
+            video_timestamps[len(video_timestamps)-1-i] = video_timestamps[len(video_timestamps)-i] - dt
+        
     led_timestamps = get_led_flash_timestamps(traces=traces, timestamps=video_timestamps, threshold=led_threshold, cooldown_in_seconds=cooldown_in_seconds, sampling_rate=video_sampling_rate)
     led_intervals = np.diff(led_timestamps)
 
@@ -515,6 +538,11 @@ def get_aligned_video_timestamps_juveniles_from_dat(
 
         segment_led_start_indices.append(led_segment_start_index)
         segment_led_stop_indices.append(led_segment_start_index + len(single_segment_ttl_timestamps))
+
+    # NaN values represent LED pulses that were not recorded in the ephys data (ex. between segments)
+    not_nan = ~np.isnan(ttl_timestamps)
+    led_timestamps = led_timestamps[not_nan]
+    ttl_timestamps = ttl_timestamps[not_nan]
 
     # Estimate the wall-clock offset of each segment relative to segment 0 (which anchors at 0).
     # Each later segment is pushed forward by the LED-measured gap between its first matched
