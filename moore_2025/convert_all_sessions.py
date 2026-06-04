@@ -111,8 +111,17 @@ def detect_video_and_timestamp_paths(raw_folder_path: Path) -> tuple[list[Path],
     -------
     tuple[list[Path], list[Path]]
         (video_file_paths, timestamps_file_paths)
+
+    Notes
+    -----
+    Bonsai also emits tiny (few-KB) ``Bonsaitimestamps*.avi`` placeholders that
+    are not real video (e.g. 6x6 with an unspecified pixel format) and cause
+    ffmpeg to fail when transcoded. These are excluded from the video paths.
     """
-    video_file_paths = sorted(raw_folder_path.rglob("Bonsai*.avi"))
+    video_file_paths = sorted(
+        path for path in raw_folder_path.rglob("Bonsai*.avi")
+        if not path.name.startswith("Bonsaitimestamps")
+    )
     timestamps_file_paths = sorted(raw_folder_path.rglob("Bonsai*.csv"))
     return video_file_paths, timestamps_file_paths
 
