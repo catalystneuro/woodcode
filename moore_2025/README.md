@@ -16,7 +16,9 @@ NeuroConv have conflicting dependencies:
 
 1. **Conversion** (environment `dudchenko_lab_to_nwb_env`): reads the raw acquisition files and writes one `.nwb` file per
    session. This stage uses NeuroConv/SpikeInterface and the `woodcode` package. Scripts:
-   [convert_session.py](convert_session.py) and [convert_all_sessions.py](convert_all_sessions.py).
+   [convert_single_session.py](convert_single_session.py), [convert_example_sessions.py](convert_example_sessions.py),
+   [convert_edge_case_sessions.py](convert_edge_case_sessions.py), and
+   [convert_all_sessions.py](convert_all_sessions.py).
 
 2. **Spyglass ingestion** (a separate environment built from the Spyglass install instructions): reads the `.nwb`
    files produced in stage 1 and inserts them into a MySQL-backed Spyglass database. Scripts:
@@ -65,13 +67,13 @@ The insertion scripts expect a DataJoint config file at the path hard-coded near
 Unlike a typical NeuroConv conversion, this project does **not** use `DataInterface` / `NWBConverter` classes.
 Instead, the reusable NWB-building logic is a library of `add_*` functions in
 [woodcode/nwb/convert.py](../woodcode/nwb/convert.py), and the dataset-specific
-[convert_session.py](convert_session.py) orchestrates them. The conceptual roles are still the same:
+[session_to_nwb.py](session_to_nwb.py) orchestrates them. The conceptual roles are still the same:
 
 - **Readers** ([woodcode/nwb/io.py](../woodcode/nwb/io.py)) parse a single source-data modality (Neuroscope `.xml`,
   the metadata `.xlsx`, MATLAB `.mat` tracking/spikes, binary `.dat`/`.lfp`, etc.) into numpy/pynapple objects.
 - **Adders** ([woodcode/nwb/convert.py](../woodcode/nwb/convert.py)) write each modality into the NWB file
   (`add_raw_ephys`, `add_lfp`, `add_units`, `add_tracking`, `add_video`, `add_sleep`, `add_histology`, ...).
-- **Orchestration** ([convert_session.py](convert_session.py)) defines `session_to_nwb()`, which calls the readers
+- **Orchestration** ([session_to_nwb.py](session_to_nwb.py)) defines `session_to_nwb()`, which calls the readers
   and adders in the correct order and handles temporal alignment for a single session.
 - **Batch driver** ([convert_all_sessions.py](convert_all_sessions.py)) defines `dataset_to_nwb()`, which discovers
   every session, builds the per-session arguments, and converts them in parallel.
@@ -93,7 +95,10 @@ woodcode/
 │       ├── dat_file_data_chunk_iterator.py
 │       └── multi_segment_recording_data_chunk_iterator.py
 └── moore_2025/                          # the Moore 2025 conversion (this directory)
-    ├── convert_session.py               # session_to_nwb(): convert a single session
+    ├── session_to_nwb.py                # session_to_nwb(): convert a single session + get_probe_info_*
+    ├── convert_single_session.py        # convert the first example session (fast smoke test)
+    ├── convert_example_sessions.py      # convert the six representative example sessions
+    ├── convert_edge_case_sessions.py    # convert the edge-case sessions
     ├── convert_all_sessions.py          # dataset_to_nwb(): convert the whole dataset in parallel
     ├── temporal_alignment.py            # align video timestamps to the ephys clock
     ├── adult_metadata.yaml              # cohort-constant metadata for adult mice
@@ -108,11 +113,19 @@ woodcode/
 
 Inside the [moore_2025/](.) directory you will find the following files:
 
-* [convert_session.py](convert_session.py) : Defines `session_to_nwb()`, which converts a single session of data to
-  NWB. When run as a script, its `main()` converts a curated set of example sessions chosen to exercise every code
-  path (juvenile/adult, WT/KO, and the edge cases described below). It also defines the `get_probe_info_*` helpers
-  that build probe geometry from the [probeinterface library](https://github.com/SpikeInterface/probeinterface_library)
-  for the Cambridge Neurotech H5, H6b, and H7 probes.
+* [session_to_nwb.py](session_to_nwb.py) : Defines `session_to_nwb()`, which converts a single session of data to
+  NWB. It also defines the `get_probe_info_*` helpers that build probe geometry from the
+  [probeinterface library](https://github.com/SpikeInterface/probeinterface_library) for the Cambridge Neurotech
+  H5, H6b, and H7 probes. This is the reusable module imported by the driver scripts below and by
+  [convert_all_sessions.py](convert_all_sessions.py).
+
+* [convert_single_session.py](convert_single_session.py) / [convert_example_sessions.py](convert_example_sessions.py)
+  / [convert_edge_case_sessions.py](convert_edge_case_sessions.py) : Driver scripts that call `session_to_nwb()` on
+  hand-curated sessions chosen to exercise every code path (juvenile/adult, WT/KO, and the edge cases described
+  below). `convert_single_session.py` converts only the first example session and is the fastest way to smoke-test
+  the pipeline; `convert_example_sessions.py` converts the six representative sessions (juvenile WT/KO across two
+  days, plus adult WT/KO); `convert_edge_case_sessions.py` converts the remaining edge cases. Each script defines
+  its own data-path constants near the top of `main()`.
 
 * [convert_all_sessions.py](convert_all_sessions.py) : Defines `dataset_to_nwb()`, which converts every session in
   the dataset. It auto-discovers sessions from the `WT`/`KO` subfolders, builds the arguments for each, and runs them
@@ -139,8 +152,9 @@ Inside the [moore_2025/](.) directory you will find the following files:
 
 * [insert_session.py](insert_session.py) : Ingests a single converted NWB file into Spyglass via
   `sgi.insert_sessions(...)`, then runs the custom inserts (`insert_sleep`, `insert_sorting`, `insert_pseudo_emg`,
-  `insert_histology_images`). Its `main()` inserts the same curated example sessions as
-  [convert_session.py](convert_session.py) and dumps the resulting tables to `tables_*.txt` files for verification.
+  `insert_histology_images`). Its `main()` inserts the same curated example sessions as the
+  [convert_example_sessions.py](convert_example_sessions.py) / [convert_edge_case_sessions.py](convert_edge_case_sessions.py)
+  driver scripts and dumps the resulting tables to `tables_*.txt` files for verification.
 
 * [insert_all_sessions.py](insert_all_sessions.py) : Batch version that ingests every `.nwb` file in the Spyglass
   raw directory.
@@ -164,8 +178,16 @@ conda activate dudchenko_lab_to_nwb_env
 
 ### Convert example sessions
 
-1. In [convert_session.py](convert_session.py), update the path variables at the top of `main()` to point to your
-   local data. These are currently hard-coded to the original author's external drives and must be changed:
+The example conversion is split across three driver scripts, all of which call `session_to_nwb()` from
+[session_to_nwb.py](session_to_nwb.py):
+- [convert_single_session.py](convert_single_session.py) — converts only the first example session. This is the
+  fastest way to smoke-test the pipeline end-to-end.
+- [convert_example_sessions.py](convert_example_sessions.py) — converts the six representative sessions.
+- [convert_edge_case_sessions.py](convert_edge_case_sessions.py) — converts the edge-case sessions.
+
+1. In each script you intend to run, update the path variables at the top of `main()` to point to your local
+   data. These are currently hard-coded to the original author's external drives and must be changed (the same
+   block appears in all three scripts):
    - `juvenile_folder_path` — the `H3000_Juveniles` data root
    - `adult_folder_path` — the `H4800_Adults` data root
    - `meta_path` — the `MooreDataset_Metadata.xlsx` spreadsheet
@@ -173,16 +195,15 @@ conda activate dudchenko_lab_to_nwb_env
    - `output_folder_path` — where the `.nwb` files are written
    - `juvenile_metadata_file_path` / `adult_metadata_file_path` — the two YAML files in this directory
 
-   > [!WARNING]
-   > `convert_session.py` runs `shutil.rmtree(output_folder_path)` at the start of `main()`, which **deletes the
-   > entire output directory on every run**. Use an empty or dedicated folder for `output_folder_path`.
-
-2. Run the conversion script:
+2. Run the script you need, e.g. the fast single-session smoke test:
     ```bash
-    python -W ignore moore_2025/convert_session.py
+    python -W ignore moore_2025/convert_single_session.py
     ```
 
-   Set `stub_test = True` in `main()` to convert only a small slice of each session for a fast development run.
+   The scripts do not clear `output_folder_path`; converted files accumulate there and per-session outputs are
+   overwritten, so you can run the scripts in sequence into one folder. Prefer `convert_single_session.py` for a
+   quick check — `stub_test` is not an effective speed-up here because temporal alignment still runs on the full
+   data.
 
 ### Convert all sessions
 
@@ -191,7 +212,7 @@ conda activate dudchenko_lab_to_nwb_env
    `adult_histology_folder_path`, `output_dir_path`). The two metadata YAML paths resolve automatically relative to
    the script. You can also set `stub_test` and `max_workers` (the number of parallel processes).
 
-   Unlike `convert_session.py`, this script does **not** delete the output directory first.
+   Like the example driver scripts, this script does **not** delete the output directory first.
 
 2. Run the conversion script:
     ```bash
@@ -262,7 +283,7 @@ When new sessions are added to the dataset, most adjustments happen in
   - `SESSION_TO_ALT_XML_SESSION` — borrow another session's XML when this session's XMLs are unusable.
   - `SESSIONS_TO_SKIP` — skip a session entirely.
 
-- **New probe models** require a new `get_probe_info_*` helper in [convert_session.py](convert_session.py) (look up
+- **New probe models** require a new `get_probe_info_*` helper in [session_to_nwb.py](session_to_nwb.py) (look up
   the probe in the [probeinterface library](https://github.com/SpikeInterface/probeinterface_library)) plus a branch
   in `get_probe_info()`.
 
@@ -295,8 +316,8 @@ named `<subject>-<date>` (e.g. `H4813-220728`). Each session folder contains a `
 
 ### Edge cases in the dataset
 
-The dataset includes several sessions that deviate from the standard layout; these are the example sessions in
-`convert_session.py:main()` and are documented by the lookup tables described above:
+The dataset includes several sessions that deviate from the standard layout; these are the sessions in
+`convert_edge_case_sessions.py:main()` and are documented by the lookup tables described above:
 
 - Sessions with **no video** (raw Bonsai tracking cannot be aligned).
 - Sessions with **no raw Open Ephys output**, converted from the processed `.dat` file instead.
@@ -307,17 +328,20 @@ The dataset includes several sessions that deviate from the standard layout; the
 
 ## Tips for Using the Code
 
-- **Start with the example sessions.** The `main()` functions in [convert_session.py](convert_session.py) and
+- **Start with the example sessions.** The `main()` functions in the
+  [convert_single_session.py](convert_single_session.py) / [convert_example_sessions.py](convert_example_sessions.py)
+  / [convert_edge_case_sessions.py](convert_edge_case_sessions.py) driver scripts and in
   [insert_session.py](insert_session.py) demonstrate the expected data organization, parameter values, and every
   edge case in the dataset.
 
-- **Use `stub_test=True` for development.** It converts only a small slice of each session, which runs much faster.
+- **Smoke-test with a single session.** Run [convert_single_session.py](convert_single_session.py) for the fastest
+  end-to-end check. `stub_test` is not an effective speed-up because temporal alignment still runs on the full data.
 
 - **Check your file paths.** The conversion fails loudly if input files are missing. For batch runs, inspect the
   `ERROR_*.txt` files written to the output directory.
 
-- **Mind the destructive steps.** `convert_session.py` wipes its output directory, and `insert_all_sessions.py`
-  wipes the Spyglass database. Read the warnings above before running either.
+- **Mind the destructive steps.** `insert_all_sessions.py` wipes the Spyglass database. Read the warnings above
+  before running it. (The conversion driver scripts do not delete their output directory.)
 
 - **Edit metadata, not code, for descriptive changes.** The `.yaml` files and the metadata spreadsheet hold
   experiment metadata; you can update them without touching the Python.
@@ -328,7 +352,9 @@ The dataset includes several sessions that deviate from the standard layout; the
 ## Getting Help
 
 1. Check the docstrings in the code for detailed information about each function.
-2. Review the example sessions in [convert_session.py](convert_session.py) and [insert_session.py](insert_session.py).
+2. Review the example sessions in the [convert_single_session.py](convert_single_session.py) /
+   [convert_example_sessions.py](convert_example_sessions.py) / [convert_edge_case_sessions.py](convert_edge_case_sessions.py)
+   driver scripts and in [insert_session.py](insert_session.py).
 3. See [spyglass_requirements.md](../spyglass_requirements.md) for the NWB-structure constraints Spyglass enforces.
 4. Consult the [NWB documentation](https://nwb-overview.readthedocs.io/) for the NWB format,
    the [NeuroConv documentation](https://neuroconv.readthedocs.io/) for data interfaces, and the

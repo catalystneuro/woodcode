@@ -9,7 +9,7 @@ from typing import Any, Union
 
 from tqdm import tqdm
 
-from moore_2025.convert_session import session_to_nwb
+from moore_2025.session_to_nwb import session_to_nwb
 
 # Manually specified stream names for each session.
 # The ttl_stream_name is always derived as f"{stream_name}_ADC".
