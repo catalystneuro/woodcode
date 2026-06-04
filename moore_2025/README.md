@@ -22,7 +22,9 @@ NeuroConv have conflicting dependencies:
 
 2. **Spyglass ingestion** (a separate environment built from the Spyglass install instructions): reads the `.nwb`
    files produced in stage 1 and inserts them into a MySQL-backed Spyglass database. Scripts:
-   [insert_session.py](insert_session.py) and [insert_all_sessions.py](insert_all_sessions.py).
+   [insert_single_session.py](insert_single_session.py), [insert_example_sessions.py](insert_example_sessions.py),
+   [insert_edge_case_sessions.py](insert_edge_case_sessions.py), and
+   [insert_all_sessions.py](insert_all_sessions.py).
 
 You must finish stage 1 before starting stage 2.
 
@@ -57,10 +59,10 @@ NeuroConv stack used for conversion. Build it by following the official
 [Spyglass installation instructions](https://lorenfranklab.github.io/spyglass/latest/notebooks/00_Setup/), which also
 cover standing up the required MySQL database. The insertion scripts do not require the `woodcode` package to be
 installed in this environment — they reach the custom tables in [spyglass_extensions/](spyglass_extensions/) via a
-`sys.path.append(...)` near the top of [insert_session.py](insert_session.py).
+`sys.path.append(...)` near the top of [session_to_spyglass.py](session_to_spyglass.py).
 
 The insertion scripts expect a DataJoint config file at the path hard-coded near the top of
-[insert_session.py](insert_session.py) (`dj_local_conf.json`). Update that path for your machine.
+[session_to_spyglass.py](session_to_spyglass.py) (`dj_local_conf.json`). Update that path for your machine.
 
 ## Helpful Definitions
 
@@ -103,7 +105,10 @@ woodcode/
     ├── temporal_alignment.py            # align video timestamps to the ephys clock
     ├── adult_metadata.yaml              # cohort-constant metadata for adult mice
     ├── juvenile_metadata.yaml           # cohort-constant metadata for juvenile mice
-    ├── insert_session.py                # ingest a single NWB file into Spyglass
+    ├── session_to_spyglass.py           # insert_session(): ingest one NWB file into Spyglass + helpers
+    ├── insert_single_session.py         # ingest the first example session (fast smoke test)
+    ├── insert_example_sessions.py       # ingest the six representative example sessions
+    ├── insert_edge_case_sessions.py     # ingest the edge-case sessions
     ├── insert_all_sessions.py           # ingest all NWB files into Spyglass
     ├── example_notebook.ipynb           # example analysis of a converted/ingested session
     └── spyglass_extensions/             # custom DataJoint tables
@@ -150,11 +155,19 @@ Inside the [moore_2025/](.) directory you will find the following files:
   Logitech for juveniles), and the probe/data-acquisition system. Per-subject, per-session values (e.g. genotype)
   live in the spreadsheet, not here.
 
-* [insert_session.py](insert_session.py) : Ingests a single converted NWB file into Spyglass via
-  `sgi.insert_sessions(...)`, then runs the custom inserts (`insert_sleep`, `insert_sorting`, `insert_pseudo_emg`,
-  `insert_histology_images`). Its `main()` inserts the same curated example sessions as the
-  [convert_example_sessions.py](convert_example_sessions.py) / [convert_edge_case_sessions.py](convert_edge_case_sessions.py)
-  driver scripts and dumps the resulting tables to `tables_*.txt` files for verification.
+* [session_to_spyglass.py](session_to_spyglass.py) : Defines `insert_session()`, which ingests a single converted
+  NWB file into Spyglass via `sgi.insert_sessions(...)` and then runs the custom inserts (`insert_sleep`,
+  `insert_sorting`, `insert_pseudo_emg`, `insert_histology_images`). It also defines `print_tables()` (dumps the
+  resulting tables to a `tables_*.txt` file for verification) and `clear_shared_tables()` (clears the shared
+  probe/camera/device/task records before a fresh insertion). This is the reusable module imported by the driver
+  scripts below and by [insert_all_sessions.py](insert_all_sessions.py).
+
+* [insert_single_session.py](insert_single_session.py) / [insert_example_sessions.py](insert_example_sessions.py)
+  / [insert_edge_case_sessions.py](insert_edge_case_sessions.py) : Driver scripts that ingest the same curated
+  sessions as the stage-1 convert drivers. Each calls `clear_shared_tables()` once, then ingests its sessions and
+  dumps a `tables_*.txt` per session. `insert_single_session.py` ingests only the first example session (fastest
+  smoke test); `insert_example_sessions.py` ingests the six representative sessions; `insert_edge_case_sessions.py`
+  ingests the edge cases. Each defines its own `raw_data_path` near the top of `main()`.
 
 * [insert_all_sessions.py](insert_all_sessions.py) : Batch version that ingests every `.nwb` file in the Spyglass
   raw directory.
@@ -230,17 +243,25 @@ Switch to the Spyglass environment first (see [Installation](#installation)). Ma
 
 ### Insert example sessions
 
-1. In [insert_session.py](insert_session.py), update `dj_local_conf_path`, the `sys.path.append(...)` to
-   `spyglass_extensions`, `raw_data_path` (the directory containing the `.nwb` files), and the per-session
-   `nwbfile_path` entries in `main()`.
+The example ingestion is split across three driver scripts, all of which import `insert_session()` and the
+helpers from [session_to_spyglass.py](session_to_spyglass.py):
+- [insert_single_session.py](insert_single_session.py) — ingests only the first example session (fastest check).
+- [insert_example_sessions.py](insert_example_sessions.py) — ingests the six representative sessions.
+- [insert_edge_case_sessions.py](insert_edge_case_sessions.py) — ingests the edge-case sessions.
 
-2. Run the script:
+1. In [session_to_spyglass.py](session_to_spyglass.py), update `dj_local_conf_path` and the `sys.path.append(...)`
+   to `spyglass_extensions`. In each driver script you intend to run, update `raw_data_path` (the directory
+   containing the `.nwb` files).
+
+2. Run the script you need, e.g. the fast single-session smoke test:
     ```bash
-    python moore_2025/insert_session.py
+    python moore_2025/insert_single_session.py
     ```
 
-   `main()` first deletes the stale probe/camera/device/task entries it is about to re-insert, then inserts each
-   example session and writes a `tables_*.txt` dump for verification.
+   Each driver first calls `clear_shared_tables()`, which deletes the shared probe/camera/device/task entries
+   it is about to re-insert, then inserts its sessions and writes a `tables_*.txt` dump per session for
+   verification. Because deleting the probe types cascades, each script resets the shared tables on every run, so
+   running one driver after another re-ingests from a clean slate rather than accumulating.
 
 ### Insert all sessions
 
@@ -293,7 +314,8 @@ When new sessions are added to the dataset, most adjustments happen in
   names).
 
 - **New probe/camera/device names** must also be added to the cleanup `delete()` blocks in
-  [insert_session.py](insert_session.py) and [insert_all_sessions.py](insert_all_sessions.py).
+  `clear_shared_tables()` in [session_to_spyglass.py](session_to_spyglass.py) and in
+  [insert_all_sessions.py](insert_all_sessions.py).
 
 ## Understanding the Data
 
@@ -330,12 +352,15 @@ The dataset includes several sessions that deviate from the standard layout; the
 
 - **Start with the example sessions.** The `main()` functions in the
   [convert_single_session.py](convert_single_session.py) / [convert_example_sessions.py](convert_example_sessions.py)
-  / [convert_edge_case_sessions.py](convert_edge_case_sessions.py) driver scripts and in
-  [insert_session.py](insert_session.py) demonstrate the expected data organization, parameter values, and every
-  edge case in the dataset.
+  / [convert_edge_case_sessions.py](convert_edge_case_sessions.py) driver scripts and in their stage-2
+  counterparts ([insert_single_session.py](insert_single_session.py) /
+  [insert_example_sessions.py](insert_example_sessions.py) /
+  [insert_edge_case_sessions.py](insert_edge_case_sessions.py)) demonstrate the expected data organization,
+  parameter values, and every edge case in the dataset.
 
-- **Smoke-test with a single session.** Run [convert_single_session.py](convert_single_session.py) for the fastest
-  end-to-end check. `stub_test` is not an effective speed-up because temporal alignment still runs on the full data.
+- **Smoke-test with a single session.** Run [convert_single_session.py](convert_single_session.py) (stage 1) or
+  [insert_single_session.py](insert_single_session.py) (stage 2) for the fastest end-to-end check. `stub_test` is
+  not an effective speed-up because temporal alignment still runs on the full data.
 
 - **Check your file paths.** The conversion fails loudly if input files are missing. For batch runs, inspect the
   `ERROR_*.txt` files written to the output directory.
@@ -352,9 +377,12 @@ The dataset includes several sessions that deviate from the standard layout; the
 ## Getting Help
 
 1. Check the docstrings in the code for detailed information about each function.
-2. Review the example sessions in the [convert_single_session.py](convert_single_session.py) /
-   [convert_example_sessions.py](convert_example_sessions.py) / [convert_edge_case_sessions.py](convert_edge_case_sessions.py)
-   driver scripts and in [insert_session.py](insert_session.py).
+2. Review the example sessions in the convert driver scripts
+   ([convert_single_session.py](convert_single_session.py) /
+   [convert_example_sessions.py](convert_example_sessions.py) /
+   [convert_edge_case_sessions.py](convert_edge_case_sessions.py)) and their insert counterparts
+   ([insert_single_session.py](insert_single_session.py) / [insert_example_sessions.py](insert_example_sessions.py)
+   / [insert_edge_case_sessions.py](insert_edge_case_sessions.py)).
 3. See [spyglass_requirements.md](../spyglass_requirements.md) for the NWB-structure constraints Spyglass enforces.
 4. Consult the [NWB documentation](https://nwb-overview.readthedocs.io/) for the NWB format,
    the [NeuroConv documentation](https://neuroconv.readthedocs.io/) for data interfaces, and the

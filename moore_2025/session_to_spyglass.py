@@ -1,7 +1,13 @@
-"""SpyGlass database insertion script for the example dataset.
+"""Reusable Spyglass insertion logic for the Moore 2025 dataset.
 
-This module provides functions for inserting converted NWB files from the example dataset into a SpyGlass database. 
-It handles data ingestion, custom table population, and validation testing for the database integration pipeline.
+Defines ``insert_session()``, which ingests a single converted NWB file into a Spyglass database, along
+with its custom-insert helpers (``insert_sleep``, ``insert_sorting``, ``insert_pseudo_emg``,
+``insert_histology_images``), ``print_tables()`` for QA dumps, and ``clear_shared_tables()`` for clearing
+the shared probe/camera/device/task records before a fresh insertion. The driver scripts
+(``insert_single_session.py``, ``insert_example_sessions.py``, ``insert_edge_case_sessions.py``) and
+``insert_all_sessions.py`` import from here.
+
+Importing this module loads ``dj_local_conf.json`` and connects to the database.
 """
 
 from pynwb import NWBHDF5IO
@@ -127,6 +133,22 @@ def insert_sleep(nwbfile_path: Path):
         sgc.IntervalList().insert1(key)
 
 
+def clear_shared_tables():
+    """Delete the shared probe/camera/device/task records before a fresh insertion.
+
+    These records are shared across sessions, so they are cleared once at the start of an insertion run
+    (and re-created by ``insert_session``). Deleting ``ProbeType`` cascades to everything referencing it,
+    so this resets any previously inserted sessions as well.
+    """
+    (sgc.ProbeType & {"probe_type": "Cambridge Neurotech H5 probe"}).delete()
+    (sgc.ProbeType & {"probe_type": "Cambridge Neurotech H6b probe"}).delete()
+    (sgc.ProbeType & {"probe_type": "Cambridge Neurotech H7 probe"}).delete()
+    (sgc.DataAcquisitionDevice & {"name": "data_acquisition_device"}).delete()
+    (sgc.CameraDevice & {"camera_name": "Basler Camera"}).delete()
+    (sgc.CameraDevice & {"camera_name": "Logitech Camera"}).delete()
+    sgc.Task().delete()
+
+
 def print_tables(nwbfile_path: Path, table_path: Path = Path("tables.txt")):
     nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
     with open(table_path, "w") as f:
@@ -189,7 +211,7 @@ def print_tables(nwbfile_path: Path, table_path: Path = Path("tables.txt")):
         print((sgc.RawPosition & {"nwb_file_name": nwb_copy_file_name, "interval_list_name": "pos 0 valid times"}).fetch1_dataframe(), file=f)
         print("=== RawCompassDirection ===", file=f)
         print((sgc.RawCompassDirection & {"nwb_file_name": nwb_copy_file_name}), file=f)
-        
+
         # Spike Sorting tables
         print("=== ImportedSpikeSorting ===", file=f)
         print(sgs.ImportedSpikeSorting & {"nwb_file_name": nwb_copy_file_name}, file=f)
@@ -202,131 +224,3 @@ def print_tables(nwbfile_path: Path, table_path: Path = Path("tables.txt")):
         # Custom Histology Images table
         print("=== ImportedHistologyImages ===", file=f)
         print(ImportedHistologyImages & {"nwb_file_name": nwb_copy_file_name}, file=f)
-
-
-def main():
-    raw_data_path = Path("/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/Spyglass/raw")
-
-    # Clear existing data for a clean insertion
-    (sgc.ProbeType & {"probe_type": "Cambridge Neurotech H5 probe"}).delete()
-    (sgc.ProbeType & {"probe_type": "Cambridge Neurotech H6b probe"}).delete()
-    (sgc.ProbeType & {"probe_type": "Cambridge Neurotech H7 probe"}).delete()
-    (sgc.DataAcquisitionDevice & {"name": "data_acquisition_device"}).delete()
-    (sgc.CameraDevice & {"camera_name": "Basler Camera"}).delete()
-    (sgc.CameraDevice & {"camera_name": "Logitech Camera"}).delete()
-    sgc.Task().delete()
-
-    # Example Juvenile WT
-    (sgc.Subject & {"subject_id": "H3022"}).delete()
-
-    # Example Juvenile WT Day 1 Session
-    nwbfile_path = raw_data_path / "H3022-210805.nwb"
-    table_path = Path("tables_jv_wt_day1.txt")
-    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
-
-    # Example Juvenile WT Day 2 Session
-    nwbfile_path = raw_data_path / "H3022-210806.nwb"
-    table_path = Path("tables_jv_wt_day2.txt")
-    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
-
-    # Example Juvenile KO
-    (sgc.Subject & {"subject_id": "H3016"}).delete()
-
-    # Example Juvenile KO Day 1 Session
-    nwbfile_path = raw_data_path / "H3016-210422.nwb"
-    table_path = Path("tables_jv_ko_day1.txt")
-    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
-
-    # Example Juvenile KO Day 2 Session
-    nwbfile_path = raw_data_path / "H3016-210423.nwb"
-    table_path = Path("tables_jv_ko_day2.txt")
-    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
-
-    # Example Adult WT Session
-    nwbfile_path = raw_data_path / "H4813-220728.nwb"
-    table_path = Path("tables_ad_wt.txt")
-    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    (sgc.Subject & {"subject_id": "H4813"}).delete()
-    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
-
-    # Example Adult KO Session
-    nwbfile_path = raw_data_path / "H4817-220828.nwb"
-    table_path = Path("tables_ad_ko.txt")
-    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    (sgc.Subject & {"subject_id": "H4817"}).delete()
-    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
-
-    # Example Session without videos
-    nwbfile_path = raw_data_path / "H3001-200202.nwb"
-    table_path = Path("tables_jv_wt_no_videos.txt")
-    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    (sgc.Subject & {"subject_id": "H3001"}).delete()
-    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
-
-    # Example Session without raw data
-    nwbfile_path = raw_data_path / "H3023-210812.nwb"
-    table_path = Path("tables_jv_wt_no_raw.txt")
-    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    (sgc.Subject & {"subject_id": "H3023"}).delete()
-    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
-
-    # Example Session without video nor timestamp csv files nor raw OpenEphys output
-    nwbfile_path = raw_data_path / "H4823-221108.nwb"
-    table_path = Path("tables_ad_wt_no_video_no_raw.txt")
-    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    (sgc.Subject & {"subject_id": "H4823"}).delete()
-    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
-
-    # Example Juvenile Session with Adult temporal alignment and H5 Probe
-    nwbfile_path = raw_data_path / "H3029-230510.nwb"
-    table_path = Path("tables_jv_wt_adult_alignment_h5.txt")
-    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    (sgc.Subject & {"subject_id": "H3029"}).delete()
-    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
-
-    # Example Adult Session with error epoch
-    nwbfile_path = raw_data_path / "H4830-230406.nwb"
-    table_path = Path("tables_ad_wt_error_epoch.txt")
-    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    (sgc.Subject & {"subject_id": "H4830"}).delete()
-    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
-
-    # Example Session with clock reset between segments
-    nwbfile_path = raw_data_path / "H4815-220814.nwb"
-    table_path = Path("tables_ad_wt_clock_reset.txt")
-    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    (sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}).delete()
-    (sgc.Subject & {"subject_id": "H4815"}).delete()
-    insert_session(nwbfile_path, rollback_on_fail=True, raise_err=True)
-    print_tables(nwbfile_path=nwbfile_path, table_path=table_path)
-
-
-if __name__ == "__main__":
-    main()
-    print("Done!")
