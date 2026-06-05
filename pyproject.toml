@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "woodcode"
-version = "0.1.2"
+version = "0.1.4"
 description = "A python package for neural and behavioural data analysis in Wood/Dudchenko lab"
 readme = "README.md"
 authors = [
@@ -21,7 +21,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
-    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Neural Data Analysis",
 ]
 requires-python = ">=3.8"
 dependencies = [
@@ -36,7 +36,6 @@ dependencies = [
     "pytz>=2021.1",
     "pynapple==0.7.1",
     "pyyaml>=6.0",
-    "selenium>=4.0.0",
     "seaborn>=0.11.0",
     "fmatch>=0.0.9",
     "jupyter>=1.1.1",
@@ -45,6 +44,7 @@ dependencies = [
     "spikeinterface",
     "neuroconv",
     "probeinterface",
+    "scikit-learn>=1.7.2"
 ]
 
 [project.urls]
@@ -53,3 +53,6 @@ Homepage = "https://github.com/Wood-Dudchenko-lab/woodcode"
 
 [tool.setuptools.packages.find]
 include = ["woodcode", "woodcode.*", "moore_2025"]
+
+[project.scripts]
+calibrate-tracking = "woodcode.video.calibrate_tracking:main"
