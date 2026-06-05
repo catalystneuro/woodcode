@@ -102,6 +102,7 @@ woodcode/
     ├── convert_example_sessions.py      # convert the six representative example sessions
     ├── convert_edge_case_sessions.py    # convert the edge-case sessions
     ├── convert_all_sessions.py          # dataset_to_nwb(): convert the whole dataset in parallel
+    ├── convert_all_videos.py            # (optional) transcode every session's video in a separate serial pass
     ├── temporal_alignment.py            # align video timestamps to the ephys clock
     ├── adult_metadata.yaml              # cohort-constant metadata for adult mice
     ├── juvenile_metadata.yaml           # cohort-constant metadata for juvenile mice
@@ -139,6 +140,14 @@ Inside the [moore_2025/](.) directory you will find the following files:
   `SESSIONS_WITHOUT_RAW_DATA`, `SESSIONS_WITHOUT_VIDEO`, `SESSIONS_WITHOUT_RAW_BONSAI_OUTPUT`,
   `SESSIONS_USING_PROCESSED_XML`, `SESSION_TO_ALT_XML_SESSION`, `SESSIONS_TO_SKIP`) that encode every known
   deviation from the default data layout — this is the main place to edit when adding new sessions.
+
+* [convert_all_videos.py](convert_all_videos.py) : **Optional** helper that runs only the video-transcoding step of
+  the conversion. It reuses the same session-discovery logic as `convert_all_sessions.py` to find every session's
+  Bonsai `.avi`, then transcodes each to H.264 `.mp4` in the output directory, one at a time. This is useful because
+  transcoding is the slowest part of the conversion: running it as a separate serial pass keeps the heavy `ffmpeg`
+  work out of the parallel `convert_all_sessions.py` workers. Because `video_codec.convert_avi_to_mp4_h264` skips any
+  `.mp4` that already exists, a subsequent `convert_all_sessions.py` run finds the videos already transcoded and just
+  references them. The pass is resumable for the same reason. See [Convert all sessions](#convert-all-sessions).
 
 * [temporal_alignment.py](temporal_alignment.py) : Puts the video camera clock onto the electrophysiology clock.
   Adult sessions use a Basler camera that emits one TTL pulse per frame, so alignment is a near 1:1 TTL-to-frame
@@ -235,6 +244,27 @@ The example conversion is split across three driver scripts, all of which call `
    Conversion is fault-tolerant: if a session fails, the error and its traceback are written to
    `ERROR_<session>.txt` in the output directory and the batch continues. After a run, check the output directory
    for `ERROR_*.txt` files to find sessions that did not convert.
+
+#### (Optional) Pre-transcode video in a separate pass
+
+Transcoding the Bonsai `.avi` video to H.264 `.mp4` is the slowest part of the conversion, and running it inside the
+parallel `convert_all_sessions.py` workers is the heaviest step. If you prefer, you can do all the transcoding up
+front in a single serial pass with [convert_all_videos.py](convert_all_videos.py):
+
+1. Update the data paths in its `__main__` block (the same `juvenile_dir_path`, `adult_dir_path`, `meta_path`,
+   `juvenile_histology_folder_path`, `adult_histology_folder_path`, and `output_dir_path` as
+   `convert_all_sessions.py`). **`output_dir_path` must match** the `convert_all_sessions.py` output directory so the
+   main conversion finds the transcoded files.
+
+2. Run it:
+    ```bash
+    python -W ignore moore_2025/convert_all_videos.py
+    ```
+
+It writes one `.mp4` per video into `output_dir_path`. A subsequent `convert_all_sessions.py` run then skips
+transcoding (it reuses any `.mp4` that already exists) and just references the converted files when building each
+`ImageSeries`. The pass is resumable: re-running only transcodes the videos that are still missing. This step is
+purely optional — `convert_all_sessions.py` transcodes any missing video itself.
 
 ## Running the Spyglass Ingestion (Stage 2)
 
