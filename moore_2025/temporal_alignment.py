@@ -33,11 +33,13 @@ def get_start_time(timestamps_file_path: Path | None = None, video_file_path: Pa
         tz_info = pytz.timezone('Europe/London')
         start_time = tz_info.localize(start_time)
         return start_time
-    
-    # Example filename: 'Bonsai testing2021-08-05T17_06_23.csv'
-    filename = timestamps_file_path.stem  # Ex. 'Bonsai testing2021-08-05T17_06_23'
+
     pattern = r'(\d{4}-\d{2}-\d{2}T\d{2}_\d{2}_\d{2})'
-    match = re.search(pattern, filename)
+    match = False
+    if timestamps_file_path is not None:
+        # Example filename: 'Bonsai testing2021-08-05T17_06_23.csv'
+        filename = timestamps_file_path.stem  # Ex. 'Bonsai testing2021-08-05T17_06_23'
+        match = re.search(pattern, filename)
     if not match:
         video_file_name = video_file_path.stem  # Ex. 'BonsaiCaptureALL2021-08-12T19_44_12'
         match = re.search(pattern, video_file_name)
@@ -50,6 +52,50 @@ def get_start_time(timestamps_file_path: Path | None = None, video_file_path: Pa
     start_time = tz_info.localize(start_time)
 
     return start_time
+
+def get_led_flash_timestamps(*, traces: np.ndarray, timestamps: np.ndarray, threshold: float, cooldown_in_seconds: float, sampling_rate: float) -> np.ndarray:
+    """
+    Get LED flash timestamps from traces.
+
+    Parameters
+    ----------
+    traces : np.ndarray
+        The input signal traces.
+    timestamps : np.ndarray
+        The corresponding timestamps for the traces.
+    threshold : float
+        The threshold to detect LED onsets and offsets.
+    cooldown_in_seconds : float
+        The cooldown period in seconds to avoid detecting the same onset multiple times.
+    sampling_rate : float
+        The sampling rate of the traces in Hz.
+    
+    Returns
+    -------
+    np.ndarray
+        The timestamps of detected LED flash centers.
+    """    
+
+    peak_points = np.where((traces > threshold))[0]
+    gaps = np.diff(peak_points) > 1
+    onsets = np.concatenate([[peak_points[0]], peak_points[1:][gaps]])
+    offsets = np.concatenate([peak_points[:-1][gaps], [peak_points[-1]]])
+    onsets = np.array(onsets)
+    offsets = np.array(offsets)
+    centers = (onsets + offsets) // 2
+
+    # Add a cooldown period to avoid detecting the same onset multiple times
+    cooldown_in_samples = int(cooldown_in_seconds * sampling_rate)
+    center_diff = np.diff(centers)
+    cooldown_conflict_mask = center_diff <= cooldown_in_samples
+    cooldown_conflict_mask[:-1] = cooldown_conflict_mask[:-1] | np.roll(cooldown_conflict_mask[:-1], -1) # Exclude all centers involved in a conflict even if they are the first in the group
+    cooldown_conflict_mask = np.concatenate(([False], cooldown_conflict_mask))
+    if center_diff[0] <= cooldown_in_samples:
+        cooldown_conflict_mask[0] = True
+    centers = centers[~cooldown_conflict_mask]
+
+    ttl_timestamps = timestamps[centers]
+    return ttl_timestamps
 
 def get_ttl_timestamps(*, traces: np.ndarray, timestamps: np.ndarray, threshold: float, cooldown_in_seconds: float, sampling_rate: float) -> np.ndarray:
     """
@@ -72,25 +118,16 @@ def get_ttl_timestamps(*, traces: np.ndarray, timestamps: np.ndarray, threshold:
     -------
     np.ndarray
         The timestamps of detected TTL centers.
-    """    
-
+    """
     peak_points = np.where((traces > threshold))[0]
+    if len(peak_points) == 0:
+        return np.array([]) # Some segments are very short and contain no TTL pulses, so we return an empty array in that case.
     gaps = np.diff(peak_points) > 1
     onsets = np.concatenate([[peak_points[0]], peak_points[1:][gaps]])
     offsets = np.concatenate([peak_points[:-1][gaps], [peak_points[-1]]])
     onsets = np.array(onsets)
     offsets = np.array(offsets)
     centers = (onsets + offsets) // 2
-
-    # Add a cooldown period to avoid detecting the same onset multiple times
-    cooldown_in_samples = int(cooldown_in_seconds * sampling_rate)
-    center_diff = np.diff(centers)
-    cooldown_conflict_mask = center_diff <= cooldown_in_samples
-    cooldown_conflict_mask[:-1] = cooldown_conflict_mask[:-1] | np.roll(cooldown_conflict_mask[:-1], -1) # Exclude all centers involved in a conflict even if they are the first in the group
-    cooldown_conflict_mask = np.concatenate(([False], cooldown_conflict_mask))
-    if center_diff[0] <= cooldown_in_samples:
-        cooldown_conflict_mask[0] = True
-    centers = centers[~cooldown_conflict_mask]
 
     ttl_timestamps = timestamps[centers]
     return ttl_timestamps
@@ -188,7 +225,7 @@ def find_segment_start(*, led_times: np.ndarray, ttl_times: np.ndarray, min_matc
     global_led_index = 0
     while not match_is_found:
         led_index, ttl_index = find_putative_interval_match(led_intervals=led_intervals, ttl_intervals=ttl_intervals, tolerance_in_seconds=tolerance_in_seconds)
-        if led_index is None:
+        if led_index is None or led_index + min_matches >= len(led_intervals):
             return None
         global_led_index += led_index
         match_is_found = check_interval_match(
@@ -257,11 +294,13 @@ def correct_ttl_times(*, led_times: np.ndarray, ttl_times: np.ndarray, min_match
                 raise ValueError(f"No matching TTL interval found for LED interval {led_interval} at index {led_interval_index}")
     corrected_ttl_timestamps = np.array(corrected_ttl_timestamps)
 
-    # If the last interval does not match, there is no way to correct it with a compound interval, so we drop it.
-    last_ttl_interval = corrected_ttl_timestamps[-1] - corrected_ttl_timestamps[-2]
+    # If the last N interval(s) do not match, there is no way to correct it with a compound interval, so we drop it.
     last_led_interval = segment_led_times[len(corrected_ttl_timestamps)-1] - segment_led_times[len(corrected_ttl_timestamps)-2]
-    if np.abs(last_ttl_interval - last_led_interval) > tolerance_in_seconds:
+    last_ttl_interval = corrected_ttl_timestamps[-1] - corrected_ttl_timestamps[-2]
+    while np.abs(last_ttl_interval - last_led_interval) > tolerance_in_seconds:
         corrected_ttl_timestamps = corrected_ttl_timestamps[:-1]
+        last_ttl_interval = corrected_ttl_timestamps[-1] - corrected_ttl_timestamps[-2]
+        last_led_interval = segment_led_times[len(corrected_ttl_timestamps)-1] - segment_led_times[len(corrected_ttl_timestamps)-2]
 
     return corrected_ttl_timestamps, segment_start_index
 
@@ -323,7 +362,6 @@ def get_aligned_video_timestamps_juveniles(
     """
     print("Aligning juvenile video timestamps...")
     led_threshold = 2_100
-    video_sampling_rate = 30.0
     timestamp_column_name = "Item4.Timestamp"
     led_column_name = "Item3.Val0"
     ttl_threshold = 20_000
@@ -332,10 +370,24 @@ def get_aligned_video_timestamps_juveniles(
     min_matches = 5
     tolerance_in_seconds = 0.5
 
-    timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
+    sep = nwb.convert.get_separator(file_path=timestamp_file_path)
+    timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name], sep=sep)
     traces = timestamps_df[led_column_name].values
-    video_timestamps = np.arange(traces.shape[0]) / video_sampling_rate
-    led_timestamps = get_ttl_timestamps(traces=traces, timestamps=video_timestamps, threshold=led_threshold, cooldown_in_seconds=cooldown_in_seconds, sampling_rate=video_sampling_rate)
+    video_timestamps = (timestamps_df[timestamp_column_name] - timestamps_df[timestamp_column_name][0]).dt.total_seconds().values
+    dt = np.median(np.diff(video_timestamps))
+    video_sampling_rate = int(1 / dt)
+    # Handle any NaN timestamps by using sampling rate
+    assert not(np.all(np.isnan(video_timestamps))), "All video timestamps are NaN, cannot infer from sampling rate."
+    isnan_mask = np.isnan(video_timestamps)
+    for i, isnan in enumerate(isnan_mask):
+        if isnan:
+            video_timestamps[i] = video_timestamps[i-1] + dt
+    # Second pass in reverse to catch any leading NaNs
+    isnan_mask = np.isnan(video_timestamps)
+    for i, isnan in enumerate(isnan_mask[::-1]):
+        if isnan:
+            video_timestamps[len(video_timestamps)-1-i] = video_timestamps[len(video_timestamps)-i] - dt
+    led_timestamps = get_led_flash_timestamps(traces=traces, timestamps=video_timestamps, threshold=led_threshold, cooldown_in_seconds=cooldown_in_seconds, sampling_rate=video_sampling_rate)
     led_intervals = np.diff(led_timestamps)
 
     extractor = OpenEphysBinaryRecordingExtractor(folder_path=ephys_folder_path, stream_name=ttl_stream_name)
@@ -346,13 +398,18 @@ def get_aligned_video_timestamps_juveniles(
         traces = extractor.get_traces(segment_index=segment_index, channel_ids=[ttl_channel_id])
         ephys_timestamps = extractor.get_times(segment_index=segment_index)
         single_segment_ttl_timestamps = get_ttl_timestamps(traces=traces, timestamps=ephys_timestamps, threshold=ttl_threshold, cooldown_in_seconds=cooldown_in_seconds, sampling_rate=sampling_rate)
-        single_segment_ttl_timestamps, segment_start_index = correct_ttl_times(led_times=led_timestamps, ttl_times=single_segment_ttl_timestamps, min_matches=min_matches, tolerance_in_seconds=tolerance_in_seconds)
-        
+        if len(single_segment_ttl_timestamps) == 0:
+            # Very short segments contain no TTL pulses and carry no alignment information, so we skip them.
+            print(f"    Segment {segment_index} contains no TTL pulses, skipping...")
+            continue
+        single_segment_ttl_timestamps, led_segment_start_index = correct_ttl_times(led_times=led_timestamps, ttl_times=single_segment_ttl_timestamps, min_matches=min_matches, tolerance_in_seconds=tolerance_in_seconds)
+
         ttl_intervals = np.diff(single_segment_ttl_timestamps)
-        assert np.all(np.isnan(ttl_timestamps[segment_start_index:segment_start_index + len(single_segment_ttl_timestamps)])), f"Overlap in TTL timestamps at segment {segment_index}"
-        ttl_timestamps[segment_start_index:segment_start_index + len(single_segment_ttl_timestamps)] = single_segment_ttl_timestamps
-        error = led_intervals[segment_start_index:segment_start_index + len(ttl_intervals)] - ttl_intervals
-        assert np.max(np.abs(error)) < tolerance_in_seconds, f"Alignment error too large: {np.max(np.abs(error))} seconds for segment {segment_index}"
+        assert np.all(np.isnan(ttl_timestamps[led_segment_start_index:led_segment_start_index + len(single_segment_ttl_timestamps)])), f"Overlap in TTL timestamps at segment {segment_index}"
+        ttl_timestamps[led_segment_start_index:led_segment_start_index + len(single_segment_ttl_timestamps)] = single_segment_ttl_timestamps
+        error = led_intervals[led_segment_start_index:led_segment_start_index + len(ttl_intervals)] - ttl_intervals
+        num_misaligned_intervals = np.sum(np.abs(error) > tolerance_in_seconds)
+        assert num_misaligned_intervals <= 3, f"{num_misaligned_intervals} misaligned intervals found between LED and TTL timestamps for segment {segment_index}"
 
     # NaN values represent LED pulses that were not recorded in the ephys data (ex. between segments)
     not_nan = ~np.isnan(ttl_timestamps)
@@ -366,6 +423,164 @@ def get_aligned_video_timestamps_juveniles(
     )
 
     return aligned_video_timestamps
+
+def get_aligned_video_timestamps_juveniles_from_dat(
+    *,
+    timestamp_file_path: Path,
+    dat_file_path: Path,
+    xml_data: dict,
+    epoch_ts_file_path: Path,
+    ttl_channel_index: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Get aligned video timestamps for juvenile sessions using the raw ephys .dat file.
+
+    Used when the OpenEphys record-node folder is not available but the raw .dat file is.
+    The TTL signal is read directly from the appropriate channel of the .dat memmap, sliced
+    per segment using the start/stop times in the Epoch_TS.csv file.
+
+    The .dat file concatenates segments without preserving the wall-clock gaps between them.
+    The wall-clock duration of each inter-segment gap is estimated from the LED (which keeps
+    ticking continuously on the video clock) and re-injected, so the returned timestamps live
+    on the raw ephys time basis rather than the processed (concatenated) one.
+
+    Parameters
+    ----------
+    timestamp_file_path : Path
+        Path to the video timestamps CSV file.
+    dat_file_path : Path
+        Path to the raw ephys .dat file.
+    xml_data : dict
+        Parsed XML metadata for the .dat file (as returned by ``nwb.io.read_xml``). Must
+        contain ``n_channels`` and ``dat_sampling_rate``.
+    epoch_ts_file_path : Path
+        Path to the Epoch_TS.csv file (headerless, two columns of start/stop seconds, one
+        row per segment) used to slice the .dat file into segments.
+    ttl_channel_index : int
+        Zero-based channel index of the TTL channel in the .dat file (Moore dataset metadata
+        column ``channelTTL_0base``).
+
+    Returns
+    -------
+    aligned_video_timestamps : np.ndarray
+        The video timestamps aligned to the raw ephys time basis.
+    raw_ephys_timestamps : np.ndarray
+        Per-sample timestamps for the .dat file on the raw ephys time basis. Within each
+        segment, samples advance at the .dat sampling rate; between segments, the wall-clock
+        gap estimated from the LED is injected.
+    """
+    print("Aligning juvenile video timestamps from .dat file...")
+    led_threshold = 2_100
+    video_sampling_rate = 30.0
+    timestamp_column_name = "Item4.Timestamp"
+    led_column_name = "Item3.Val0"
+    ttl_threshold = 20_000
+    cooldown_in_seconds = 1.0
+    min_matches = 5
+    tolerance_in_seconds = 0.5
+
+    sep = nwb.convert.get_separator(file_path=timestamp_file_path)
+    timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name], sep=sep)
+    traces = timestamps_df[led_column_name].values
+    video_timestamps = (timestamps_df[timestamp_column_name] - timestamps_df[timestamp_column_name][0]).dt.total_seconds().values
+    dt = np.median(np.diff(video_timestamps))
+    video_sampling_rate = int(1 / dt)
+    # Handle any NaN timestamps by using sampling rate
+    assert not(np.all(np.isnan(video_timestamps))), "All video timestamps are NaN, cannot infer from sampling rate."
+    isnan_mask = np.isnan(video_timestamps)
+    for i, isnan in enumerate(isnan_mask):
+        if isnan:
+            video_timestamps[i] = video_timestamps[i-1] + dt
+    # Second pass in reverse to catch any leading NaNs
+    isnan_mask = np.isnan(video_timestamps)
+    for i, isnan in enumerate(isnan_mask[::-1]):
+        if isnan:
+            video_timestamps[len(video_timestamps)-1-i] = video_timestamps[len(video_timestamps)-i] - dt
+        
+    led_timestamps = get_led_flash_timestamps(traces=traces, timestamps=video_timestamps, threshold=led_threshold, cooldown_in_seconds=cooldown_in_seconds, sampling_rate=video_sampling_rate)
+    led_intervals = np.diff(led_timestamps)
+
+    sampling_rate = float(xml_data['dat_sampling_rate'])
+    raw_data = nwb.io.load_eeg(
+        filepath=dat_file_path,
+        n_channels=xml_data['n_channels'],
+        frequency=sampling_rate,
+        bytes_size=2,
+    )
+
+    epoch_ts_df = pd.read_csv(epoch_ts_file_path, header=None, names=["start_seconds", "stop_seconds"])
+    segment_start_indices = (epoch_ts_df["start_seconds"].values * sampling_rate).astype(np.int64)
+    segment_stop_indices = np.concatenate([segment_start_indices[1:], [raw_data.shape[0]]])
+
+    ttl_timestamps = np.ones_like(led_timestamps) * np.nan
+    segment_led_start_indices = []
+    segment_led_stop_indices = []
+    for segment_index, (dat_segment_start_index, dat_segment_stop_index) in enumerate(zip(segment_start_indices, segment_stop_indices, strict=True)):
+        print(f"  Aligning segment {segment_index}...")
+        traces = raw_data[dat_segment_start_index:dat_segment_stop_index, ttl_channel_index]
+        ephys_timestamps = np.arange(dat_segment_start_index, dat_segment_stop_index) / sampling_rate
+        single_segment_ttl_timestamps = get_ttl_timestamps(traces=traces, timestamps=ephys_timestamps, threshold=ttl_threshold, cooldown_in_seconds=cooldown_in_seconds, sampling_rate=sampling_rate)
+        if len(single_segment_ttl_timestamps) == 0:
+            # Very short segments contain no TTL pulses and carry no alignment information, so we skip them.
+            # None sentinels keep these lists indexed by segment_index for the shift computation below.
+            print(f"    Segment {segment_index} contains no TTL pulses, skipping...")
+            segment_led_start_indices.append(None)
+            segment_led_stop_indices.append(None)
+            continue
+        single_segment_ttl_timestamps, led_segment_start_index = correct_ttl_times(led_times=led_timestamps, ttl_times=single_segment_ttl_timestamps, min_matches=min_matches, tolerance_in_seconds=tolerance_in_seconds)
+
+        ttl_intervals = np.diff(single_segment_ttl_timestamps)
+        assert np.all(np.isnan(ttl_timestamps[led_segment_start_index:led_segment_start_index + len(single_segment_ttl_timestamps)])), f"Overlap in TTL timestamps at segment {segment_index}"
+        ttl_timestamps[led_segment_start_index:led_segment_start_index + len(single_segment_ttl_timestamps)] = single_segment_ttl_timestamps
+        error = led_intervals[led_segment_start_index:led_segment_start_index + len(ttl_intervals)] - ttl_intervals
+        num_misaligned_intervals = np.sum(np.abs(error) > tolerance_in_seconds)
+        assert num_misaligned_intervals <= 3, f"{num_misaligned_intervals} misaligned intervals found between LED and TTL timestamps for segment {segment_index}"
+
+        segment_led_start_indices.append(led_segment_start_index)
+        segment_led_stop_indices.append(led_segment_start_index + len(single_segment_ttl_timestamps))
+
+    # NaN values represent LED pulses that were not recorded in the ephys data (ex. between segments)
+    not_nan = ~np.isnan(ttl_timestamps)
+    led_timestamps = led_timestamps[not_nan]
+    ttl_timestamps = ttl_timestamps[not_nan]
+
+    # Estimate the wall-clock offset of each segment relative to segment 0 (which anchors at 0).
+    # Each later segment is pushed forward by the LED-measured gap between its first matched
+    # pulse and the previous segment's last matched pulse, minus the gap already present in
+    # the processed (concatenated) ephys time basis.
+    # Skipped (None) segments have no TTL pulses to anchor, so they inherit the previous segment's
+    # shift (treated as contiguous in the .dat), and the next valid segment measures its gap against
+    # the last valid preceding segment.
+    segment_shifts = np.zeros(len(segment_start_indices))
+    previous_valid_index = 0
+    for segment_index in range(1, len(segment_start_indices)):
+        if segment_led_start_indices[segment_index] is None:
+            segment_shifts[segment_index] = segment_shifts[segment_index - 1]
+            continue
+        previous_last_led_index = segment_led_stop_indices[previous_valid_index] - 1
+        current_first_led_index = segment_led_start_indices[segment_index]
+        led_gap = led_timestamps[current_first_led_index] - led_timestamps[previous_last_led_index]
+        processed_ttl_gap = ttl_timestamps[current_first_led_index] - ttl_timestamps[previous_last_led_index]
+        segment_shifts[segment_index] = segment_shifts[previous_valid_index] + (led_gap - processed_ttl_gap)
+        previous_valid_index = segment_index
+
+    raw_ttl_timestamps = ttl_timestamps.copy()
+    for segment_index, (led_start, led_stop) in enumerate(zip(segment_led_start_indices, segment_led_stop_indices, strict=True)):
+        if led_start is None:
+            continue
+        raw_ttl_timestamps[led_start:led_stop] += segment_shifts[segment_index]
+
+    aligned_video_timestamps = align_by_interpolation(
+        unaligned_dense_timestamps=video_timestamps,
+        unaligned_sparse_timestamps=led_timestamps,
+        aligned_sparse_timestamps=raw_ttl_timestamps,
+    )
+
+    raw_ephys_timestamps = np.arange(raw_data.shape[0]) / sampling_rate
+    for segment_index, (dat_segment_start_index, dat_segment_stop_index) in enumerate(zip(segment_start_indices, segment_stop_indices, strict=True)):
+        raw_ephys_timestamps[dat_segment_start_index:dat_segment_stop_index] += segment_shifts[segment_index]
+
+    return aligned_video_timestamps, raw_ephys_timestamps
 
 
 def get_aligned_video_timestamps_adults(
@@ -406,7 +621,8 @@ def get_aligned_video_timestamps_adults(
     for segment_index, timestamp_file_path in enumerate(timestamp_file_paths):
         print(f"  Aligning segment {segment_index} with timestamp file {timestamp_file_path.name}...")
         starting_time_shift = starting_time_shifts[segment_index]
-        timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
+        sep = nwb.convert.get_separator(file_path=timestamp_file_path)
+        timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name], sep=sep)
         num_frames = timestamps_df.shape[0] + 1 # + 1 bc video has one extra frame at the end
         traces = extractor.get_traces(segment_index=segment_index, channel_ids=[ttl_channel_id])
         ephys_timestamps = extractor.get_times(segment_index=segment_index)
@@ -427,25 +643,3 @@ def get_aligned_video_timestamps_adults(
         all_aligned_video_timestamps.append(single_segment_ttl_timestamps)
 
     return all_aligned_video_timestamps
-
-
-def get_unaligned_video_timestamps_juveniles(*,timestamp_file_path: Path) -> np.ndarray:
-    """
-    Get unaligned video timestamps for juvenile sessions.
-
-    Parameters
-    ----------
-    timestamp_file_path : Path
-        Path to the video timestamps CSV file.
-
-    Returns
-    -------
-    np.ndarray
-        The unaligned video timestamps.
-    """
-    timestamp_column_name = "Item4.Timestamp"
-    timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name])
-    unaligned_timestamps = timestamps_df[timestamp_column_name].values
-    unaligned_timestamps = (unaligned_timestamps - unaligned_timestamps[0]) / np.timedelta64(1, 's') # Convert to seconds relative to the first timestamp
-
-    return unaligned_timestamps

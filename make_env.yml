@@ -1,0 +1,14 @@
+name: dudchenko_lab_to_nwb_env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.10
+  - pip
+  # System ffmpeg binary, needed by woodcode.nwb.video_codec to transcode Bonsai .avi -> .mp4 (H.264)
+  - ffmpeg
+  - pip:
+    # Installs the woodcode package (including the moore_2025 conversion) in editable mode
+    # along with all dependencies declared in pyproject.toml (neuroconv, spikeinterface,
+    # probeinterface, pynwb, pynapple==0.7.1, ndx-franklab-novela, opencv-python, etc.).
+    - -e .

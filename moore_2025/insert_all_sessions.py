@@ -23,7 +23,7 @@ sys.path.append(
 from imported_pseudo_emg import ImportedPseudoEMG
 from imported_histology_images import ImportedHistologyImages
 
-from insert_session import insert_session
+from session_to_spyglass import insert_session
 
 
 def main():

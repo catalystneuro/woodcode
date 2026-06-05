@@ -9,7 +9,7 @@ from typing import Any, Union
 
 from tqdm import tqdm
 
-from moore_2025.convert_session import session_to_nwb
+from moore_2025.session_to_nwb import session_to_nwb
 
 # Manually specified stream names for each session.
 # The ttl_stream_name is always derived as f"{stream_name}_ADC".
@@ -64,15 +64,25 @@ SESSIONS_WITHOUT_RAW_DATA: set[str] = {
     "H3026-211003",    # Raw data missing
     "H3026-211004_2",  # Raw data missing
     "H3015-210416_1",  # Raw data missing
-    "H4823-221108",    # Raw data and video missing
+    "H4823-221108",    # Raw data and video and raw Bonsai missing
 }
 
 # Sessions with no video recorded.
 SESSIONS_WITHOUT_VIDEO: set[str] = {
     "H3001-200201",  # Video not recorded
     "H3001-200202",  # Video not recorded
-    "H4822-221023",  # Video missing
-    "H4823-221108",  # Raw data and video missing
+    "H4822-221023",  # Video and raw Bonsai missing
+    "H4823-221108",  # Raw data and video and raw Bonsai missing
+}
+
+# Sessions without raw bonsai output
+SESSIONS_WITHOUT_RAW_BONSAI_OUTPUT: set[str] = {
+    "H3001-200201",  # Video not recorded --> Bonsai TTLs do not match ephys TTLs
+    "H3001-200202",  # Video not recorded --> Bonsai TTLs do not match ephys TTLs
+    "H4823-221108",  # Raw data and video and raw Bonsai missing
+    "H4822-221023",  # Video and raw Bonsai missing
+    "H3006-200314_1",  # Raw Bonsai missing is missing LED flashes
+    "H3006-200314_2",  # Raw Bonsai missing is missing LED flashes
 }
 
 # Sessions that should use Processed/<session>.xml for raw_xml_path, even if raw data exists.
@@ -89,7 +99,7 @@ SESSION_TO_ALT_XML_SESSION: dict[str, str] = {
 }
 
 
-def detect_video_and_timestamp_paths(raw_folder_path: Path) -> tuple[list[Path] | None, list[Path]]:
+def detect_video_and_timestamp_paths(raw_folder_path: Path) -> tuple[list[Path], list[Path]]:
     """Detect video and timestamp files in a Raw directory.
 
     Parameters
@@ -99,13 +109,20 @@ def detect_video_and_timestamp_paths(raw_folder_path: Path) -> tuple[list[Path] 
 
     Returns
     -------
-    tuple[list[Path] | None, list[Path]]
-        (video_file_paths, timestamps_file_paths). video_file_paths is None if no videos found.
+    tuple[list[Path], list[Path]]
+        (video_file_paths, timestamps_file_paths)
+
+    Notes
+    -----
+    Bonsai also emits tiny (few-KB) ``Bonsaitimestamps*.avi`` placeholders that
+    are not real video (e.g. 6x6 with an unspecified pixel format) and cause
+    ffmpeg to fail when transcoded. These are excluded from the video paths.
     """
-    video_file_paths = sorted(raw_folder_path.rglob("Bonsai*.avi"))
+    video_file_paths = sorted(
+        path for path in raw_folder_path.rglob("Bonsai*.avi")
+        if not path.name.startswith("Bonsaitimestamps")
+    )
     timestamps_file_paths = sorted(raw_folder_path.rglob("Bonsai*.csv"))
-    if not video_file_paths:
-        video_file_paths = None
     return video_file_paths, timestamps_file_paths
 
 
@@ -158,6 +175,7 @@ def get_session_to_nwb_kwargs(
 
     has_raw_data = folder_name not in SESSIONS_WITHOUT_RAW_DATA
     has_video = folder_name not in SESSIONS_WITHOUT_VIDEO
+    has_raw_bonsai_output = folder_name not in SESSIONS_WITHOUT_RAW_BONSAI_OUTPUT
 
     # Defaults for optional kwargs; overridden below when applicable.
     raw_ephys_folder_path = None
@@ -182,11 +200,20 @@ def get_session_to_nwb_kwargs(
         # No raw Open Ephys data; use .dat file from Processed/.
         raw_xml_path = processed_xml_path
         raw_ephys_dat_file_path = processed_folder_path / f"{folder_name}.dat"
+        video_file_paths, timestamps_file_paths = [], []
+        
+    if not(video_file_paths and timestamps_file_paths):
         video_file_paths, timestamps_file_paths = detect_video_and_timestamp_paths(processed_folder_path)
 
-    if not has_video:
+    if has_video:
+        assert video_file_paths, f"Expected video files for session {folder_name} but found none."
+    else:
         video_file_paths = None
-
+    if has_raw_bonsai_output:
+        assert timestamps_file_paths, f"Expected Bonsai timestamp files for session {folder_name} but found none."
+    else:
+        timestamps_file_paths = None
+        
     return dict(
         folder_name=folder_name,
         raw_xml_path=raw_xml_path,
