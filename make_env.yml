@@ -3,12 +3,15 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python>=3.10
+  - python==3.13
   - pip
   # System ffmpeg binary, needed by woodcode.nwb.video_codec to transcode Bonsai .avi -> .mp4 (H.264)
   - ffmpeg
   - pip:
     # Installs the woodcode package (including the moore_2025 conversion) in editable mode
     # along with all dependencies declared in pyproject.toml (neuroconv, spikeinterface,
-    # probeinterface, pynwb, pynapple==0.7.1, ndx-franklab-novela, opencv-python, etc.).
+    # probeinterface, pynwb, pynapple==0.7.1, opencv-python, etc.).
+    # NOTE: ndx-franklab-novela is intentionally NOT listed here or in pyproject.toml. It pins an
+    # older hdmf that conflicts with the pynwb dev build, so it must be installed separately after
+    # the environment is created with: pip install ndx-franklab-novela --no-deps (see moore_2025/README.md).
     - -e .

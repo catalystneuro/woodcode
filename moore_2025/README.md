@@ -41,12 +41,18 @@ git clone https://github.com/catalystneuro/woodcode
 cd woodcode
 conda env create --file make_env.yml
 conda activate dudchenko_lab_to_nwb_env
+pip install ndx-franklab-novela --no-deps
 ```
 
 This creates a [conda environment](https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html)
 that isolates the conversion code from your system libraries. The environment installs the `woodcode` package in
 [editable mode](https://pip.pypa.io/en/stable/cli/pip_install/#editable-installs), so any changes you make to the
 source take effect immediately.
+
+The extra `pip install ndx-franklab-novela --no-deps` is required because `ndx-franklab-novela` pins an older
+`hdmf` that conflicts with the development build of `pynwb` this conversion depends on. Installing it with
+`--no-deps` adds the extension without letting it drag in that incompatible `hdmf`, which is why it is kept out of
+`make_env.yml`/`pyproject.toml` and installed as a separate step.
 
 The [make_env.yml](../make_env.yml) file additionally installs the **`ffmpeg`** system binary, which is not a
 Python package and so cannot be declared in `pyproject.toml`. It is used by
