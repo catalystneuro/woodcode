@@ -371,7 +371,12 @@ def get_aligned_video_timestamps_juveniles(
     tolerance_in_seconds = 0.5
 
     sep = nwb.convert.get_separator(file_path=timestamp_file_path)
-    timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name], sep=sep)
+    try:
+        timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name], sep=sep)
+    except ValueError:
+        # H3006_200314 sessions have timestamps columns named Item3.Timestamp instead
+        timestamp_column_name = "Item3.Timestamp"
+        timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name], sep=sep)
     traces = timestamps_df[led_column_name].values
     video_timestamps = (timestamps_df[timestamp_column_name] - timestamps_df[timestamp_column_name][0]).dt.total_seconds().values
     dt = np.median(np.diff(video_timestamps))
@@ -471,7 +476,6 @@ def get_aligned_video_timestamps_juveniles_from_dat(
     """
     print("Aligning juvenile video timestamps from .dat file...")
     led_threshold = 2_100
-    video_sampling_rate = 30.0
     timestamp_column_name = "Item4.Timestamp"
     led_column_name = "Item3.Val0"
     ttl_threshold = 20_000
