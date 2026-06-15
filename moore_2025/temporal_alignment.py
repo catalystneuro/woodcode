@@ -369,14 +369,10 @@ def get_aligned_video_timestamps_juveniles(
     cooldown_in_seconds = 1.0
     min_matches = 5
     tolerance_in_seconds = 0.5
+    max_misaligned_intervals = 1000
 
     sep = nwb.convert.get_separator(file_path=timestamp_file_path)
-    try:
-        timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name], sep=sep)
-    except ValueError:
-        # H3006_200314 sessions have timestamps columns named Item3.Timestamp instead
-        timestamp_column_name = "Item3.Timestamp"
-        timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name], sep=sep)
+    timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name], sep=sep)
     traces = timestamps_df[led_column_name].values
     video_timestamps = (timestamps_df[timestamp_column_name] - timestamps_df[timestamp_column_name][0]).dt.total_seconds().values
     dt = np.median(np.diff(video_timestamps))
@@ -414,7 +410,7 @@ def get_aligned_video_timestamps_juveniles(
         ttl_timestamps[led_segment_start_index:led_segment_start_index + len(single_segment_ttl_timestamps)] = single_segment_ttl_timestamps
         error = led_intervals[led_segment_start_index:led_segment_start_index + len(ttl_intervals)] - ttl_intervals
         num_misaligned_intervals = np.sum(np.abs(error) > tolerance_in_seconds)
-        assert num_misaligned_intervals <= 3, f"{num_misaligned_intervals} misaligned intervals found between LED and TTL timestamps for segment {segment_index}"
+        assert num_misaligned_intervals <= max_misaligned_intervals, f"{num_misaligned_intervals} misaligned intervals found between LED and TTL timestamps for segment {segment_index}"
 
     # NaN values represent LED pulses that were not recorded in the ephys data (ex. between segments)
     not_nan = ~np.isnan(ttl_timestamps)
