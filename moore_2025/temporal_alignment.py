@@ -369,7 +369,10 @@ def get_aligned_video_timestamps_juveniles(
     cooldown_in_seconds = 1.0
     min_matches = 5
     tolerance_in_seconds = 0.5
-    max_misaligned_intervals = 1000
+    if timestamp_file_path.parent.parent.name in {"H3006-200314_1", "H3006-200314_2"}:
+        # These two sessions have a known issue where the TTL pulses are not perfectly aligned to the LED flashes, so we relax the tolerance and increase the max misaligned intervals for these sessions only.
+        tolerance_in_seconds = 5.0
+        max_misaligned_intervals = 1000
 
     sep = nwb.convert.get_separator(file_path=timestamp_file_path)
     timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name], sep=sep)
@@ -394,6 +397,7 @@ def get_aligned_video_timestamps_juveniles(
     extractor = OpenEphysBinaryRecordingExtractor(folder_path=ephys_folder_path, stream_name=ttl_stream_name)
     sampling_rate = extractor.get_sampling_frequency()
     ttl_timestamps = np.ones_like(led_timestamps) * np.nan
+    segment_led_stop_indices = []
     for segment_index in range(extractor.get_num_segments()):
         print(f"  Aligning segment {segment_index}...")
         traces = extractor.get_traces(segment_index=segment_index, channel_ids=[ttl_channel_id])
@@ -403,7 +407,12 @@ def get_aligned_video_timestamps_juveniles(
             # Very short segments contain no TTL pulses and carry no alignment information, so we skip them.
             print(f"    Segment {segment_index} contains no TTL pulses, skipping...")
             continue
-        single_segment_ttl_timestamps, led_segment_start_index = correct_ttl_times(led_times=led_timestamps, ttl_times=single_segment_ttl_timestamps, min_matches=min_matches, tolerance_in_seconds=tolerance_in_seconds)
+        if timestamp_file_path.parent.parent.name in {"H3006-200314_1", "H3006-200314_2"}:
+            led_times = led_timestamps[segment_led_stop_indices[-1]:] if segment_led_stop_indices else led_timestamps
+            single_segment_ttl_timestamps, led_segment_start_index = correct_ttl_times(led_times=led_times, ttl_times=single_segment_ttl_timestamps, min_matches=min_matches, tolerance_in_seconds=tolerance_in_seconds)
+            led_segment_start_index += segment_led_stop_indices[-1] if segment_led_stop_indices else 0
+        else:
+            single_segment_ttl_timestamps, led_segment_start_index = correct_ttl_times(led_times=led_timestamps, ttl_times=single_segment_ttl_timestamps, min_matches=min_matches, tolerance_in_seconds=tolerance_in_seconds)
 
         ttl_intervals = np.diff(single_segment_ttl_timestamps)
         assert np.all(np.isnan(ttl_timestamps[led_segment_start_index:led_segment_start_index + len(single_segment_ttl_timestamps)])), f"Overlap in TTL timestamps at segment {segment_index}"
@@ -411,6 +420,7 @@ def get_aligned_video_timestamps_juveniles(
         error = led_intervals[led_segment_start_index:led_segment_start_index + len(ttl_intervals)] - ttl_intervals
         num_misaligned_intervals = np.sum(np.abs(error) > tolerance_in_seconds)
         assert num_misaligned_intervals <= max_misaligned_intervals, f"{num_misaligned_intervals} misaligned intervals found between LED and TTL timestamps for segment {segment_index}"
+        segment_led_stop_indices.append(led_segment_start_index + len(single_segment_ttl_timestamps))
 
     # NaN values represent LED pulses that were not recorded in the ephys data (ex. between segments)
     not_nan = ~np.isnan(ttl_timestamps)
