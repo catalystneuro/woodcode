@@ -369,6 +369,7 @@ def get_aligned_video_timestamps_juveniles(
     cooldown_in_seconds = 1.0
     min_matches = 5
     tolerance_in_seconds = 0.5
+    max_misaligned_intervals = 3
     if timestamp_file_path.parent.parent.name in {"H3006-200314_1", "H3006-200314_2"}:
         # These two sessions have a known issue where the TTL pulses are not perfectly aligned to the LED flashes, so we relax the tolerance and increase the max misaligned intervals for these sessions only.
         tolerance_in_seconds = 5.0
