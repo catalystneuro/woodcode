@@ -1,0 +1,219 @@
+"""Reusable Spyglass insertion logic for the Duszkiewicz 2025 dataset.
+
+Defines ``insert_session()``, which ingests a single converted NWB file into a Spyglass database,
+along with its custom-insert helpers (``insert_sleep``, ``insert_cue_epochs``, ``insert_sorting``,
+``insert_pseudo_emg``), ``print_tables()`` for QA dumps, and ``clear_shared_tables()`` for clearing
+the shared probe/camera/device/task records before a fresh insertion. The driver script
+(``insert_single_session.py``) imports from here.
+
+Relative to the Moore insertion: there is no histology, and the Duszkiewicz-specific cue
+intervals (``epCue1``-``epCue4``) are inserted as IntervalLists. The blink timestamps and raw
+digital TTL events live in the ``behavioral_events`` container and are auto-populated into
+Spyglass's ``DIOEvents`` by ``insert_sessions``.
+
+Importing this module loads ``dj_local_conf.json`` and connects to the database.
+"""
+
+from pynwb import NWBHDF5IO
+import numpy as np
+import datajoint as dj
+from pathlib import Path
+import sys
+
+dj_local_conf_path = "/Users/pauladkisson/Documents/CatalystNeuro/Spyglass/spyglass/dj_local_conf.json"
+dj.config.load(dj_local_conf_path)  # load config for database connection info
+
+# General Spyglass Imports
+import spyglass.common as sgc  # this import connects to the database
+import spyglass.data_import as sgi
+from spyglass.utils.nwb_helper_fn import get_nwb_copy_filename
+import spyglass.lfp as sglfp
+
+# Spike Sorting Imports
+from spyglass.spikesorting.spikesorting_merge import SpikeSortingOutput
+import spyglass.spikesorting.v1 as sgs
+from spyglass.spikesorting.analysis.v1.group import SortedSpikesGroup
+from spyglass.spikesorting.analysis.v1.group import UnitSelectionParams
+
+# Custom Table Imports (reuse the Moore pseudo-EMG extension)
+sys.path.append(
+    "/Users/pauladkisson/Documents/CatalystNeuro/DudchenkoConv/woodcode/moore_2025/spyglass_extensions"
+)
+from imported_pseudo_emg import ImportedPseudoEMG
+
+
+def insert_pseudo_emg(nwbfile_path: Path):
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    ImportedPseudoEMG().make(key={"nwb_file_name": nwb_copy_file_name})
+
+
+def insert_sorting(nwbfile_path: Path):
+    """Insert spike sorting data and unit annotations into Spyglass.
+
+    Creates a sorted spikes group containing all units from the imported spike sorting data and
+    adds sampling_rate / waveform_mean annotations for each unit (extracted from the NWB file).
+    """
+    io = NWBHDF5IO(nwbfile_path, "r")
+    nwbfile = io.read()
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    merge_id = str((SpikeSortingOutput.ImportedSpikeSorting & {"nwb_file_name": nwb_copy_file_name}).fetch1("merge_id"))
+
+    UnitSelectionParams().insert_default()
+    group_name = "all_units"
+    SortedSpikesGroup().create_group(
+        group_name=group_name,
+        nwb_file_name=nwb_copy_file_name,
+        keys=[{"spikesorting_merge_id": merge_id}],
+    )
+    group_key = {
+        "nwb_file_name": nwb_copy_file_name,
+        "sorted_spikes_group_name": group_name,
+    }
+    group_key = (SortedSpikesGroup & group_key).fetch1("KEY")
+    _, unit_ids = SortedSpikesGroup().fetch_spike_data(group_key, return_unit_ids=True)
+
+    for unit_key in unit_ids:
+        unit_id = unit_key["unit_id"]
+        sampling_rate = nwbfile.units.get((unit_id, "sampling_rate"))
+        waveform_mean = nwbfile.units.get((unit_id, "waveform_mean"))
+        annotations = {
+            "sampling_rate": sampling_rate,
+            "waveform_mean": waveform_mean,
+        }
+        sgs.ImportedSpikeSorting().add_annotation(key={"nwb_file_name": nwb_copy_file_name}, id=unit_id, annotations=annotations)
+    io.close()
+
+
+def insert_sleep(nwbfile_path: Path):
+    nwb_copy_filename = get_nwb_copy_filename(nwbfile_path.name)
+    with NWBHDF5IO(str(nwbfile_path), "r") as io:
+        nwbfile = io.read()
+        sleep_stages = nwbfile.intervals["sleep_stages"].to_dataframe()
+    unique_tags = ["rem", "nrem", "wake"]
+    for tag in unique_tags:
+        stage_intervals = sleep_stages[sleep_stages["tags"] == tag]
+        start_times = stage_intervals["start_time"].to_numpy()
+        stop_times = stage_intervals["stop_time"].to_numpy()
+        valid_times = np.column_stack((start_times, stop_times))
+        key = {"nwb_file_name": nwb_copy_filename, "interval_list_name": f"sleep_{tag}", "valid_times": valid_times}
+        sgc.IntervalList().insert1(key, skip_duplicates=True)
+
+
+def insert_cue_epochs(nwbfile_path: Path):
+    """Insert the Duszkiewicz cue intervals (epCue1-epCue4) as Spyglass IntervalLists."""
+    nwb_copy_filename = get_nwb_copy_filename(nwbfile_path.name)
+    with NWBHDF5IO(str(nwbfile_path), "r") as io:
+        nwbfile = io.read()
+        cue_names = [name for name in nwbfile.intervals if name.startswith("epCue")]
+        cue_valid_times = {}
+        for cue_name in cue_names:
+            cue_df = nwbfile.intervals[cue_name].to_dataframe()
+            cue_valid_times[cue_name] = np.column_stack(
+                (cue_df["start_time"].to_numpy(), cue_df["stop_time"].to_numpy())
+            )
+    for cue_name, valid_times in cue_valid_times.items():
+        key = {"nwb_file_name": nwb_copy_filename, "interval_list_name": cue_name, "valid_times": valid_times}
+        sgc.IntervalList().insert1(key, skip_duplicates=True)
+
+
+def insert_session(nwbfile_path: Path, rollback_on_fail: bool = True, raise_err: bool = False):
+    """Insert a complete Duszkiewicz session from an NWB file into Spyglass.
+
+    Runs the standard Spyglass session ingestion (which also populates DIOEvents from the
+    ``behavioral_events`` container) followed by the custom sleep, cue-epoch, spike-sorting, and
+    pseudo-EMG inserts.
+    """
+    sgi.insert_sessions(str(nwbfile_path), rollback_on_fail=rollback_on_fail, raise_err=raise_err)
+    insert_sleep(nwbfile_path)
+    insert_cue_epochs(nwbfile_path)
+    insert_sorting(nwbfile_path)
+    insert_pseudo_emg(nwbfile_path)
+
+
+def clear_shared_tables():
+    """Delete the shared probe/camera/device/task records before a fresh insertion.
+
+    These records are shared across sessions, so they are cleared once at the start of an insertion
+    run (and re-created by ``insert_session``). Deleting ``ProbeType`` cascades to everything
+    referencing it, so this resets any previously inserted sessions as well.
+    """
+    (sgc.ProbeType & {"probe_type": "Cambridge Neurotech H7 probe"}).delete()
+    (sgc.DataAcquisitionDevice & {"name": "data_acquisition_device"}).delete()
+    (sgc.CameraDevice & {"camera_name": "Basler Camera"}).delete()
+    sgc.Task().delete()
+
+
+def print_tables(nwbfile_path: Path, table_path: Path = Path("tables.txt")):
+    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
+    with open(table_path, "w") as f:
+        # NWB file and Subject info
+        print("=== NWB File ===", file=f)
+        print(sgc.Nwbfile & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== Session ===", file=f)
+        print(sgc.Session & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== Subject ===", file=f)
+        print(sgc.Subject(), file=f)
+
+        # Task / Epoch / Sleep / Cue interval tables
+        print("=== IntervalList ===", file=f)
+        print(sgc.IntervalList & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== Task ===", file=f)
+        print(sgc.Task(), file=f)
+        print("=== Task Epoch ===", file=f)
+        print(sgc.TaskEpoch & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== Sleep NREM Valid Times ===", file=f)
+        print((sgc.IntervalList & {"nwb_file_name": nwb_copy_file_name, "interval_list_name": "sleep_nrem"}).fetch1("valid_times"), file=f)
+        print("=== epCue1 Valid Times ===", file=f)
+        print((sgc.IntervalList & {"nwb_file_name": nwb_copy_file_name, "interval_list_name": "epCue1"}).fetch1("valid_times"), file=f)
+
+        # Digital I/O events (blink + raw TTL lines)
+        print("=== DIOEvents ===", file=f)
+        print(sgc.DIOEvents & {"nwb_file_name": nwb_copy_file_name}, file=f)
+
+        # PseudoEMG table
+        print("=== ImportedPseudoEMG ===", file=f)
+        print(ImportedPseudoEMG & {"nwb_file_name": nwb_copy_file_name}, file=f)
+
+        # Video and Camera tables
+        print("=== Video File ===", file=f)
+        print(sgc.VideoFile & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== Camera Device ===", file=f)
+        print(sgc.CameraDevice(), file=f)
+
+        # Electrode / Probe tables
+        print("=== Data Acquisition Device ===", file=f)
+        print(sgc.DataAcquisitionDevice(), file=f)
+        print("=== Electrode ===", file=f)
+        print(sgc.Electrode & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== Electrode Group ===", file=f)
+        print(sgc.ElectrodeGroup & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== Probe ===", file=f)
+        print(sgc.Probe & {"probe_id": "Cambridge Neurotech H7 probe"}, file=f)
+        print("=== Probe Shank ===", file=f)
+        print(sgc.Probe.Shank & {"probe_id": "Cambridge Neurotech H7 probe"}, file=f)
+        print("=== Probe Electrode ===", file=f)
+        print(sgc.Probe.Electrode & {"probe_id": "Cambridge Neurotech H7 probe"}, file=f)
+        print("=== Raw ===", file=f)
+        print(sgc.Raw & {"nwb_file_name": nwb_copy_file_name}, file=f)
+
+        # LFP tables
+        print("=== ImportedLFP ===", file=f)
+        print(sglfp.ImportedLFP & {"nwb_file_name": nwb_copy_file_name}, file=f)
+
+        # Tracking tables
+        print("=== PositionSource ===", file=f)
+        print(sgc.PositionSource & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== PositionSource.SpatialSeries ===", file=f)
+        print(sgc.PositionSource.SpatialSeries & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== RawPosition.PosObject ===", file=f)
+        print(sgc.RawPosition.PosObject & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== RawCompassDirection ===", file=f)
+        print((sgc.RawCompassDirection & {"nwb_file_name": nwb_copy_file_name}), file=f)
+
+        # Spike Sorting tables
+        print("=== ImportedSpikeSorting ===", file=f)
+        print(sgs.ImportedSpikeSorting & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== Annotation ===", file=f)
+        print(sgs.ImportedSpikeSorting.Annotations & {"nwb_file_name": nwb_copy_file_name}, file=f)
+        print("=== Example Annotation (Unit 0) ===", file=f)
+        print((sgs.ImportedSpikeSorting.Annotations & {"nwb_file_name": nwb_copy_file_name, "id": 0}).fetch1("annotations"), file=f)

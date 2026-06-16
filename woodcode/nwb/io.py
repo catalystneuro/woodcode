@@ -540,6 +540,67 @@ def read_metadata(file_path, file_name, print_output=False):
     return metadata
 
 
+def get_cue_epochs(path):
+    """Read the Duszkiewicz ``CueEpochs.mat`` file.
+
+    The file holds four processed cue interval sets (``epCue1``-``epCue4``), each a pynapple
+    ``IntervalSet`` with four intervals, and ``tsBlink``, a pynapple ``Ts`` of blink event
+    timestamps. All times are on the no-gap (concatenated MATLAB/Neuroscope) time basis and
+    must be aligned to the NWB time basis by the caller.
+
+    Parameters
+    ----------
+    path : Path
+        Path to the ``CueEpochs.mat`` file.
+
+    Returns
+    -------
+    cue_epochs : dict[str, numpy.ndarray]
+        Maps each cue name (``"epCue1"``…``"epCue4"``) to an (n_intervals, 2) array of
+        ``[start, stop]`` times in seconds.
+    blink_times : numpy.ndarray
+        1D array of blink event timestamps in seconds.
+    """
+    print('Importing cue epochs and blink timestamps from CueEpochs.mat...')
+    cue_data = spio.loadmat(path, simplify_cells=True)
+
+    cue_epochs = {}
+    for cue_name in ('epCue1', 'epCue2', 'epCue3', 'epCue4'):
+        cue_interval_set = cue_data[cue_name]
+        starts = np.asarray(cue_interval_set['start']).ravel()
+        stops = np.asarray(cue_interval_set['stop']).ravel()
+        cue_epochs[cue_name] = np.column_stack((starts, stops))
+
+    blink_times = np.asarray(cue_data['tsBlink']['tsd']['t']).ravel()
+
+    return cue_epochs, blink_times
+
+
+def read_openephys_software_start_ms(sync_messages_path):
+    """Read the absolute acquisition start time from an OpenEphys ``sync_messages.txt`` file.
+
+    The file contains a line of the form
+    ``Software Time (milliseconds since midnight Jan 1st 1970 UTC): 1717621481708``,
+    which marks the wall-clock time of sample 0 of the experiment. This is the only place the
+    absolute start time is recorded; SpikeInterface/neo do not expose it.
+
+    Parameters
+    ----------
+    sync_messages_path : Path
+        Path to the experiment's ``sync_messages.txt`` file.
+
+    Returns
+    -------
+    int
+        Software start time in milliseconds since the Unix epoch.
+    """
+    with open(sync_messages_path, 'r') as file:
+        for line in file:
+            if 'Software Time' in line:
+                return int(line.split(':')[1].split()[0])
+    raise ValueError(f"No 'Software Time' line found in {sync_messages_path}")
+
+
 def load_eeg(
     filepath,
     n_channels=None,
