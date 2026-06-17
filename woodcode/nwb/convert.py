@@ -888,10 +888,14 @@ def add_camera_device(
 
     # Add camera device
     camera_device_metadata = metadata["Video"]["CameraDevice"]
+    # Spatial calibration is session-specific: read centimeters-per-pixel from the Excel
+    # metadata (file_pxwidth) and convert to meters per pixel for the NWB CameraDevice.
+    centimeters_per_pixel = metadata["file"]["pxwidth"]
+    meters_per_pixel = centimeters_per_pixel * 0.01
     camera_device = CameraDevice(
         name=camera_device_metadata["name"],
         description=camera_device_metadata["description"],
-        meters_per_pixel=camera_device_metadata["meters_per_pixel"],
+        meters_per_pixel=meters_per_pixel,
         lens=camera_device_metadata["lens"],
         camera_name=camera_device_metadata["camera_name"],
         model=camera_device_model,
