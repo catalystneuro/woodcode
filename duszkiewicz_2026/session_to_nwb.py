@@ -126,6 +126,14 @@ def session_to_nwb(
 
     probe_info = get_probe_info_duszkiewicz(metadata)
 
+    # Both probes are the same Cambridge Neurotech H7 hardware, but Spyglass keys its ProbeType and
+    # Probe tables by the probe's `type` string during NWB ingestion (LorenFrankLab/spyglass#1216),
+    # so two probes sharing a type collide on insert with a DuplicateError. Disambiguate each probe's
+    # type by its implant location to give each a distinct ProbeType/Probe entry in Spyglass. This
+    # runs after get_probe_info_duszkiewicz so its H7-type assertion still sees the original type.
+    for probe_metadata in metadata["probe"]:
+        probe_metadata["type"] = f"{probe_metadata['type']} ({probe_metadata['location']})"
+
     # CROSS-EXPERIMENT TIMEBASE: recover absolute Software Times → per-experiment sync offsets.
     software_start_ms = [
         nwb.io.read_openephys_software_start_ms(record_node_path / experiment_name / "recording1" / "sync_messages.txt")

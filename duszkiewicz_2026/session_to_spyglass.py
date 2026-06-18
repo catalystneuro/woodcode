@@ -81,7 +81,7 @@ def clear_shared_tables():
     run (and re-created by ``insert_session``). Deleting ``ProbeType`` cascades to everything
     referencing it, so this resets any previously inserted sessions as well.
     """
-    (sgc.ProbeType & {"probe_type": "Cambridge Neurotech H7 probe"}).delete()
+    (sgc.ProbeType & 'probe_type LIKE "Cambridge Neurotech H7 probe%"').delete()
     (sgc.DataAcquisitionDevice & {"name": "data_acquisition_device"}).delete()
     (sgc.CameraDevice & {"camera_name": "Basler Camera"}).delete()
     sgc.Task().delete()
@@ -132,11 +132,11 @@ def print_tables(nwbfile_path: Path, table_path: Path = Path("tables.txt")):
         print("=== Electrode Group ===", file=f)
         print(sgc.ElectrodeGroup & {"nwb_file_name": nwb_copy_file_name}, file=f)
         print("=== Probe ===", file=f)
-        print(sgc.Probe & {"probe_id": "Cambridge Neurotech H7 probe"}, file=f)
+        print(sgc.Probe & 'probe_id LIKE "Cambridge Neurotech H7 probe%"', file=f)
         print("=== Probe Shank ===", file=f)
-        print(sgc.Probe.Shank & {"probe_id": "Cambridge Neurotech H7 probe"}, file=f)
+        print(sgc.Probe.Shank & 'probe_id LIKE "Cambridge Neurotech H7 probe%"', file=f)
         print("=== Probe Electrode ===", file=f)
-        print(sgc.Probe.Electrode & {"probe_id": "Cambridge Neurotech H7 probe"}, file=f)
+        print(sgc.Probe.Electrode & 'probe_id LIKE "Cambridge Neurotech H7 probe%"', file=f)
         print("=== Raw ===", file=f)
         print(sgc.Raw & {"nwb_file_name": nwb_copy_file_name}, file=f)
 

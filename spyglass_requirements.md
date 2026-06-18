@@ -76,6 +76,8 @@ The required types and their roles:
 
 Hierarchy: `Probe` contains `Shank`s, each `Shank` contains `ShanksElectrode`s. Each shank also has a corresponding `NwbElectrodeGroup` that the electrode-table rows belong to.
 
+**Each `Probe` device must have a unique `probe_type` string.** During ingestion Spyglass keys *both* its `ProbeType` and `Probe` tables off the probe's `probe_type` attribute, and its duplicate-check only compares against rows already in the database — not against the other entries in the same insert batch. So two `Probe` devices in one file that share a `probe_type` produce two identical primary keys in a single insert and fail with `DuplicateError: Duplicate entry '<probe_type>' for key 'probe_type.PRIMARY'`. This is a real shortcoming in Spyglass's dedup logic (see [LorenFrankLab/spyglass#1216](https://github.com/LorenFrankLab/spyglass/issues/1216)). When a session has multiple probes of the same hardware model, disambiguate their `probe_type` strings — e.g. by appending the implant location (`"Cambridge Neurotech H7 probe (postsubiculum)"`) — so each lands as a distinct `ProbeType`/`Probe`. The `probe_type` must stay within `varchar(80)`.
+
 </details>
 
 <details>
