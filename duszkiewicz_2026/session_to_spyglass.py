@@ -1,10 +1,11 @@
 """Reusable Spyglass insertion logic for the Duszkiewicz 2026 dataset.
 
 Defines ``insert_session()``, which ingests a single converted NWB file into a Spyglass database,
-along with its custom-insert helpers (``insert_sleep``, ``insert_cue_epochs``, ``insert_sorting``,
-``insert_pseudo_emg``), ``print_tables()`` for QA dumps, and ``clear_shared_tables()`` for clearing
-the shared probe/camera/device/task records before a fresh insertion. The driver script
-(``insert_single_session.py``) imports from here.
+along with the Duszkiewicz-specific ``insert_cue_epochs`` helper, ``print_tables()`` for QA dumps,
+and ``clear_shared_tables()`` for clearing the shared probe/camera/device/task records before a
+fresh insertion. The generic ``insert_sleep``, ``insert_sorting``, and ``insert_pseudo_emg``
+helpers are reused from the Moore module. The driver script (``insert_single_session.py``) imports
+from here.
 
 Relative to the Moore insertion: there is no histology, and the Duszkiewicz-specific cue
 intervals (``epCue1``-``epCue4``) are inserted as IntervalLists. The blink timestamps and raw
@@ -30,10 +31,7 @@ from spyglass.utils.nwb_helper_fn import get_nwb_copy_filename
 import spyglass.lfp as sglfp
 
 # Spike Sorting Imports
-from spyglass.spikesorting.spikesorting_merge import SpikeSortingOutput
 import spyglass.spikesorting.v1 as sgs
-from spyglass.spikesorting.analysis.v1.group import SortedSpikesGroup
-from spyglass.spikesorting.analysis.v1.group import UnitSelectionParams
 
 # Custom Table Imports (reuse the Moore pseudo-EMG extension)
 sys.path.append(
@@ -41,62 +39,8 @@ sys.path.append(
 )
 from imported_pseudo_emg import ImportedPseudoEMG
 
-
-def insert_pseudo_emg(nwbfile_path: Path):
-    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    ImportedPseudoEMG().make(key={"nwb_file_name": nwb_copy_file_name})
-
-
-def insert_sorting(nwbfile_path: Path):
-    """Insert spike sorting data and unit annotations into Spyglass.
-
-    Creates a sorted spikes group containing all units from the imported spike sorting data and
-    adds sampling_rate / waveform_mean annotations for each unit (extracted from the NWB file).
-    """
-    io = NWBHDF5IO(nwbfile_path, "r")
-    nwbfile = io.read()
-    nwb_copy_file_name = get_nwb_copy_filename(nwbfile_path.name)
-    merge_id = str((SpikeSortingOutput.ImportedSpikeSorting & {"nwb_file_name": nwb_copy_file_name}).fetch1("merge_id"))
-
-    UnitSelectionParams().insert_default()
-    group_name = "all_units"
-    SortedSpikesGroup().create_group(
-        group_name=group_name,
-        nwb_file_name=nwb_copy_file_name,
-        keys=[{"spikesorting_merge_id": merge_id}],
-    )
-    group_key = {
-        "nwb_file_name": nwb_copy_file_name,
-        "sorted_spikes_group_name": group_name,
-    }
-    group_key = (SortedSpikesGroup & group_key).fetch1("KEY")
-    _, unit_ids = SortedSpikesGroup().fetch_spike_data(group_key, return_unit_ids=True)
-
-    for unit_key in unit_ids:
-        unit_id = unit_key["unit_id"]
-        sampling_rate = nwbfile.units.get((unit_id, "sampling_rate"))
-        waveform_mean = nwbfile.units.get((unit_id, "waveform_mean"))
-        annotations = {
-            "sampling_rate": sampling_rate,
-            "waveform_mean": waveform_mean,
-        }
-        sgs.ImportedSpikeSorting().add_annotation(key={"nwb_file_name": nwb_copy_file_name}, id=unit_id, annotations=annotations)
-    io.close()
-
-
-def insert_sleep(nwbfile_path: Path):
-    nwb_copy_filename = get_nwb_copy_filename(nwbfile_path.name)
-    with NWBHDF5IO(str(nwbfile_path), "r") as io:
-        nwbfile = io.read()
-        sleep_stages = nwbfile.intervals["sleep_stages"].to_dataframe()
-    unique_tags = ["rem", "nrem", "wake"]
-    for tag in unique_tags:
-        stage_intervals = sleep_stages[sleep_stages["tags"] == tag]
-        start_times = stage_intervals["start_time"].to_numpy()
-        stop_times = stage_intervals["stop_time"].to_numpy()
-        valid_times = np.column_stack((start_times, stop_times))
-        key = {"nwb_file_name": nwb_copy_filename, "interval_list_name": f"sleep_{tag}", "valid_times": valid_times}
-        sgc.IntervalList().insert1(key, skip_duplicates=True)
+# Reuse the generic Moore insertion helpers, which are identical for Duszkiewicz.
+from moore_2025.session_to_spyglass import insert_pseudo_emg, insert_sorting, insert_sleep
 
 
 def insert_cue_epochs(nwbfile_path: Path):
