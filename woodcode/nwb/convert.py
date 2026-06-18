@@ -1187,24 +1187,30 @@ def _get_behavioral_events(nwbfile: NWBFile) -> BehavioralEvents:
     return behavioral_events
 
 
-def add_cue_epochs(nwbfile, cue_epochs, lfp_eseries, lfp_sampling_rate):
-    """Add the processed cue interval sets (``epCue1``-``epCue4``) as TimeIntervals.
+def add_cue_events(nwbfile, cue_epochs, lfp_eseries, lfp_sampling_rate):
+    """Add the processed cue events (``epCue1``-``epCue4``) as point-event TimeSeries.
 
-    Each cue is stored as its own TimeIntervals table named like the source variable. Times are
-    aligned from the no-gap MATLAB basis to the unified NWB basis before being written.
+    Each cue is a set of point events (the start and stop times in ``CueEpochs.mat`` are identical),
+    so each cue is stored as its own ``TimeSeries`` named like the source variable in the
+    Spyglass-readable ``behavioral_events`` container (mirroring ``add_blink_events``). A placeholder
+    unit data vector is stored since these are point events. Times are aligned from the no-gap MATLAB
+    basis to the unified NWB basis before being written.
     """
-    print('Adding cue epochs to NWB file...')
+    print('Adding cue events to NWB file...')
+    behavioral_events = _get_behavioral_events(nwbfile)
     for cue_name, intervals in cue_epochs.items():
-        aligned_starts = _align_to_lfp_basis(intervals[:, 0], lfp_eseries, lfp_sampling_rate)
-        aligned_stops = _align_to_lfp_basis(intervals[:, 1], lfp_eseries, lfp_sampling_rate)
-        interval_set = nap.IntervalSet(start=aligned_starts, end=aligned_stops)
-        nwbfile = add_events(
-            nwbfile,
-            interval_set,
-            event_name=cue_name,
-            description=f"Cue presentation intervals ({cue_name}), processed from raw TTL events.",
-            label_description="Name of the cue epoch set.",
+        assert np.array_equal(intervals[:, 0], intervals[:, 1]), (
+            f"Cue {cue_name} has non-zero-duration intervals (start != stop); expected point events."
         )
+        aligned_cue_times = _align_to_lfp_basis(intervals[:, 0], lfp_eseries, lfp_sampling_rate)
+        cue_series = TimeSeries(
+            name=cue_name,
+            description=f"Cue presentation event times ({cue_name}), processed from raw TTL events.",
+            data=np.ones(len(aligned_cue_times)),
+            unit="n.a.",
+            timestamps=aligned_cue_times,
+        )
+        behavioral_events.add_timeseries(cue_series)
     return nwbfile
 
 

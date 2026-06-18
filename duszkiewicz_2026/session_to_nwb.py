@@ -8,7 +8,8 @@ these differences handled here:
 - Two epochs recorded as separate OpenEphys experiments, each with its own clock starting at 0;
   they are joined on a unified time basis using the Software-Time offset from ``sync_messages.txt``.
 - Raw digital TTL events (epoch 2) stored as Spyglass-readable DIO TimeSeries.
-- Processed cue intervals (``epCue1``-``epCue4``) and blink timestamps from ``CueEpochs.mat``.
+- Processed cue events (``epCue1``-``epCue4``, stored as DIO TimeSeries) and blink timestamps from
+  ``CueEpochs.mat``.
 """
 from datetime import datetime
 from pathlib import Path
@@ -182,8 +183,8 @@ def session_to_nwb(
     nwbfile = nwb.convert.add_epochs(nwbfile, epochs, metadata)
     nwbfile = nwb.convert.add_units(nwbfile, raw_xml_data, processed_xml_data, spikes, waveforms, shank_id, lfp_eseries, lfp_sampling_rate)
 
-    # Duszkiewicz-specific: processed cue intervals, blink timestamps, and raw DIO TTL events.
-    nwbfile = nwb.convert.add_cue_epochs(nwbfile, cue_epochs, lfp_eseries, lfp_sampling_rate)
+    # Duszkiewicz-specific: processed cue events, blink timestamps, and raw DIO TTL events.
+    nwbfile = nwb.convert.add_cue_events(nwbfile, cue_epochs, lfp_eseries, lfp_sampling_rate)
     nwbfile = nwb.convert.add_blink_events(nwbfile, blink_times, lfp_eseries, lfp_sampling_rate)
     ttl_experiment_name = next(name for name in experiment_names if name in ttl_folder_path.parts)
     dio_sync_offset = sync_offsets[experiment_names.index(ttl_experiment_name)]

@@ -37,13 +37,7 @@ with NWBHDF5IO(str(nwb_path), "r") as io:
         for n in nwbfile.processing["tasks"].data_interfaces:
             print(" ", n)
 
-    print("\n=== CUE EPOCHS (TimeIntervals) ===")
-    for n in ["epCue1", "epCue2", "epCue3", "epCue4"]:
-        if n in nwbfile.intervals:
-            df = nwbfile.intervals[n].to_dataframe()
-            print(f"  {n}: {len(df)} rows, start range [{df.start_time.min():.2f}, {df.start_time.max():.2f}]")
-
-    print("\n=== behavioral_events (Spyglass DIO) ===")
+    print("\n=== behavioral_events (Spyglass DIO; includes cue events epCue1-4) ===")
     be = nwbfile.processing["behavior"].data_interfaces.get("behavioral_events")
     if be is not None:
         for tsname, series in be.time_series.items():

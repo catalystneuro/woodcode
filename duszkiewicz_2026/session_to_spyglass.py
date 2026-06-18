@@ -1,22 +1,19 @@
 """Reusable Spyglass insertion logic for the Duszkiewicz 2026 dataset.
 
 Defines ``insert_session()``, which ingests a single converted NWB file into a Spyglass database,
-along with the Duszkiewicz-specific ``insert_cue_epochs`` helper, ``print_tables()`` for QA dumps,
-and ``clear_shared_tables()`` for clearing the shared probe/camera/device/task records before a
-fresh insertion. The generic ``insert_sleep``, ``insert_sorting``, and ``insert_pseudo_emg``
-helpers are reused from the Moore module. The driver script (``insert_single_session.py``) imports
-from here.
+along with ``print_tables()`` for QA dumps and ``clear_shared_tables()`` for clearing the shared
+probe/camera/device/task records before a fresh insertion. The generic ``insert_sleep``,
+``insert_sorting``, and ``insert_pseudo_emg`` helpers are reused from the Moore module. The driver
+script (``insert_single_session.py``) imports from here.
 
-Relative to the Moore insertion: there is no histology, and the Duszkiewicz-specific cue
-intervals (``epCue1``-``epCue4``) are inserted as IntervalLists. The blink timestamps and raw
-digital TTL events live in the ``behavioral_events`` container and are auto-populated into
-Spyglass's ``DIOEvents`` by ``insert_sessions``.
+Relative to the Moore insertion: there is no histology. The Duszkiewicz-specific cue events
+(``epCue1``-``epCue4``), blink timestamps, and raw digital TTL events all live in the
+``behavioral_events`` container and are auto-populated into Spyglass's ``DIOEvents`` by
+``insert_sessions``.
 
 Importing this module loads ``dj_local_conf.json`` and connects to the database.
 """
 
-from pynwb import NWBHDF5IO
-import numpy as np
 import datajoint as dj
 from pathlib import Path
 import sys
@@ -43,33 +40,15 @@ from imported_pseudo_emg import ImportedPseudoEMG
 from moore_2025.session_to_spyglass import insert_pseudo_emg, insert_sorting, insert_sleep
 
 
-def insert_cue_epochs(nwbfile_path: Path):
-    """Insert the Duszkiewicz cue intervals (epCue1-epCue4) as Spyglass IntervalLists."""
-    nwb_copy_filename = get_nwb_copy_filename(nwbfile_path.name)
-    with NWBHDF5IO(str(nwbfile_path), "r") as io:
-        nwbfile = io.read()
-        cue_names = [name for name in nwbfile.intervals if name.startswith("epCue")]
-        cue_valid_times = {}
-        for cue_name in cue_names:
-            cue_df = nwbfile.intervals[cue_name].to_dataframe()
-            cue_valid_times[cue_name] = np.column_stack(
-                (cue_df["start_time"].to_numpy(), cue_df["stop_time"].to_numpy())
-            )
-    for cue_name, valid_times in cue_valid_times.items():
-        key = {"nwb_file_name": nwb_copy_filename, "interval_list_name": cue_name, "valid_times": valid_times}
-        sgc.IntervalList().insert1(key, skip_duplicates=True)
-
-
 def insert_session(nwbfile_path: Path, rollback_on_fail: bool = True, raise_err: bool = False):
     """Insert a complete Duszkiewicz session from an NWB file into Spyglass.
 
     Runs the standard Spyglass session ingestion (which also populates DIOEvents from the
-    ``behavioral_events`` container) followed by the custom sleep, cue-epoch, spike-sorting, and
-    pseudo-EMG inserts.
+    ``behavioral_events`` container — including the cue events, blink timestamps, and raw TTL lines)
+    followed by the custom sleep, spike-sorting, and pseudo-EMG inserts.
     """
     sgi.insert_sessions(str(nwbfile_path), rollback_on_fail=rollback_on_fail, raise_err=raise_err)
     insert_sleep(nwbfile_path)
-    insert_cue_epochs(nwbfile_path)
     insert_sorting(nwbfile_path)
     insert_pseudo_emg(nwbfile_path)
 
@@ -107,10 +86,8 @@ def print_tables(nwbfile_path: Path, table_path: Path = Path("tables.txt")):
         print(sgc.TaskEpoch & {"nwb_file_name": nwb_copy_file_name}, file=f)
         print("=== Sleep NREM Valid Times ===", file=f)
         print((sgc.IntervalList & {"nwb_file_name": nwb_copy_file_name, "interval_list_name": "sleep_nrem"}).fetch1("valid_times"), file=f)
-        print("=== epCue1 Valid Times ===", file=f)
-        print((sgc.IntervalList & {"nwb_file_name": nwb_copy_file_name, "interval_list_name": "epCue1"}).fetch1("valid_times"), file=f)
 
-        # Digital I/O events (blink + raw TTL lines)
+        # Digital I/O events (cue events + blink + raw TTL lines)
         print("=== DIOEvents ===", file=f)
         print(sgc.DIOEvents & {"nwb_file_name": nwb_copy_file_name}, file=f)
 
