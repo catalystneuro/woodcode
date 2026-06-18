@@ -73,3 +73,21 @@ DIOEvents:
     8:
       name: video_segment8_change
       description: This line corresponds to changes in video segment 8.
+
+# Processed cue intervals (epCue1-epCue4) from CueEpochs.mat, derived from the raw TTL events. Each
+# set is a series of time intervals during which one cue condition was active; across the epoch the
+# four sets are presented in rotation. What distinguishes the four cue conditions is provisional and
+# should be refined here as the meaning is confirmed with the lab. A cue set present in CueEpochs.mat
+# without an entry here will fail loudly during conversion.
+CueEpochs:
+  description: >-
+    A processed cue presentation interval during the wake_cue_rot epoch, derived from raw TTL events.
+  sets:
+    epCue1:
+      description: Intervals belonging to cue condition 1.
+    epCue2:
+      description: Intervals belonging to cue condition 2.
+    epCue3:
+      description: Intervals belonging to cue condition 3.
+    epCue4:
+      description: Intervals belonging to cue condition 4.

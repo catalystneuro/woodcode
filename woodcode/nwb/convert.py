@@ -1187,30 +1187,34 @@ def _get_behavioral_events(nwbfile: NWBFile) -> BehavioralEvents:
     return behavioral_events
 
 
-def add_cue_events(nwbfile, cue_epochs, lfp_eseries, lfp_sampling_rate):
-    """Add the processed cue events (``epCue1``-``epCue4``) as point-event TimeSeries.
+def add_cue_epochs(nwbfile, cue_epochs, lfp_eseries, lfp_sampling_rate, cue_metadata):
+    """Add the processed cue interval sets (``epCue1``-``epCue4``) as TimeIntervals.
 
-    Each cue is a set of point events (the start and stop times in ``CueEpochs.mat`` are identical),
-    so each cue is stored as its own ``TimeSeries`` named like the source variable in the
-    Spyglass-readable ``behavioral_events`` container (mirroring ``add_blink_events``). A placeholder
-    unit data vector is stored since these are point events. Times are aligned from the no-gap MATLAB
-    basis to the unified NWB basis before being written.
+    Each cue is a set of genuine (non-zero-duration) time intervals during which a cue condition was
+    active, stored as its own TimeIntervals table named like the source variable. The biological
+    description of each cue set comes from ``cue_metadata`` (the ``CueEpochs`` block of the cohort
+    metadata YAML) so the meaning of each set is editable in metadata rather than hard-coded here; a
+    cue set present in the data without a metadata entry fails loudly. Times are aligned from the
+    no-gap MATLAB basis to the unified NWB basis before being written.
     """
-    print('Adding cue events to NWB file...')
-    behavioral_events = _get_behavioral_events(nwbfile)
+    print('Adding cue epochs to NWB file...')
+    shared_description = cue_metadata["description"]
+    set_metadata = cue_metadata["sets"]
     for cue_name, intervals in cue_epochs.items():
-        assert np.array_equal(intervals[:, 0], intervals[:, 1]), (
-            f"Cue {cue_name} has non-zero-duration intervals (start != stop); expected point events."
+        assert cue_name in set_metadata, (
+            f"Cue set {cue_name} is present in the data but has no entry in metadata['CueEpochs']['sets']; "
+            f"add a description for it to the CueEpochs block of the metadata YAML."
         )
-        aligned_cue_times = _align_to_lfp_basis(intervals[:, 0], lfp_eseries, lfp_sampling_rate)
-        cue_series = TimeSeries(
+        cue_info = set_metadata[cue_name]
+        aligned_starts = _align_to_lfp_basis(intervals[:, 0], lfp_eseries, lfp_sampling_rate)
+        aligned_stops = _align_to_lfp_basis(intervals[:, 1], lfp_eseries, lfp_sampling_rate)
+        cue_table = TimeIntervals(
             name=cue_name,
-            description=f"Cue presentation event times ({cue_name}), processed from raw TTL events.",
-            data=np.ones(len(aligned_cue_times)),
-            unit="n.a.",
-            timestamps=aligned_cue_times,
+            description=f"{shared_description} {cue_info['description']}",
         )
-        behavioral_events.add_timeseries(cue_series)
+        for start_time, stop_time in zip(aligned_starts, aligned_stops):
+            cue_table.add_interval(start_time=float(start_time), stop_time=float(stop_time))
+        nwbfile.add_time_intervals(cue_table)
     return nwbfile
 
 
