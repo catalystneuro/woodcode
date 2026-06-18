@@ -85,6 +85,9 @@ def get_aligned_video_timestamps_duszkiewicz(
         # The camera emits ~5-8% more TTL pulses than there are saved frames and the surplus can't
         # be matched to specific frames, so we take the first num_frames pulses (assumes the extra
         # pulses are at the end of the epoch). Pending confirmation from the Dudchenko lab (Q35).
+        # TODO: This first-num_frames truncation is a temporary stopgap. Replace it with the correct
+        # frame-to-TTL matching once Adrian confirms how the surplus pulses map to dropped/extra
+        # frames (e.g. whether the extras are genuinely at the end or interspersed).
         single_segment_ttl_timestamps = single_segment_ttl_timestamps[:num_frames]
 
         all_aligned_video_timestamps.append(single_segment_ttl_timestamps)
