@@ -188,7 +188,7 @@ def session_to_nwb(
     nwbfile = nwb.convert.add_blink_events(nwbfile, blink_times, lfp_eseries, lfp_sampling_rate)
     ttl_experiment_name = next(name for name in experiment_names if name in ttl_folder_path.parts)
     dio_sync_offset = sync_offsets[experiment_names.index(ttl_experiment_name)]
-    nwbfile = nwb.convert.add_dio_ttl_events(nwbfile, ttl_folder_path, dio_sync_offset)
+    nwbfile = nwb.convert.add_dio_ttl_events(nwbfile, ttl_folder_path, dio_sync_offset, dio_metadata=metadata["DIOEvents"])
 
     # save NWB file
     nwb.convert.save_nwb_file(nwbfile, save_path, folder_name)

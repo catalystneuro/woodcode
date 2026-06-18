@@ -1235,26 +1235,42 @@ def add_blink_events(nwbfile, blink_times, lfp_eseries, lfp_sampling_rate):
     return nwbfile
 
 
-def add_dio_ttl_events(nwbfile, ttl_folder_path, sync_offset):
+def add_dio_ttl_events(nwbfile, ttl_folder_path, sync_offset, dio_metadata):
     """Add raw digital TTL events as per-line DIO TimeSeries in ``behavioral_events``.
 
     Reads the OpenEphys TTL events (``states.npy`` of signed line numbers, ``timestamps.npy`` of
-    experiment-local seconds) and stores one ``dio_<line>`` TimeSeries per active line, with
-    ``data`` = 1 for a rising edge and 0 for a falling edge. The experiment-local timestamps are
-    shifted onto the unified NWB basis by adding ``sync_offset`` (the experiment's sync offset).
+    experiment-local seconds) and stores one TimeSeries per active line, with ``data`` = 1 for a
+    rising edge and 0 for a falling edge. The experiment-local timestamps are shifted onto the
+    unified NWB basis by adding ``sync_offset`` (the experiment's sync offset).
+
+    Each line's TimeSeries name and biological description come from ``dio_metadata`` (the
+    ``DIOEvents`` block of the cohort metadata YAML), keyed by line number, so the underlying event
+    each TTL line represents is editable in metadata rather than hard-coded here. A line present in
+    the data without a metadata entry fails loudly.
     """
     print('Adding raw TTL (DIO) events to NWB file...')
     states = np.load(ttl_folder_path / 'states.npy')
     timestamps = np.load(ttl_folder_path / 'timestamps.npy').astype(float) + sync_offset
 
+    shared_description = dio_metadata["description"]
+    line_metadata = dio_metadata["lines"]
     behavioral_events = _get_behavioral_events(nwbfile)
     for line in sorted(np.unique(np.abs(states))):
+        line = int(line)
+        assert line in line_metadata, (
+            f"TTL line {line} is present in the data but has no entry in metadata['DIOEvents']['lines']; "
+            f"add a name/description for it to the DIOEvents block of the metadata YAML."
+        )
+        line_info = line_metadata[line]
         line_mask = np.abs(states) == line
         line_timestamps = timestamps[line_mask]
         line_data = (states[line_mask] > 0).astype(np.uint8)  # 1 = rising edge, 0 = falling edge
         dio_series = TimeSeries(
-            name=f"dio_{int(line)}",
-            description=f"Digital TTL events on line {int(line)} (1 = rising edge, 0 = falling edge).",
+            name=line_info["name"],
+            description=(
+                f"{shared_description} {line_info['description']} Recorded as digital TTL line {line}; "
+                f"data = 1 marks a rising edge and 0 a falling edge."
+            ),
             data=line_data,
             unit="n.a.",
             timestamps=line_timestamps,

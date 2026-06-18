@@ -37,3 +37,39 @@ probe:
     data_acquisition_adc_circuit: Intan RHD adc circuit
   - name: probe_2
     reference: A silver ground wire was attached to one of the skull screws placed above the cerebellum as the reference.
+
+# Digital TTL events recorded in epoch 2 (wake_cue_rot). The rat forages in an arena surrounded by a
+# circular video display split into eight segments; each TTL line marks the times at which one of the
+# eight video segments changes. The line -> segment mapping below (line N -> segment N) and the
+# per-line text are provisional (reconstructed from meeting notes) and should be refined here as the
+# meaning is confirmed with the lab. Lines not present in a given session's data are simply ignored,
+# and a line present in the data without an entry here will fail loudly during conversion.
+DIOEvents:
+  description: >-
+    Marks a change in a circular eight-segment video stimulus presented on the walls of the arena
+    surrounding the rat during the wake_cue_rot epoch.
+  lines:
+    1:
+      name: video_segment1_change
+      description: This line corresponds to changes in video segment 1.
+    2:
+      name: video_segment2_change
+      description: This line corresponds to changes in video segment 2.
+    3:
+      name: video_segment3_change
+      description: This line corresponds to changes in video segment 3.
+    4:
+      name: video_segment4_change
+      description: This line corresponds to changes in video segment 4.
+    5:
+      name: video_segment5_change
+      description: This line corresponds to changes in video segment 5.
+    6:
+      name: video_segment6_change
+      description: This line corresponds to changes in video segment 6.
+    7:
+      name: video_segment7_change
+      description: This line corresponds to changes in video segment 7.
+    8:
+      name: video_segment8_change
+      description: This line corresponds to changes in video segment 8.
