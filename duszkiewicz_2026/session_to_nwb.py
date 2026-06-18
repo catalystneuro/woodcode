@@ -73,7 +73,6 @@ def session_to_nwb(
     video_file_paths: list[Path],
     timestamps_file_paths: list[Path],
     save_path: Path,
-    stub_test: bool = False,
 ):
     """Convert one Duszkiewicz session to NWB.
 
@@ -110,8 +109,6 @@ def session_to_nwb(
         Per-experiment AVI video and Bonsai tracking CSV files.
     save_path : Path
         Directory to write the NWB file (and transcoded videos).
-    stub_test : bool, optional
-        If True, stub the raw ephys/LFP to 100 samples for a fast smoke test.
     """
     save_path.mkdir(parents=True, exist_ok=True)
 
@@ -165,9 +162,8 @@ def session_to_nwb(
         experiment_names=experiment_names,
         sync_offsets=sync_offsets,
         xml_data=raw_xml_data,
-        stub_test=stub_test,
     )
-    nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=raw_xml_data, raw_eseries=nwbfile.acquisition["e-series"], stub_test=stub_test)
+    nwbfile = nwb.convert.add_lfp(nwbfile=nwbfile, lfp_path=lfp_file_path, xml_data=raw_xml_data, raw_eseries=nwbfile.acquisition["e-series"])
     lfp_eseries = nwbfile.processing["ecephys"].data_interfaces["LFP"].electrical_series["LFP"]
     nwbfile = nwb.convert.add_tracking(nwbfile, pos, lfp_eseries, lfp_sampling_rate, ang=hd)
     nwbfile, camera_device = nwb.convert.add_camera_device(nwbfile=nwbfile, metadata=metadata)

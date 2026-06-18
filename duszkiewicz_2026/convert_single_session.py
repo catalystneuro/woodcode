@@ -17,7 +17,6 @@ def main():
 
     folder_name = "H6813-240605"
     metadata_lookup_name = "H6813_240605"
-    stub_test = False
 
     record_node_path = session_path / "Raw" / "2024-06-05_22-04-41" / "Record Node 101"
     experiment_names = ["experiment1", "experiment2"]
@@ -69,7 +68,6 @@ def main():
         video_file_paths=video_file_paths,
         timestamps_file_paths=timestamps_file_paths,
         save_path=output_folder_path,
-        stub_test=stub_test,
     )
 
 
