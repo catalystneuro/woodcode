@@ -1,4 +1,4 @@
-# Cohort-level constants for the Duszkiewicz 2025 dataset.
+# Cohort-level constants for the Duszkiewicz 2026 dataset.
 # Per-session / per-subject metadata (genotype, probe locations, epochs, etc.) lives in the
 # metadata xlsx; constants shared across the cohort live here.
 Task:

@@ -1,4 +1,4 @@
-"""Reusable Spyglass insertion logic for the Duszkiewicz 2025 dataset.
+"""Reusable Spyglass insertion logic for the Duszkiewicz 2026 dataset.
 
 Defines ``insert_session()``, which ingests a single converted NWB file into a Spyglass database,
 along with its custom-insert helpers (``insert_sleep``, ``insert_cue_epochs``, ``insert_sorting``,

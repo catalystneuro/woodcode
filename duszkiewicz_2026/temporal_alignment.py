@@ -1,4 +1,4 @@
-"""Temporal alignment for the Duszkiewicz 2025 dataset.
+"""Temporal alignment for the Duszkiewicz 2026 dataset.
 
 Each session is split across two OpenEphys experiments (epochs) that were recorded by fully
 stopping and restarting acquisition, so each experiment has its own clock starting at 0. Video

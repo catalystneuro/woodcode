@@ -1,11 +1,11 @@
 """Convert the Duszkiewicz example session (H6813-240605) to NWB.
 
 Run from the repo root with:
-    python -m duszkiewicz_2025.convert_single_session
+    python -m duszkiewicz_2026.convert_single_session
 """
 from pathlib import Path
 
-from duszkiewicz_2025.session_to_nwb import session_to_nwb
+from duszkiewicz_2026.session_to_nwb import session_to_nwb
 
 
 def main():

@@ -1,4 +1,4 @@
-"""Single-session conversion logic for the Duszkiewicz 2025 dataset.
+"""Single-session conversion logic for the Duszkiewicz 2026 dataset.
 
 Defines ``session_to_nwb()`` for one Duszkiewicz session and ``get_probe_info_duszkiewicz()``,
 which builds the two-probe geometry. The session is organized like the Moore H4800 adults, with
@@ -18,7 +18,7 @@ from neuroconv.utils.dict import load_dict_from_file, dict_deep_update
 
 import woodcode.nwb as nwb
 from moore_2025.session_to_nwb import get_probe_info_h7
-from duszkiewicz_2025.temporal_alignment import get_aligned_video_timestamps_duszkiewicz
+from duszkiewicz_2026.temporal_alignment import get_aligned_video_timestamps_duszkiewicz
 
 
 def get_probe_info_duszkiewicz(metadata: dict) -> dict:

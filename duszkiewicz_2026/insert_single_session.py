@@ -5,7 +5,7 @@ from pathlib import Path
 import spyglass.common as sgc
 from spyglass.utils.nwb_helper_fn import get_nwb_copy_filename
 
-from duszkiewicz_2025.session_to_spyglass import insert_session, print_tables, clear_shared_tables
+from duszkiewicz_2026.session_to_spyglass import insert_session, print_tables, clear_shared_tables
 
 
 def main():
