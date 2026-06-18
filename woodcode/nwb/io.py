@@ -529,8 +529,11 @@ def read_metadata(file_path, file_name, print_output=False):
                 metadata[group] = {}
             metadata[group][key] = value
 
-    # Convert probe_data dictionary to a list of probe dictionaries
-    metadata["probe"] = list(probe_data.values())
+    # Convert probe_data dictionary to a list of probe dictionaries, ordered by probe number
+    # (probe_1, probe_2, ...) rather than spreadsheet column order. Downstream code assigns
+    # global shank ids and maps shanks to recording channels by this list's position, so the
+    # order must follow the probe number in the column name, not where the columns happen to sit.
+    metadata["probe"] = [probe_data[probe_num] for probe_num in sorted(probe_data)]
 
     # Print metadata if print_output is True
     if print_output:
