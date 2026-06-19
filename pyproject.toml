@@ -52,7 +52,7 @@ Homepage = "https://github.com/Wood-Dudchenko-lab/woodcode"
 "Bug Tracker" = "https://github.com/Wood-Dudchenko-lab/woodcode/issues"
 
 [tool.setuptools.packages.find]
-include = ["woodcode", "woodcode.*", "moore_2025"]
+include = ["woodcode", "woodcode.*", "moore_2025", "duszkiewicz_2026"]
 
 [project.scripts]
 calibrate-tracking = "woodcode.video.calibrate_tracking:main"

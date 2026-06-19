@@ -76,6 +76,8 @@ The required types and their roles:
 
 Hierarchy: `Probe` contains `Shank`s, each `Shank` contains `ShanksElectrode`s. Each shank also has a corresponding `NwbElectrodeGroup` that the electrode-table rows belong to.
 
+**Each `Probe` device must have a unique `probe_type` string.** During ingestion Spyglass keys *both* its `ProbeType` and `Probe` tables off the probe's `probe_type` attribute, and its duplicate-check only compares against rows already in the database — not against the other entries in the same insert batch. So two `Probe` devices in one file that share a `probe_type` produce two identical primary keys in a single insert and fail with `DuplicateError: Duplicate entry '<probe_type>' for key 'probe_type.PRIMARY'`. This is a real shortcoming in Spyglass's dedup logic (see [LorenFrankLab/spyglass#1216](https://github.com/LorenFrankLab/spyglass/issues/1216)). When a session has multiple probes of the same hardware model, disambiguate their `probe_type` strings — e.g. by appending the implant location (`"Cambridge Neurotech H7 probe (postsubiculum)"`) — so each lands as a distinct `ProbeType`/`Probe`. The `probe_type` must stay within `varchar(80)`.
+
 </details>
 
 <details>
@@ -94,6 +96,15 @@ Hierarchy: `Probe` contains `Shank`s, each `Shank` contains `ShanksElectrode`s. 
 
 </details>
 
+<details>
+<summary><b>8. Digital I/O events (DIO)</b></summary>
+
+- Digital TTL / event lines must live in a `pynwb.behavior.BehavioralEvents` container named exactly **`behavioral_events`**, placed in the `behavior` processing module (i.e. `nwbfile.processing["behavior"]["behavioral_events"]`).
+- **Each digital line is one `pynwb.TimeSeries` inside that container.** Spyglass's `DIOEvents` table is auto-populated by `sgi.insert_sessions`, which iterates the TimeSeries in this container and creates one `DIOEvents` row per TimeSeries (keyed by the TimeSeries name). A `behavioral_events` container is the only thing it looks for — events stored anywhere else are not ingested.
+- Each line's TimeSeries carries the event times as `timestamps` and the line state as `data` (e.g. `1` = rising edge, `0` = falling edge).
+
+</details>
+
 </details>
 
 ---
@@ -101,17 +112,17 @@ Hierarchy: `Probe` contains `Shank`s, each `Shank` contains `ShanksElectrode`s. 
 <details>
 <summary><h2 style="display:inline">Part B — Custom Extension Requirements</h2></summary>
 
-These requirements are imposed by the custom Spyglass tables in [moore_2025/spyglass_extensions/](moore_2025/spyglass_extensions/) and the helper inserts in [moore_2025/insert_session.py](moore_2025/insert_session.py). They are *not* enforced by base Spyglass — they only apply when using these custom tables in this pipeline.
+These requirements are imposed by the custom Spyglass tables in [moore_2025/spyglass_extensions/](moore_2025/spyglass_extensions/), the helper inserts in [moore_2025/insert_session.py](moore_2025/insert_session.py), and the Duszkiewicz-specific cue-epoch helper in [duszkiewicz_2026/session_to_spyglass.py](duszkiewicz_2026/session_to_spyglass.py). They are *not* enforced by base Spyglass — they only apply when using these custom tables and helpers in this pipeline.
 
 <details>
-<summary><b>8. Pseudo-EMG (<code>ImportedPseudoEMG</code>)</b></summary>
+<summary><b>9. Pseudo-EMG (<code>ImportedPseudoEMG</code>)</b></summary>
 
 - A `pynwb.TimeSeries` named exactly **`pseudoEMG`** must live in the `ecephys` processing module (i.e. `nwbfile.processing["ecephys"]["pseudoEMG"]`). Read by `ImportedPseudoEMG.make()`.
 
 </details>
 
 <details>
-<summary><b>9. Histology images (<code>ImportedHistologyImages</code>)</b></summary>
+<summary><b>10. Histology images (<code>ImportedHistologyImages</code>)</b></summary>
 
 - A `pynwb.image.Images` container named exactly **`histology_images`** must be added to `nwbfile.acquisition`.
 - Each image inside is exposed as its own row in `ImportedHistologyImages` keyed by the image's name, so individual image names must be unique within the container.
@@ -119,7 +130,7 @@ These requirements are imposed by the custom Spyglass tables in [moore_2025/spyg
 </details>
 
 <details>
-<summary><b>10. Sleep stages (custom <code>insert_sleep</code> helper)</b></summary>
+<summary><b>11. Sleep stages (custom <code>insert_sleep</code> helper)</b></summary>
 
 - Sleep-stage intervals must be added as a `TimeIntervals` table named exactly **`sleep_stages`** via `nwbfile.add_time_intervals(...)` (so it lands at `nwbfile.intervals["sleep_stages"]`).
 - Each row's `tags` column must be one of the literal values **`["rem"]`**, **`["nrem"]`**, or **`["wake"]`**. Other tag values are silently ignored by `insert_sleep()`.
@@ -127,7 +138,7 @@ These requirements are imposed by the custom Spyglass tables in [moore_2025/spyg
 </details>
 
 <details>
-<summary><b>11. Units table (custom unit annotations via <code>insert_sorting</code>)</b></summary>
+<summary><b>12. Units table (custom unit annotations via <code>insert_sorting</code>)</b></summary>
 
 The standard NWB units table must additionally carry:
 
@@ -135,6 +146,16 @@ The standard NWB units table must additionally carry:
 - A **`waveform_mean`** value per unit — the mean waveform array.
 
 Both are pushed into Spyglass's `ImportedSpikeSorting.Annotations` table by the `insert_sorting()` helper.
+
+</details>
+
+<details>
+<summary><b>13. Cue epochs (Duszkiewicz <code>insert_cue_epochs</code> helper)</b></summary>
+
+Specific to the Duszkiewicz 2026 pipeline ([duszkiewicz_2026/session_to_spyglass.py](duszkiewicz_2026/session_to_spyglass.py)).
+
+- Each cue interval set must be added as its own `TimeIntervals` table via `nwbfile.add_time_intervals(...)`, named with the **`epCue`** prefix (`epCue1`, `epCue2`, ...), so it lands at `nwbfile.intervals["epCueN"]`.
+- `insert_cue_epochs()` finds every `nwbfile.intervals` entry whose name starts with **`epCue`** and inserts its `(start_time, stop_time)` rows as a Spyglass `IntervalList` keyed by that name. Interval sets stored under any other name are not picked up.
 
 </details>
 

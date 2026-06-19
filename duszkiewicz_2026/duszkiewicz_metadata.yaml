@@ -1,0 +1,93 @@
+# Cohort-level constants for the Duszkiewicz 2026 dataset.
+# Per-session / per-subject metadata (genotype, probe locations, epochs, etc.) lives in the
+# metadata xlsx; constants shared across the cohort live here.
+Task:
+  sleep:
+    description: The rat was given a sleep opportunity in a container placed inside the recording arena, during which recordings continued.
+    environment: sleep_container
+    camera_id: 1
+  wake_cue_rot:
+    description: The rat was awake and foraging for scattered cereal in a cylindrical open field while a prominent visual cue on the arena wall was rotated between trials to probe visual reorientation of the head-direction system.
+    environment: cylindrical_open_field
+    camera_id: 1
+
+Video:
+  ImageSeries:
+    - name: Video1
+      description: Video during epoch 1 (sleep). Video capturing and marker tracking were performed using Bonsai software at 40 Hz. Images were acquired through an acA1300-75gc Basler camera with a LMVZ4411 Kowa lens, positioned at the ceiling of the rig. This camera was connected to the OpenEphys board, sending a pulse for each frame taken, allowing the synchronisation of the two streams of information.
+    - name: Video2
+      description: Video during epoch 2 (wake_cue_rot). Video capturing and marker tracking were performed using Bonsai software at 40 Hz. Images were acquired through an acA1300-75gc Basler camera with a LMVZ4411 Kowa lens, positioned at the ceiling of the rig. This camera was connected to the OpenEphys board, sending a pulse for each frame taken, allowing the synchronisation of the two streams of information.
+  CameraDevice:
+    name: camera_device 1
+    description: Images were acquired through an acA1300-75gc Basler camera with a LMVZ4411 Kowa lens, positioned at the ceiling of the rig.
+    lens: LMVZ4411 Kowa Lens
+    camera_name: Basler Camera
+    model:
+      name: CameraDeviceModel
+      description: Images were acquired through an acA1300-75gc Basler camera with a LMVZ4411 Kowa lens, positioned at the ceiling of the rig.
+      manufacturer: Basler
+      model_number: acA1300-75gc
+
+probe:
+  - name: probe_1
+    reference: A silver ground wire was attached to one of the skull screws placed above the cerebellum as the reference.
+    data_acquisition_description: For recording, the implanted silicon probes were connected to an Intan RHD headstage (Intan technologies). The headstage was connected to an Intan RHD standard SPI cable, which was connected to a 3D-printed commutator in the ceiling (custom-made in house). Signals were acquired at 30kHz with an OpenEphys data acquisition system.
+    data_acquisition_system: OpenEphys
+    data_acuisition_amplifier: Intan RHD amplifier chip
+    data_acquisition_adc_circuit: Intan RHD adc circuit
+  - name: probe_2
+    reference: A silver ground wire was attached to one of the skull screws placed above the cerebellum as the reference.
+
+# Digital TTL events recorded in epoch 2 (wake_cue_rot). The rat forages in an arena surrounded by a
+# circular video display split into eight segments; each TTL line marks the times at which one of the
+# eight video segments changes. The line -> segment mapping below (line N -> segment N) and the
+# per-line text are provisional (reconstructed from meeting notes) and should be refined here as the
+# meaning is confirmed with the lab. Lines not present in a given session's data are simply ignored,
+# and a line present in the data without an entry here will fail loudly during conversion.
+DIOEvents:
+  description: >-
+    Marks a change in a circular eight-segment video stimulus presented on the walls of the arena
+    surrounding the rat during the wake_cue_rot epoch.
+  lines:
+    1:
+      name: video_segment1_change
+      description: This line corresponds to changes in video segment 1.
+    2:
+      name: video_segment2_change
+      description: This line corresponds to changes in video segment 2.
+    3:
+      name: video_segment3_change
+      description: This line corresponds to changes in video segment 3.
+    4:
+      name: video_segment4_change
+      description: This line corresponds to changes in video segment 4.
+    5:
+      name: video_segment5_change
+      description: This line corresponds to changes in video segment 5.
+    6:
+      name: video_segment6_change
+      description: This line corresponds to changes in video segment 6.
+    7:
+      name: video_segment7_change
+      description: This line corresponds to changes in video segment 7.
+    8:
+      name: video_segment8_change
+      description: This line corresponds to changes in video segment 8.
+
+# Processed cue intervals (epCue1-epCue4) from CueEpochs.mat, derived from the raw TTL events. Each
+# set is a series of time intervals during which one cue condition was active; across the epoch the
+# four sets are presented in rotation. What distinguishes the four cue conditions is provisional and
+# should be refined here as the meaning is confirmed with the lab. A cue set present in CueEpochs.mat
+# without an entry here will fail loudly during conversion.
+CueEpochs:
+  description: >-
+    A processed cue presentation interval during the wake_cue_rot epoch, derived from raw TTL events.
+  sets:
+    epCue1:
+      description: Intervals belonging to cue condition 1.
+    epCue2:
+      description: Intervals belonging to cue condition 2.
+    epCue3:
+      description: Intervals belonging to cue condition 3.
+    epCue4:
+      description: Intervals belonging to cue condition 4.

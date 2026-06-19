@@ -1,7 +1,7 @@
 from pathlib import Path
 from pynwb import NWBHDF5IO, NWBFile
 from pynwb.ecephys import ElectricalSeries, LFP, TimeSeries
-from pynwb.behavior import SpatialSeries, Position, CompassDirection
+from pynwb.behavior import SpatialSeries, Position, CompassDirection, BehavioralEvents
 from pynwb.epoch import TimeIntervals
 from pynwb.file import Subject
 from hdmf.common.table import DynamicTable
@@ -20,8 +20,10 @@ from pynwb.device import DeviceModel
 from neuroconv.utils import calculate_regular_series_rate
 from neuroconv.tools.nwb_helpers import configure_and_write_nwbfile
 from .dat_file_data_chunk_iterator import DatFileDataChunkIterator
-from .io import load_eeg
+from .io import load_eeg, read_openephys_software_start_ms
+import spikeinterface as si
 from spikeinterface.extractors import OpenEphysBinaryRecordingExtractor
+from neuroconv.tools.nwb_helpers import get_module
 from neuroconv.tools.spikeinterface.spikeinterface import _stub_recording
 from neuroconv.utils import calculate_regular_series_rate
 import pynwb
@@ -101,7 +103,7 @@ def save_nwb_file(nwbfile, file_path, file_name):
     print('Done!')
 
 
-def add_events(nwbfile, events, event_name="events"):
+def add_events(nwbfile, events, event_name="events", description=None, label_description="Event label."):
     print('Adding events to NWB file...')
 
     # Handle case where events is a single IntervalSet
@@ -131,8 +133,16 @@ def add_events(nwbfile, events, event_name="events"):
     # Concatenate all event data
     events_df = pd.concat(data, ignore_index=True)
 
-    # Create TimeIntervals from the DataFrame, now with a name
-    events_table = TimeIntervals.from_dataframe(events_df, name=event_name)
+    # Create TimeIntervals from the DataFrame, now with a name and descriptions
+    table_description = description if description is not None else f"{event_name} time intervals."
+    columns = [
+        {"name": "start_time", "description": "Start time of the interval, in seconds."},
+        {"name": "stop_time", "description": "Stop time of the interval, in seconds."},
+        {"name": "label", "description": label_description},
+    ]
+    events_table = TimeIntervals.from_dataframe(
+        events_df, name=event_name, table_description=table_description, columns=columns
+    )
 
     # Add to NWB file
     nwbfile.add_time_intervals(events_table)
@@ -208,9 +218,9 @@ def add_probes(nwbfile, metadata, xmldata, nrsdata, probe_info):
     for probe_metadata in metadata["probe"]:
         probe_id = probe_metadata["id"]
         nshanks = probe_metadata["nshanks"]
-        ap_mm = probe_metadata["AP_mm"] # Posterior is positive
-        dv_mm = np.abs(probe_metadata["DV_mm"]) # Ventral aka down is positive
-        ml_mm = probe_metadata["ML_mm"] # Right is positive
+        ap_mm = float(probe_metadata["AP_mm"]) # Posterior is positive
+        dv_mm = float(np.abs(probe_metadata["DV_mm"])) # Ventral aka down is positive
+        ml_mm = float(probe_metadata["ML_mm"]) # Right is positive
         coordinates = [ap_mm, dv_mm, ml_mm]
         for _ in range(nshanks):
             shank_assignments.append((probe_id, global_shank_id, probe_metadata["location"], probe_metadata["step"], coordinates, probe_metadata["reference"]))
@@ -878,10 +888,14 @@ def add_camera_device(
 
     # Add camera device
     camera_device_metadata = metadata["Video"]["CameraDevice"]
+    # Spatial calibration is session-specific: read centimeters-per-pixel from the Excel
+    # metadata (file_pxwidth) and convert to meters per pixel for the NWB CameraDevice.
+    centimeters_per_pixel = metadata["file"]["pxwidth"]
+    meters_per_pixel = centimeters_per_pixel * 0.01
     camera_device = CameraDevice(
         name=camera_device_metadata["name"],
         description=camera_device_metadata["description"],
-        meters_per_pixel=camera_device_metadata["meters_per_pixel"],
+        meters_per_pixel=meters_per_pixel,
         lens=camera_device_metadata["lens"],
         camera_name=camera_device_metadata["camera_name"],
         model=camera_device_model,
@@ -1043,6 +1057,229 @@ def add_raw_ephys(nwbfile: NWBFile, folder_path: Path, xml_data: dict, stream_na
     es = pynwb.ecephys.ElectricalSeries(**eseries_kwargs)
     nwbfile.add_acquisition(es)
 
+    return nwbfile
+
+
+def add_raw_ephys_multi_experiment(
+    nwbfile: NWBFile,
+    record_node_path: Path,
+    stream_name: str,
+    experiment_names: list[str],
+    sync_offsets: list[float],
+    xml_data: dict,
+    stub_test: bool = False,
+) -> NWBFile:
+    """Add raw ephys from a session split across multiple OpenEphys experiments.
+
+    Each experiment was recorded after fully stopping and restarting OpenEphys, so each has its
+    own on-board clock starting at 0. The extractor refuses to load multiple experiments at
+    once, so they are read individually and joined into one multi-segment recording. The
+    inter-experiment wall-clock offset is recovered from each experiment's ``sync_messages.txt``
+    Software Time (passed in as ``sync_offsets``) and added to that experiment's 0-based
+    timestamps, producing a single unified time basis with the true acquisition-stop gap.
+    """
+    print("Adding raw ephys (multi-experiment) to NWB file...")
+
+    chan_order = np.concatenate(xml_data['spike_groups'])
+
+    recordings = [
+        OpenEphysBinaryRecordingExtractor(folder_path=record_node_path, stream_name=stream_name, experiment_name=experiment_name)
+        for experiment_name in experiment_names
+    ]
+    recording = si.append_recordings(recordings)
+    if stub_test:
+        recording = _stub_recording(recording)
+
+    # NOTE: spyglass now requires raw electrical series objects to be named, specifically, e-series.
+    eseries_kwargs = dict(name="e-series", description="Acquisition traces for the ElectricalSeries.")
+
+    channel_ids = recording.get_channel_ids()
+    channel_ids = [chan_id for chan_id in channel_ids if not "AUX" in chan_id]  # Skip AUX channels
+    recording = recording.select_channels(channel_ids=channel_ids)
+    region = list(range(len(channel_ids)))
+    electrode_table_region = nwbfile.create_electrode_table_region(
+        region=region,
+        description="electrode_table_region",
+    )
+    eseries_kwargs.update(electrodes=electrode_table_region)
+
+    if recording.has_scaleable_traces():
+        # Spikeinterface gains and offsets are gains and offsets to micro volts.
+        # The units of the ElectricalSeries should be volts so we scale correspondingly.
+        micro_to_volts_conversion_factor = 1e-6
+        channel_gains_to_volts = recording.get_channel_gains() * micro_to_volts_conversion_factor
+        channel_offsets_to_volts = recording.get_channel_offsets() * micro_to_volts_conversion_factor
+
+        unique_gains = set(channel_gains_to_volts)
+        if len(unique_gains) == 1:
+            conversion_to_volts = channel_gains_to_volts[0]
+            eseries_kwargs.update(conversion=conversion_to_volts)
+        else:
+            eseries_kwargs.update(channel_conversion=channel_gains_to_volts)
+
+        unique_offset = set(channel_offsets_to_volts)
+        if len(unique_offset) > 1:
+            _report_variable_offset(recording=recording)
+        unique_offset = channel_offsets_to_volts[0]
+        eseries_kwargs.update(offset=unique_offset)
+    else:
+        warning_message = (
+            "The recording extractor does not have gains and offsets to convert to volts. "
+            "That means that correct units are not guaranteed.  \n"
+            "Set the correct gains and offsets to the recording extractor before writing to NWB."
+        )
+        warnings.warn(warning_message, UserWarning, stacklevel=2)
+
+    # Iterator
+    segment_indices = list(range(recording.get_num_segments()))
+    assert len(segment_indices) == len(sync_offsets), \
+        f"Number of segments ({len(segment_indices)}) does not match number of sync offsets ({len(sync_offsets)})."
+    ephys_data_iterator = MultiSegmentRecordingDataChunkIterator(
+        recording=recording,
+        segment_indices=segment_indices,
+        chan_order=chan_order,
+    )
+    eseries_kwargs.update(data=ephys_data_iterator)
+
+    # Place each experiment's 0-based timestamps onto the unified basis via its sync offset.
+    timestamps = []
+    for segment_index, sync_offset in zip(segment_indices, sync_offsets, strict=True):
+        segment_timestamps = recording.get_times(segment_index=segment_index)
+        segment_timestamps = segment_timestamps + sync_offset
+        timestamps.append(segment_timestamps)
+    timestamps = np.concatenate(timestamps)
+
+    rate = calculate_regular_series_rate(series=timestamps)  # Returns None if it is not regular
+    if rate:
+        eseries_kwargs.update(starting_time=float(timestamps[0]), rate=recording.get_sampling_frequency())
+    else:
+        eseries_kwargs.update(timestamps=timestamps)
+
+    es = pynwb.ecephys.ElectricalSeries(**eseries_kwargs)
+    nwbfile.add_acquisition(es)
+
+    return nwbfile
+
+
+def _align_to_lfp_basis(times: np.ndarray, lfp_eseries, lfp_sampling_rate: float) -> np.ndarray:
+    """Map times from the no-gap MATLAB basis to the unified (gapped) NWB LFP basis.
+
+    Mirrors the interpolation already used in ``add_units``/``add_tracking``/``add_sleep``: the
+    unaligned basis is the regularly-sampled LFP clock (no inter-epoch gap), and the aligned
+    basis is the LFP ElectricalSeries' actual timestamps (which carry the inter-experiment gap).
+    """
+    unaligned_lfp_timestamps = np.arange(0, lfp_eseries.data._raw_data.shape[0]) / lfp_sampling_rate
+    aligned_lfp_timestamps = lfp_eseries.get_timestamps()[:]
+    return np.interp(x=np.asarray(times, dtype=float), xp=unaligned_lfp_timestamps, fp=aligned_lfp_timestamps)
+
+
+def _get_behavioral_events(nwbfile: NWBFile) -> BehavioralEvents:
+    """Get-or-create the Spyglass-readable ``behavioral_events`` container in ``behavior``.
+
+    Spyglass's ``DIOEvents`` finds digital events by locating a ``BehavioralEvents`` named
+    exactly ``behavioral_events`` and iterating its TimeSeries (one per DIO channel).
+    """
+    behavior_module = get_module(nwbfile, name="behavior", description="Behavioral data")
+    if "behavioral_events" in behavior_module.data_interfaces:
+        return behavior_module.data_interfaces["behavioral_events"]
+    behavioral_events = BehavioralEvents(name="behavioral_events")
+    behavior_module.add(behavioral_events)
+    return behavioral_events
+
+
+def add_cue_epochs(nwbfile, cue_epochs, lfp_eseries, lfp_sampling_rate, cue_metadata):
+    """Add the processed cue interval sets (``epCue1``-``epCue4``) as TimeIntervals.
+
+    Each cue is a set of genuine (non-zero-duration) time intervals during which a cue condition was
+    active, stored as its own TimeIntervals table named like the source variable. The biological
+    description of each cue set comes from ``cue_metadata`` (the ``CueEpochs`` block of the cohort
+    metadata YAML) so the meaning of each set is editable in metadata rather than hard-coded here; a
+    cue set present in the data without a metadata entry fails loudly. Times are aligned from the
+    no-gap MATLAB basis to the unified NWB basis before being written.
+    """
+    print('Adding cue epochs to NWB file...')
+    shared_description = cue_metadata["description"]
+    set_metadata = cue_metadata["sets"]
+    for cue_name, intervals in cue_epochs.items():
+        assert cue_name in set_metadata, (
+            f"Cue set {cue_name} is present in the data but has no entry in metadata['CueEpochs']['sets']; "
+            f"add a description for it to the CueEpochs block of the metadata YAML."
+        )
+        cue_info = set_metadata[cue_name]
+        aligned_starts = _align_to_lfp_basis(intervals[:, 0], lfp_eseries, lfp_sampling_rate)
+        aligned_stops = _align_to_lfp_basis(intervals[:, 1], lfp_eseries, lfp_sampling_rate)
+        cue_table = TimeIntervals(
+            name=cue_name,
+            description=f"{shared_description} {cue_info['description']}",
+        )
+        for start_time, stop_time in zip(aligned_starts, aligned_stops):
+            cue_table.add_interval(start_time=float(start_time), stop_time=float(stop_time))
+        nwbfile.add_time_intervals(cue_table)
+    return nwbfile
+
+
+def add_blink_events(nwbfile, blink_times, lfp_eseries, lfp_sampling_rate):
+    """Add blink event timestamps as a ``Blink_timestamps`` TimeSeries in ``behavioral_events``.
+
+    The blinks are point events (timestamps only); a placeholder unit data vector is stored so
+    the times live in a Spyglass-readable ``BehavioralEvents`` container. Times are aligned from
+    the no-gap MATLAB basis to the unified NWB basis.
+    """
+    print('Adding blink timestamps to NWB file...')
+    aligned_blink_times = _align_to_lfp_basis(blink_times, lfp_eseries, lfp_sampling_rate)
+    behavioral_events = _get_behavioral_events(nwbfile)
+    blink_series = TimeSeries(
+        name="Blink_timestamps",
+        description="Times of detected blinks, processed from raw TTL events.",
+        data=np.ones(len(aligned_blink_times)),
+        unit="n.a.",
+        timestamps=aligned_blink_times,
+    )
+    behavioral_events.add_timeseries(blink_series)
+    return nwbfile
+
+
+def add_dio_ttl_events(nwbfile, ttl_folder_path, sync_offset, dio_metadata):
+    """Add raw digital TTL events as per-line DIO TimeSeries in ``behavioral_events``.
+
+    Reads the OpenEphys TTL events (``states.npy`` of signed line numbers, ``timestamps.npy`` of
+    experiment-local seconds) and stores one TimeSeries per active line, with ``data`` = 1 for a
+    rising edge and 0 for a falling edge. The experiment-local timestamps are shifted onto the
+    unified NWB basis by adding ``sync_offset`` (the experiment's sync offset).
+
+    Each line's TimeSeries name and biological description come from ``dio_metadata`` (the
+    ``DIOEvents`` block of the cohort metadata YAML), keyed by line number, so the underlying event
+    each TTL line represents is editable in metadata rather than hard-coded here. A line present in
+    the data without a metadata entry fails loudly.
+    """
+    print('Adding raw TTL (DIO) events to NWB file...')
+    states = np.load(ttl_folder_path / 'states.npy')
+    timestamps = np.load(ttl_folder_path / 'timestamps.npy').astype(float) + sync_offset
+
+    shared_description = dio_metadata["description"]
+    line_metadata = dio_metadata["lines"]
+    behavioral_events = _get_behavioral_events(nwbfile)
+    for line in sorted(np.unique(np.abs(states))):
+        line = int(line)
+        assert line in line_metadata, (
+            f"TTL line {line} is present in the data but has no entry in metadata['DIOEvents']['lines']; "
+            f"add a name/description for it to the DIOEvents block of the metadata YAML."
+        )
+        line_info = line_metadata[line]
+        line_mask = np.abs(states) == line
+        line_timestamps = timestamps[line_mask]
+        line_data = (states[line_mask] > 0).astype(np.uint8)  # 1 = rising edge, 0 = falling edge
+        dio_series = TimeSeries(
+            name=line_info["name"],
+            description=(
+                f"{shared_description} {line_info['description']} Recorded as digital TTL line {line}; "
+                f"data = 1 marks a rising edge and 0 a falling edge."
+            ),
+            data=line_data,
+            unit="n.a.",
+            timestamps=line_timestamps,
+        )
+        behavioral_events.add_timeseries(dio_series)
     return nwbfile
 
 
