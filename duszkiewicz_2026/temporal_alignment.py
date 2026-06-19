@@ -2,9 +2,18 @@
 
 Each session is split across two OpenEphys experiments (epochs) that were recorded by fully
 stopping and restarting acquisition, so each experiment has its own clock starting at 0. Video
-frames are synchronized to ephys per experiment via the LED TTL pulses recorded on an ADC
-channel, then placed on the unified session time basis using each experiment's sync offset
-(recovered from ``sync_messages.txt`` Software Time by the orchestrator).
+frames are synchronized to ephys per experiment by anchoring the Bonsai camera clock to the
+ephys clock with the first camera TTL pulse, then placed on the unified session time basis using
+each experiment's sync offset (recovered from ``sync_messages.txt`` Software Time by the
+orchestrator).
+
+Bonsai records substantially more camera TTL pulses than there are saved video frames (~5-8%
+surplus) because of frames missed by Bonsai, and the surplus pulses cannot be matched to specific
+frames. Per the Dudchenko lab (Q35), we therefore do not attempt per-pulse-to-per-frame matching.
+Instead we use the timestamp of the first TTL pulse in each epoch to offset the Bonsai timestamps
+onto the ephys clock: the Bonsai timestamps are themselves evenly spaced at the true frame times,
+so converting them to seconds relative to the first frame and adding the first pulse's ephys time
+places the whole video stream on the ephys clock.
 """
 from pathlib import Path
 import numpy as np
@@ -26,6 +35,10 @@ def get_aligned_video_timestamps_duszkiewicz(
     ttl_threshold: float = 10_000,
 ) -> list[np.ndarray]:
     """Align video timestamps to the unified ephys time basis, one experiment at a time.
+
+    The Bonsai camera timestamps are anchored to the ephys clock using the first camera TTL pulse
+    of each experiment, rather than by matching individual pulses to individual frames (see module
+    docstring / Q35).
 
     Parameters
     ----------
@@ -64,32 +77,34 @@ def get_aligned_video_timestamps_duszkiewicz(
         sampling_rate = extractor.get_sampling_frequency()
         separator = nwb.convert.get_separator(file_path=timestamp_file_path)
         timestamps_df = pd.read_csv(timestamp_file_path, parse_dates=[timestamp_column_name], sep=separator)
-        num_frames = timestamps_df.shape[0] + 1  # + 1 bc the video has one extra frame at the end
 
+        # Detect the camera TTL pulses on the unified ephys basis; only the first pulse is used to
+        # anchor the Bonsai clock (see module docstring / Q35).
         traces = extractor.get_traces(segment_index=0, channel_ids=[ttl_channel_id])
-        ephys_timestamps = extractor.get_times(segment_index=0)
-        ephys_timestamps = ephys_timestamps + sync_offset
-        single_segment_ttl_timestamps = get_ttl_timestamps(
+        ephys_timestamps = extractor.get_times(segment_index=0) + sync_offset
+        ttl_timestamps = get_ttl_timestamps(
             traces=traces,
             timestamps=ephys_timestamps,
             threshold=ttl_threshold,
             cooldown_in_seconds=cooldown_in_seconds,
             sampling_rate=sampling_rate,
         )
-        num_ttls = single_segment_ttl_timestamps.shape[0]
-        assert num_ttls >= num_frames, (
-            f"Number of TTLs ({num_ttls}) is less than number of video frames ({num_frames}) "
-            f"for {experiment_name}."
+        first_ttl_timestamp = ttl_timestamps[0]
+
+        # Offset the Bonsai timestamps onto the ephys clock: seconds relative to the first frame,
+        # plus the ephys time of the first TTL pulse (which corresponds to that first frame).
+        bonsai_timestamps = timestamps_df[timestamp_column_name]
+        relative_seconds = (bonsai_timestamps - bonsai_timestamps.iloc[0]).dt.total_seconds().to_numpy()
+        aligned_video_timestamps = relative_seconds + first_ttl_timestamp
+
+        # The video has one extra frame at the end relative to the Bonsai tracking rows, so
+        # extrapolate one more frame time (one median inter-frame interval) to match the video frame
+        # count. add_raw_tracking drops this trailing timestamp when aligning the tracking data.
+        median_interval = np.median(np.diff(aligned_video_timestamps))
+        aligned_video_timestamps = np.append(
+            aligned_video_timestamps, aligned_video_timestamps[-1] + median_interval
         )
 
-        # The camera emits ~5-8% more TTL pulses than there are saved frames and the surplus can't
-        # be matched to specific frames, so we take the first num_frames pulses (assumes the extra
-        # pulses are at the end of the epoch). Pending confirmation from the Dudchenko lab (Q35).
-        # TODO: This first-num_frames truncation is a temporary stopgap. Replace it with the correct
-        # frame-to-TTL matching once Adrian confirms how the surplus pulses map to dropped/extra
-        # frames (e.g. whether the extras are genuinely at the end or interspersed).
-        single_segment_ttl_timestamps = single_segment_ttl_timestamps[:num_frames]
-
-        all_aligned_video_timestamps.append(single_segment_ttl_timestamps)
+        all_aligned_video_timestamps.append(aligned_video_timestamps)
 
     return all_aligned_video_timestamps
